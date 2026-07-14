@@ -16,10 +16,13 @@ dist/
 # même privé.
 /data/
 
-# Jaquettes/photos consoles téléchargées localement — régénérables via les scripts d'import existants
-# (bun run import:launchbox-remote, bun run download:console-photos), inutile de les versionner.
+# Jaquettes locales : le catalogue réel utilise le hotlink LaunchBox CDN (import-launchbox-remote.ts),
+# ce dossier est vide de facto pour les vraies données — régénérable via `bun run import:launchbox`
+# si jamais utilisé. Les photos de consoles (apps/backend/public/consoles/), elles, RESTENT
+# versionnées : Render (plan gratuit) n'a pas de stockage persistant, donc tout ce qui n'est ni en
+# base ni dans l'image Docker disparaît au redéploiement — contrairement aux jaquettes, elles ne
+# sont pas régénérables de façon fiable à la demande (rate-limiting Wikimedia rencontré cette session).
 apps/backend/public/covers/
-apps/backend/public/consoles/
 
 # Config locale de l'outillage agent (spécifique à cette machine)
 /.claude/
