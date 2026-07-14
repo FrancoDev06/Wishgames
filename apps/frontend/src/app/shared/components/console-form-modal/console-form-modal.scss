@@ -1,0 +1,21 @@
+// Chrome commun (fond, carte, champs, boutons) : voir src/styles/_modal.scss.
+// Ici : uniquement les cases à cocher câbles/manette, spécifiques au matériel (§3.5).
+
+.modal__checkboxes {
+  display: flex;
+  gap: var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+.modal__checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.modal__checkbox input {
+  width: auto;
+}

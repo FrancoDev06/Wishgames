@@ -1,0 +1,101 @@
+<div class="modal-backdrop" (click)="cancel()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3 class="modal__title">{{ heading }}</h3>
+    @if (subtitle) {
+      <p class="modal__subtitle">{{ subtitle }}</p>
+    }
+
+    <form (ngSubmit)="submit()">
+      <label class="modal__field">
+        Région de l'édition
+        <select name="region" [(ngModel)]="form.ll_region" [disabled]="!!initialValue">
+          <option value="">Non précisée</option>
+          @for (opt of regionOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="modal__field">
+        Complétude *
+        <select name="completeness" [(ngModel)]="form.ll_completeness" (ngModelChange)="onCompletenessChange()" required>
+          <option value="" disabled>Choisir…</option>
+          @for (opt of completenessOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </label>
+
+      @if (form.ll_completeness) {
+        <div class="modal__conditions">
+          <label class="modal__field">
+            État du jeu *
+            <select name="condition-media" [(ngModel)]="form.ll_condition_media" required>
+              <option value="" disabled>Choisir…</option>
+              @for (opt of conditionOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </label>
+
+          @if (showBoxCondition()) {
+            <label class="modal__field">
+              État de la boîte
+              <select name="condition-box" [(ngModel)]="form.ll_condition_box">
+                <option value="">Non précisé</option>
+                @for (opt of conditionOptions; track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+            </label>
+          }
+
+          @if (showManualCondition()) {
+            <label class="modal__field">
+              État du manuel
+              <select name="condition-manual" [(ngModel)]="form.ll_condition_manual">
+                <option value="">Non précisé</option>
+                @for (opt of conditionOptions; track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+            </label>
+          }
+        </div>
+      }
+
+      <div class="modal__row">
+        <label class="modal__field">
+          Prix payé (€)
+          <input type="number" name="price" min="0" step="0.01" [(ngModel)]="form.nb_price_paid" />
+        </label>
+
+        <label class="modal__field">
+          Quantité
+          <input type="number" name="quantity" min="1" [(ngModel)]="form.nb_quantity" />
+        </label>
+      </div>
+
+      <label class="modal__field">
+        Lieu d'achat
+        <input type="text" name="location" [(ngModel)]="form.ll_purchase_location" />
+      </label>
+
+      <label class="modal__field">
+        Date d'acquisition
+        <input type="date" name="acquired" [(ngModel)]="form.ts_acquired" />
+      </label>
+
+      <div class="modal__actions">
+        <button type="button" class="btn btn--ghost" (click)="cancel()">Annuler</button>
+        <button
+          type="submit"
+          class="btn btn--primary"
+          [disabled]="submitting || !form.ll_completeness || !form.ll_condition_media"
+        >
+          {{ submitting ? 'En cours…' : confirmLabel }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

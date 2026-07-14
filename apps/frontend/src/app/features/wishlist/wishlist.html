@@ -1,0 +1,221 @@
+<section class="browse">
+  <header class="browse__header">
+    <h2>Wishlist</h2>
+    @if (!loading() && !error()) {
+      <span class="browse__count">
+        {{ items().length }} jeu{{ items().length > 1 ? 'x' : '' }} recherché{{ items().length > 1 ? 's' : '' }}
+      </span>
+    }
+
+    <div class="header-toggles">
+      <div class="browse__view-toggle">
+        <button type="button" [class.active]="displayMode() === 'cards'" (click)="setDisplayMode('cards')">Cartes</button>
+        <button type="button" [class.active]="displayMode() === 'kanban'" (click)="setDisplayMode('kanban')">Chasse</button>
+        <button type="button" [class.active]="displayMode() === 'prices'" (click)="setDisplayMode('prices')">Prix</button>
+      </div>
+
+      @if (displayMode() === 'cards') {
+        <div class="browse__view-toggle">
+          <button type="button" [class.active]="viewMode() === 'grid'" (click)="setViewMode('grid')">Grille</button>
+          <button type="button" [class.active]="viewMode() === 'list'" (click)="setViewMode('list')">Liste</button>
+        </div>
+      }
+    </div>
+  </header>
+
+  @if (!loading() && !error() && items().length > 0) {
+    <div class="filters">
+      <input
+        type="search"
+        class="filters__search"
+        placeholder="Rechercher un titre…"
+        [value]="searchText()"
+        (input)="onSearchChange($any($event.target).value)"
+      />
+
+      <select class="filters__select" [value]="sortBy()" (change)="onSortChange($any($event.target).value)">
+        <option value="priority">Priorité (haute → basse)</option>
+        <option value="date-desc">Date d'ajout (récent → ancien)</option>
+        <option value="date-asc">Date d'ajout (ancien → récent)</option>
+        <option value="title">Titre (A → Z)</option>
+      </select>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="browse__status">Chargement…</p>
+  } @else if (error()) {
+    <p class="browse__status browse__status--error">{{ error() }}</p>
+  } @else if (items().length === 0) {
+    <p class="browse__status">Aucun jeu dans la wishlist pour l'instant.</p>
+  } @else if (displayMode() === 'kanban') {
+    <p class="browse__hint">Glisse une carte vers une autre colonne pour suivre ta progression ; dépose-la sur « Acheté » pour lancer l'achat.</p>
+    <app-wishlist-kanban
+      [cards]="kanbanCards()"
+      (statusChanged)="onKanbanStatusChanged($event)"
+      (buyRequested)="onKanbanBuyRequested($event)"
+      (cardClicked)="onKanbanCardClicked($event)"
+    />
+  } @else if (displayMode() === 'prices') {
+    <app-wishlist-price-view [items]="filteredSorted()" (itemClicked)="onPriceItemClicked($event)" />
+  } @else if (groups().length === 0) {
+    <p class="browse__status">Aucun jeu ne correspond à cette recherche.</p>
+  } @else {
+    <p class="browse__hint">Clique sur une carte pour voir le détail, modifier, acheter ou gérer les offres.</p>
+
+    @for (group of groups(); track group.consoleName) {
+      <section class="console-group">
+        <h3 class="console-group__title">
+          {{ group.consoleName }}
+          <span class="console-group__count">{{ group.items.length }}</span>
+        </h3>
+
+        @if (viewMode() === 'grid') {
+          <div class="browse-grid">
+            @for (item of group.items; track item.id) {
+              <article class="card card--clickable" (click)="openDetail(item)">
+                @if (coverUrl(item); as url) {
+                  <img class="card__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
+                } @else {
+                  <div class="card__cover card__cover--placeholder">{{ group.consoleName }}</div>
+                }
+
+                <div class="card__body">
+                  <h3 class="card__title">{{ item.title }}</h3>
+
+                  @if (item.ll_desired_completeness || item.ll_desired_condition) {
+                    <div class="badges">
+                      @if (item.ll_desired_completeness) {
+                        <span class="badge badge--completeness">{{ completenessLabel(item.ll_desired_completeness) }}</span>
+                      }
+                      @if (item.ll_desired_condition) {
+                        <span class="badge badge--condition">{{ conditionLabel(item.ll_desired_condition) }}</span>
+                      }
+                    </div>
+                  }
+
+                  @if (item.nb_priority) {
+                    <div class="priority" [attr.data-level]="item.nb_priority">
+                      <span class="priority__bars">
+                        @for (level of priorityLevels; track level) {
+                          <i [class.on]="level <= item.nb_priority!"></i>
+                        }
+                      </span>
+                      <span class="priority__label">Priorité {{ item.nb_priority }}/5</span>
+                    </div>
+                  }
+
+                  @if (item.ll_desired_regions.length) {
+                    <div class="regions">{{ regionsLabel(item) }}</div>
+                  }
+
+                  @if (item.nb_offers) {
+                    <div class="offers-hint">{{ item.nb_offers }} offre{{ item.nb_offers > 1 ? 's' : '' }}</div>
+                  }
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="browse-list">
+            @for (item of group.items; track item.id) {
+              <article class="row card--clickable" (click)="openDetail(item)">
+                @if (coverUrl(item); as url) {
+                  <img class="row__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
+                } @else {
+                  <div class="row__cover row__cover--placeholder">{{ group.consoleName }}</div>
+                }
+
+                <div class="row__body">
+                  <h3 class="row__title">{{ item.title }}</h3>
+
+                  <div class="row__meta">
+                    @if (item.ll_desired_completeness || item.ll_desired_condition) {
+                      <div class="badges">
+                        @if (item.ll_desired_completeness) {
+                          <span class="badge badge--completeness">{{ completenessLabel(item.ll_desired_completeness) }}</span>
+                        }
+                        @if (item.ll_desired_condition) {
+                          <span class="badge badge--condition">{{ conditionLabel(item.ll_desired_condition) }}</span>
+                        }
+                      </div>
+                    }
+
+                    @if (item.nb_priority) {
+                      <div class="priority" [attr.data-level]="item.nb_priority">
+                        <span class="priority__bars">
+                          @for (level of priorityLevels; track level) {
+                            <i [class.on]="level <= item.nb_priority!"></i>
+                          }
+                        </span>
+                        <span class="priority__label">Priorité {{ item.nb_priority }}/5</span>
+                      </div>
+                    }
+
+                    @if (item.ll_desired_regions.length) {
+                      <div class="regions">{{ regionsLabel(item) }}</div>
+                    }
+
+                    @if (item.nb_offers) {
+                      <div class="offers-hint">{{ item.nb_offers }} offre{{ item.nb_offers > 1 ? 's' : '' }}</div>
+                    }
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    }
+  }
+</section>
+
+@if (detailTarget(); as target) {
+  <app-wishlist-detail-modal
+    [item]="target"
+    [coverUrl]="coverUrl(target)"
+    [offers]="offers()"
+    [offersSubmitting]="offersSubmitting()"
+    (offerAdded)="addOffer($event)"
+    (offerUpdated)="updateOffer($event)"
+    (offerDeleted)="deleteOffer($event)"
+    (editRequested)="editFromDetail()"
+    (buyRequested)="buyFromDetail()"
+    (deleteRequested)="deleteFromDetail()"
+    (closed)="closeDetail()"
+  />
+}
+
+@if (buyTarget(); as target) {
+  <app-collection-form-modal
+    [heading]="'Acheter « ' + target.title + ' »'"
+    [subtitle]="target.console_name"
+    confirmLabel="Confirmer l'achat"
+    [submitting]="buySubmitting()"
+    (confirmed)="submitBuy($event)"
+    (cancelled)="closeBuy()"
+  />
+}
+
+@if (editTarget(); as target) {
+  <app-wishlist-form-modal
+    [heading]="'Modifier « ' + target.title + ' »'"
+    [subtitle]="target.console_name"
+    confirmLabel="Enregistrer"
+    [submitting]="editSubmitting()"
+    [initialValue]="asEditValue(target)"
+    (confirmed)="submitEdit($event)"
+    (cancelled)="closeEdit()"
+  />
+}
+
+@if (deleteTarget(); as target) {
+  <app-confirm-modal
+    heading="Retirer de la wishlist ?"
+    [message]="'« ' + target.title + ' » sera définitivement retiré de ta wishlist.'"
+    confirmLabel="Retirer"
+    [submitting]="deleteSubmitting()"
+    (confirmed)="confirmDelete()"
+    (cancelled)="closeDelete()"
+  />
+}

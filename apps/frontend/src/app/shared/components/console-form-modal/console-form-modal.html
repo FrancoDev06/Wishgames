@@ -1,0 +1,88 @@
+<div class="modal-backdrop" (click)="cancel()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3 class="modal__title">{{ heading }}</h3>
+
+    <form (ngSubmit)="submit()">
+      <label class="modal__field">
+        Complétude *
+        <select name="completeness" [(ngModel)]="form.ll_completeness" required>
+          <option value="" disabled>Choisir…</option>
+          @for (opt of completenessOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="modal__row">
+        <label class="modal__field">
+          État de conservation *
+          <select name="condition" [(ngModel)]="form.ll_condition_overall" required>
+            <option value="" disabled>Choisir…</option>
+            @for (opt of conditionOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="modal__field">
+          Standard vidéo
+          <select name="video-standard" [(ngModel)]="form.ll_video_standard">
+            <option value="">Non précisé</option>
+            @for (opt of videoStandardOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <div class="modal__checkboxes">
+        <label class="modal__checkbox">
+          <input type="checkbox" name="cables" [(ngModel)]="form.flag_with_cables" />
+          Câbles présents
+        </label>
+        <label class="modal__checkbox">
+          <input type="checkbox" name="controller" [(ngModel)]="form.flag_with_controller" />
+          Manette présente
+        </label>
+      </div>
+
+      <div class="modal__row">
+        <label class="modal__field">
+          Prix payé (€)
+          <input type="number" name="price" min="0" step="0.01" [(ngModel)]="form.nb_price_paid" />
+        </label>
+
+        <label class="modal__field">
+          Quantité
+          <input type="number" name="quantity" min="1" [(ngModel)]="form.nb_quantity" />
+        </label>
+      </div>
+
+      <label class="modal__field">
+        Lieu d'achat
+        <input type="text" name="location" [(ngModel)]="form.ll_purchase_location" />
+      </label>
+
+      <label class="modal__field">
+        Date d'acquisition
+        <input type="date" name="acquired" [(ngModel)]="form.ts_acquired" />
+      </label>
+
+      <label class="modal__field">
+        Notes
+        <input type="text" name="notes" [(ngModel)]="form.ll_notes" />
+      </label>
+
+      <div class="modal__actions">
+        <button type="button" class="btn btn--ghost" (click)="cancel()">Annuler</button>
+        <button
+          type="submit"
+          class="btn btn--primary"
+          [disabled]="submitting || !form.ll_completeness || !form.ll_condition_overall"
+        >
+          {{ submitting ? 'En cours…' : confirmLabel }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

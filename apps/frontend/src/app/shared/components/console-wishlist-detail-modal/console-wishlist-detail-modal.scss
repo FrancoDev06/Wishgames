@@ -1,0 +1,27 @@
+// Chrome commun (fond, carte, boutons génériques) : voir src/styles/_modal.scss.
+// Ici : mise en page détail (info + offres + actions réparties).
+
+.modal {
+  max-width: 640px;
+}
+
+.detail-rows {
+  margin-bottom: var(--space-2);
+}
+
+.modal__actions--spread {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn--danger-ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+  border-color: var(--color-border-strong);
+}
+
+.btn--danger-ghost:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}

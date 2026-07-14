@@ -1,0 +1,25 @@
+# Dépendances (réinstallées via bun install / npm install)
+node_modules/
+
+# Builds (régénérés via `ng build`, aucun binaire compilé à versionner)
+dist/
+
+# Logs de session locale
+*.log
+
+# Secrets (identifiants DB, jamais commités — voir .env.example pour la liste des clés attendues)
+.env
+.env.*
+!.env.example
+
+# Fichiers personnels apportés en cours de session (wishlist Excel), pas destinés à un dépôt distant
+# même privé.
+/data/
+
+# Jaquettes/photos consoles téléchargées localement — régénérables via les scripts d'import existants
+# (bun run import:launchbox-remote, bun run download:console-photos), inutile de les versionner.
+apps/backend/public/covers/
+apps/backend/public/consoles/
+
+# Config locale de l'outillage agent (spécifique à cette machine)
+/.claude/

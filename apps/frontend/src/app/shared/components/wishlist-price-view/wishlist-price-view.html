@@ -1,0 +1,42 @@
+<div class="price-view">
+  <div class="filters">
+    <select class="filters__select" [value]="sortBy()" (change)="onSortChange($any($event.target).value)">
+      <option value="price-asc">Prix (bas → haut)</option>
+      <option value="console">Console</option>
+      <option value="priority">Priorité (haute → basse)</option>
+    </select>
+  </div>
+
+  @if (items.length === 0) {
+    <p class="browse__status">Aucun jeu dans la wishlist pour l'instant.</p>
+  } @else {
+    <div class="price-list">
+      @for (item of sortedItems(); track item.id) {
+        <article class="price-row" (click)="onRowClick(item)">
+          @if (coverUrl(item); as url) {
+            <img class="price-row__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
+          } @else {
+            <div class="price-row__cover price-row__cover--placeholder">{{ item.console_name }}</div>
+          }
+
+          <div class="price-row__body">
+            <p class="price-row__title">{{ item.title }}</p>
+            <p class="price-row__console">{{ item.console_name }}</p>
+          </div>
+
+          <div class="price-row__price">
+            @if (item.min_offer_price != null) {
+              <span class="price">{{ item.min_offer_price }} €</span>
+            } @else {
+              <span class="price-row__no-offer">Aucune offre</span>
+            }
+          </div>
+
+          @if (item.nb_offers) {
+            <div class="offers-hint">{{ item.nb_offers }} offre{{ item.nb_offers > 1 ? 's' : '' }}</div>
+          }
+        </article>
+      }
+    </div>
+  }
+</div>

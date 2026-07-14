@@ -1,0 +1,540 @@
+// Styles partagés entre les écrans "parcourir par console" (Wishlist, Collection) :
+// en-tête, bascule grille/liste, titres de section par console, grille de cartes, lignes de liste.
+// Les styles spécifiques (badges de complétude, priorité, régions...) restent dans le SCSS
+// de chaque composant, scopé via l'encapsulation Angular.
+
+.browse {
+  padding: var(--space-6);
+}
+
+.browse__header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.browse__count {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.browse__status {
+  color: var(--color-text-muted);
+}
+
+.browse__status--error {
+  color: var(--color-danger);
+}
+
+.browse__hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-4);
+}
+
+// Barre de filtres/tri (recherche + tri), partagée entre Catalogue, Wishlist et Collection.
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.filters__search {
+  flex: 1;
+  min-width: 220px;
+  box-sizing: border-box;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid var(--color-border-strong);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.filters__select {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: var(--border-width) solid var(--color-border-strong);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.browse__view-toggle {
+  display: inline-flex;
+  gap: var(--space-1);
+  margin-left: auto;
+  padding: var(--space-1);
+  background: var(--color-bg-sunken);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.browse__view-toggle button {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid transparent;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.browse__view-toggle button.active {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+// Deux groupes de boutons côte à côte dans l'en-tête (ex. mode d'affichage + bascule grille/liste
+// imbriquée, ou onglet Collection/Wishlist + bascule grille/liste sur Consoles).
+.header-toggles {
+  display: flex;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+
+.header-toggles .browse__view-toggle {
+  margin-left: 0;
+}
+
+// Organisation par console (§3.1) : un titre de section par console plutôt qu'une liste plate.
+.console-group {
+  margin-bottom: var(--space-7);
+}
+
+.console-group__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-heading);
+  text-transform: var(--text-transform-heading);
+  padding: var(--space-2) 0 var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  border-bottom: calc(var(--border-width) * 2) solid var(--color-border);
+  border-left: 4px solid var(--color-accent);
+}
+
+.console-group__count {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-text-muted);
+  background: var(--color-bg-sunken);
+  border-radius: var(--radius-pill);
+  padding: var(--space-1) var(--space-3);
+}
+
+// ---------- Vue grille ----------
+.browse-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-5);
+}
+
+.card {
+  background: var(--color-bg-elevated);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.card__cover {
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  // object-fit: contain (pas cover) pour ne jamais rogner la jaquette, quel que soit son ratio d'origine.
+  object-fit: contain;
+  display: block;
+  background: var(--color-bg-sunken);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.card__cover--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3);
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.card__body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.card__title {
+  font-size: var(--text-base);
+  margin: 0;
+}
+
+// ---------- Vue liste ----------
+.browse-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  background: var(--color-bg-elevated);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  padding-right: var(--space-5);
+}
+
+.row__cover {
+  width: 96px;
+  height: 128px;
+  flex: none;
+  object-fit: contain;
+  display: block;
+  background: var(--color-bg-sunken);
+}
+
+.row__cover--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.row__body {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-5) 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.row__title {
+  font-size: var(--text-lg);
+  margin: 0;
+  flex: 1;
+  min-width: 160px;
+}
+
+.row__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+// ---------- Tuiles "par console" (écran d'accueil Catalogue, picker Consoles physiques) ----------
+// Hauteur fixe + nom sur 2 lignes max (line-clamp) : toutes les tuiles ont le même gabarit quelle
+// que soit la longueur du nom de la console (retour utilisateur — avant ça, "Nintendo Famicom Disk
+// System" faisait une tuile 2x plus haute que "Sega Genesis"). Contenu ancré en bas + pictogramme
+// décoratif en haut à droite pour un rendu moins plat que la simple pastille de couleur unie.
+.console-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-5);
+}
+
+.console-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  height: 168px;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  text-align: left;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  background-size: cover;
+  background-position: center;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+// Voile sombre concentré sur le bas de la tuile (zone du texte) : les photos de consoles
+// (Wikimedia) sont presque toutes shootées sur fond blanc/clair, donc un dégradé pensé pour un
+// aplat de couleur (retour utilisateur, capture à l'appui) ne suffit plus à garantir la lisibilité
+// du texte blanc — la zone basse doit rester sombre quel que soit le contenu de l'image dessous.
+.console-tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.15) 45%, rgba(0, 0, 0, 0.85) 100%);
+  pointer-events: none;
+}
+
+.console-tile__name,
+.console-tile__count {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.console-tile__icon {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-2);
+  font-size: 2.75rem;
+  line-height: 1;
+  opacity: 0.2;
+  transform: rotate(8deg);
+  pointer-events: none;
+}
+
+.console-tile:hover {
+  transform: translateY(-3px) scale(1.015);
+  box-shadow: var(--shadow-md);
+}
+
+.console-tile__content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
+}
+
+.console-tile__name {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.console-tile__slug {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.25);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.console-tile__count {
+  position: relative;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  opacity: 0.95;
+}
+
+// ---------- Boutons d'ajout rapide / badges de statut (Catalogue, Consoles physiques) ----------
+.add-btn {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid transparent;
+  cursor: pointer;
+  transition: var(--transition-base);
+  white-space: nowrap;
+}
+
+.add-btn--collection {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+.add-btn--collection:hover {
+  background: var(--color-primary-hover);
+}
+
+.add-btn--wishlist {
+  background: var(--color-secondary);
+  color: var(--color-text-inverse);
+}
+
+.add-btn--wishlist:hover {
+  filter: brightness(0.92);
+}
+
+.status-badge {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.status-badge--collection {
+  background: var(--color-success);
+  color: var(--color-text-inverse);
+}
+
+.status-badge--wishlist {
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
+}
+
+// ---------- Badges détail (complétude/état/quantité) + prix (Collection jeux + consoles) ----------
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.badge {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-inverse);
+  white-space: nowrap;
+}
+
+.badge--completeness {
+  background: var(--color-secondary);
+}
+
+.badge--condition {
+  background: var(--color-success);
+}
+
+.badge--quantity {
+  background: var(--color-text-muted);
+}
+
+.price {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+// ---------- Actions ligne d'item (modifier/supprimer/offres) — Collection, Wishlist, Consoles ----------
+.item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.edit-btn,
+.delete-btn,
+.offers-btn {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid var(--color-border-strong);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.edit-btn:hover,
+.offers-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.delete-btn:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+// ---------- Lignes de détail label/valeur (cartes Consoles, modales de détail Wishlist) ----------
+.detail-rows {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.detail-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  padding-bottom: var(--space-2);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.detail-row dt {
+  color: var(--color-text-muted);
+}
+
+.detail-row dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: right;
+}
+
+.detail-row dd.on {
+  color: var(--color-success);
+}
+
+.notes-block {
+  margin: 0;
+  padding: var(--space-3);
+  background: var(--color-bg-sunken);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.badge--video {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+// ---------- Carte cliquable (ouvre une modale de détail) ----------
+.card--clickable {
+  cursor: pointer;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.card--clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}

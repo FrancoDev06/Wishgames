@@ -1,0 +1,16 @@
+// Chrome commun (fond, carte, champs) : voir src/styles/_modal.scss.
+// Ici : uniquement le bouton dédié (rouge, cohérent avec le statut "wishlist" ailleurs dans l'app).
+
+.btn--wishlist {
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
+}
+
+.btn--wishlist:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.btn--wishlist:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

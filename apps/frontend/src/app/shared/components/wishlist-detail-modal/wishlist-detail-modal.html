@@ -1,0 +1,64 @@
+<div class="modal-backdrop" (click)="close()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="detail-header">
+      @if (coverUrl; as url) {
+        <img class="detail-header__cover" [src]="url" [alt]="'Jaquette de ' + item.title" />
+      }
+      <div>
+        <h3 class="modal__title">{{ item.title }}</h3>
+        <p class="modal__subtitle">{{ item.console_name }}</p>
+      </div>
+    </div>
+
+    <dl class="detail-rows">
+      @if (item.nb_priority) {
+        <div class="detail-row">
+          <dt>Priorité</dt>
+          <dd>{{ item.nb_priority }}/5</dd>
+        </div>
+      }
+      @if (item.ll_desired_regions.length) {
+        <div class="detail-row">
+          <dt>Régions acceptées</dt>
+          <dd>{{ regionsLabel() }}</dd>
+        </div>
+      }
+      @if (item.ll_desired_completeness) {
+        <div class="detail-row">
+          <dt>Complétude recherchée</dt>
+          <dd>{{ completenessLabel(item.ll_desired_completeness) }}</dd>
+        </div>
+      }
+      @if (item.ll_desired_condition) {
+        <div class="detail-row">
+          <dt>État recherché</dt>
+          <dd>{{ conditionLabel(item.ll_desired_condition) }}</dd>
+        </div>
+      }
+      @if (item.ts_last_checked) {
+        <div class="detail-row">
+          <dt>Dernière vérification</dt>
+          <dd>{{ formatDate(item.ts_last_checked) }}</dd>
+        </div>
+      }
+    </dl>
+
+    <app-offers-panel
+      itemKind="game"
+      [offers]="offers"
+      [submitting]="offersSubmitting"
+      (added)="offerAdded.emit($event)"
+      (updated)="offerUpdated.emit($event)"
+      (deleted)="offerDeleted.emit($event)"
+    />
+
+    <div class="modal__actions modal__actions--spread">
+      <button type="button" class="btn btn--danger-ghost" (click)="deleteRequested.emit()">Supprimer</button>
+      <div class="modal__actions">
+        <button type="button" class="btn btn--ghost" (click)="close()">Fermer</button>
+        <button type="button" class="btn btn--ghost" (click)="editRequested.emit()">Modifier</button>
+        <button type="button" class="btn btn--primary" (click)="buyRequested.emit()">Acheter</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,230 @@
+<div class="offers-panel">
+  <h4 class="offers-panel__title">Offres</h4>
+
+  @if (offers.length === 0) {
+    <p class="offers-empty">Aucune offre enregistrée pour l'instant.</p>
+  } @else {
+    <ul class="offers-list">
+      @for (offer of offers; track offer.id) {
+        <li class="offer-row">
+          @if (editingId() === offer.id) {
+            <div class="offer-edit-form">
+              <div class="modal__row">
+                <label class="modal__field">
+                  Prix (€)
+                  <input type="number" min="0" step="0.01" [(ngModel)]="editForm.nb_price" name="edit-price-{{ offer.id }}" />
+                </label>
+                <label class="modal__field">
+                  Source
+                  <input type="text" placeholder="ex. Leboncoin" [(ngModel)]="editForm.ll_source_label" name="edit-label-{{ offer.id }}" />
+                </label>
+              </div>
+              <label class="modal__field">
+                Lien
+                <input type="text" [(ngModel)]="editForm.ll_source_url" name="edit-url-{{ offer.id }}" />
+              </label>
+
+              <div class="modal__row">
+                <label class="modal__field">
+                  Complétude constatée
+                  <select
+                    name="edit-completeness-{{ offer.id }}"
+                    [(ngModel)]="editForm.ll_completeness"
+                    (ngModelChange)="onCompletenessChange(editForm)"
+                  >
+                    <option value="">Non précisée</option>
+                    @for (opt of completenessOptions; track opt.value) {
+                      <option [value]="opt.value">{{ opt.label }}</option>
+                    }
+                  </select>
+                </label>
+
+                @if (isGame()) {
+                  <label class="modal__field">
+                    État du jeu
+                    <select name="edit-condition-media-{{ offer.id }}" [(ngModel)]="editForm.ll_condition_media">
+                      <option value="">Non précisé</option>
+                      @for (opt of conditionOptions; track opt.value) {
+                        <option [value]="opt.value">{{ opt.label }}</option>
+                      }
+                    </select>
+                  </label>
+                } @else {
+                  <label class="modal__field">
+                    État général
+                    <select name="edit-condition-overall-{{ offer.id }}" [(ngModel)]="editForm.ll_condition_overall">
+                      <option value="">Non précisé</option>
+                      @for (opt of conditionOptions; track opt.value) {
+                        <option [value]="opt.value">{{ opt.label }}</option>
+                      }
+                    </select>
+                  </label>
+                }
+              </div>
+
+              @if (isGame() && (showBoxCondition(editForm) || showManualCondition(editForm))) {
+                <div class="modal__row">
+                  @if (showBoxCondition(editForm)) {
+                    <label class="modal__field">
+                      État de la boîte
+                      <select name="edit-condition-box-{{ offer.id }}" [(ngModel)]="editForm.ll_condition_box">
+                        <option value="">Non précisé</option>
+                        @for (opt of conditionOptions; track opt.value) {
+                          <option [value]="opt.value">{{ opt.label }}</option>
+                        }
+                      </select>
+                    </label>
+                  }
+
+                  @if (showManualCondition(editForm)) {
+                    <label class="modal__field">
+                      État de la notice
+                      <select name="edit-condition-manual-{{ offer.id }}" [(ngModel)]="editForm.ll_condition_manual">
+                        <option value="">Non précisé</option>
+                        @for (opt of conditionOptions; track opt.value) {
+                          <option [value]="opt.value">{{ opt.label }}</option>
+                        }
+                      </select>
+                    </label>
+                  }
+                </div>
+              }
+
+              <label class="modal__field">
+                Note
+                <input type="text" placeholder="ex. vendeur sérieux" [(ngModel)]="editForm.ll_notes" name="edit-notes-{{ offer.id }}" />
+              </label>
+              <div class="offer-row__actions">
+                <button type="button" class="btn btn--ghost" (click)="cancelEdit()">Annuler</button>
+                <button type="button" class="btn btn--primary" (click)="submitEdit(offer.id)">Enregistrer</button>
+              </div>
+            </div>
+          } @else {
+            <div class="offer-row__main">
+              @if (offer.nb_price !== null) {
+                <span class="offer-row__price">{{ offer.nb_price }} €</span>
+              }
+              @if (offer.ll_source_url) {
+                <a class="offer-row__source" [href]="offer.ll_source_url" target="_blank" rel="noopener">{{
+                  offer.ll_source_label || offer.ll_source_url
+                }}</a>
+              } @else if (offer.ll_source_label) {
+                <span class="offer-row__source">{{ offer.ll_source_label }}</span>
+              }
+              @if (offerStateSummary(offer)) {
+                <span class="offer-row__state">{{ offerStateSummary(offer) }}</span>
+              }
+              @if (offer.ll_notes) {
+                <span class="offer-row__notes">{{ offer.ll_notes }}</span>
+              }
+            </div>
+            <div class="offer-row__actions">
+              <button type="button" class="icon-btn" (click)="startEdit(offer)">Modifier</button>
+              <button type="button" class="icon-btn icon-btn--danger" (click)="remove(offer.id)">Supprimer</button>
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  }
+
+  <div class="offer-add-form">
+    <h5 class="offer-add-form__title">Ajouter une offre</h5>
+    <div class="modal__row">
+      <label class="modal__field">
+        Prix (€)
+        <input type="number" min="0" step="0.01" [(ngModel)]="newForm.nb_price" name="new-price" />
+      </label>
+      <label class="modal__field">
+        Source
+        <input type="text" placeholder="ex. Vinted" [(ngModel)]="newForm.ll_source_label" name="new-label" />
+      </label>
+    </div>
+    <label class="modal__field">
+      Lien
+      <input type="text" placeholder="https://…" [(ngModel)]="newForm.ll_source_url" name="new-url" />
+    </label>
+
+    <div class="modal__row">
+      <label class="modal__field">
+        Complétude constatée
+        <select name="new-completeness" [(ngModel)]="newForm.ll_completeness" (ngModelChange)="onCompletenessChange(newForm)">
+          <option value="">Non précisée</option>
+          @for (opt of completenessOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </label>
+
+      @if (isGame()) {
+        <label class="modal__field">
+          État du jeu
+          <select name="new-condition-media" [(ngModel)]="newForm.ll_condition_media">
+            <option value="">Non précisé</option>
+            @for (opt of conditionOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </label>
+      } @else {
+        <label class="modal__field">
+          État général
+          <select name="new-condition-overall" [(ngModel)]="newForm.ll_condition_overall">
+            <option value="">Non précisé</option>
+            @for (opt of conditionOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </label>
+      }
+    </div>
+
+    @if (isGame() && (showBoxCondition(newForm) || showManualCondition(newForm))) {
+      <div class="modal__row">
+        @if (showBoxCondition(newForm)) {
+          <label class="modal__field">
+            État de la boîte
+            <select name="new-condition-box" [(ngModel)]="newForm.ll_condition_box">
+              <option value="">Non précisé</option>
+              @for (opt of conditionOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </label>
+        }
+
+        @if (showManualCondition(newForm)) {
+          <label class="modal__field">
+            État de la notice
+            <select name="new-condition-manual" [(ngModel)]="newForm.ll_condition_manual">
+              <option value="">Non précisé</option>
+              @for (opt of conditionOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </label>
+        }
+      </div>
+    }
+
+    <label class="modal__field">
+      Note
+      <input type="text" placeholder="ex. vendeur sérieux" [(ngModel)]="newForm.ll_notes" name="new-notes" />
+    </label>
+    <div class="offer-add-form__actions">
+      <button type="button" class="btn btn--primary" [disabled]="submitting" (click)="submitNew()">
+        {{ submitting ? 'En cours…' : '+ Ajouter l\'offre' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+@if (deleteTargetId()) {
+  <app-confirm-modal
+    heading="Supprimer cette offre ?"
+    message="Cette offre sera définitivement supprimée."
+    confirmLabel="Supprimer"
+    (confirmed)="confirmRemove()"
+    (cancelled)="cancelRemove()"
+  />
+}

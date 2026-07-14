@@ -1,0 +1,15 @@
+<header class="app-header">
+  <h1>WishGames</h1>
+  <nav class="app-nav">
+    <a routerLink="/dashboard" routerLinkActive="app-nav__link--active" class="app-nav__link">Dashboard</a>
+    <a routerLink="/collection" routerLinkActive="app-nav__link--active" class="app-nav__link">Collection</a>
+    <a routerLink="/wishlist" routerLinkActive="app-nav__link--active" class="app-nav__link">Wishlist</a>
+    <a routerLink="/catalogue" routerLinkActive="app-nav__link--active" class="app-nav__link">Catalogue</a>
+    <a routerLink="/consoles" routerLinkActive="app-nav__link--active" class="app-nav__link">Consoles</a>
+  </nav>
+  <app-theme-switcher />
+</header>
+
+<router-outlet />
+
+<app-toast />

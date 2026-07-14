@@ -1,0 +1,37 @@
+<div class="modal-backdrop" (click)="close()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3 class="modal__title">{{ item.console_name }}</h3>
+    <p class="modal__subtitle">Console recherchée</p>
+
+    <dl class="detail-rows">
+      <div class="detail-row">
+        <dt>Standard vidéo désiré</dt>
+        <dd>{{ videoStandardLabel(item.ll_desired_video_standard) }}</dd>
+      </div>
+      @if (item.ts_last_checked) {
+        <div class="detail-row">
+          <dt>Dernière vérification</dt>
+          <dd>{{ formatDate(item.ts_last_checked) }}</dd>
+        </div>
+      }
+    </dl>
+
+    <app-offers-panel
+      itemKind="console"
+      [offers]="offers"
+      [submitting]="offersSubmitting"
+      (added)="offerAdded.emit($event)"
+      (updated)="offerUpdated.emit($event)"
+      (deleted)="offerDeleted.emit($event)"
+    />
+
+    <div class="modal__actions modal__actions--spread">
+      <button type="button" class="btn btn--danger-ghost" (click)="deleteRequested.emit()">Supprimer</button>
+      <div class="modal__actions">
+        <button type="button" class="btn btn--ghost" (click)="close()">Fermer</button>
+        <button type="button" class="btn btn--ghost" (click)="editRequested.emit()">Modifier</button>
+        <button type="button" class="btn btn--primary" (click)="buyRequested.emit()">Acheter</button>
+      </div>
+    </div>
+  </div>
+</div>

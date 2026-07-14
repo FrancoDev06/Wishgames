@@ -1,0 +1,151 @@
+<section class="browse">
+  <header class="browse__header">
+    <h2>Collection</h2>
+    @if (!loading() && !error()) {
+      <span class="browse__count">
+        {{ items().length }} jeu{{ items().length > 1 ? 'x' : '' }} possédé{{ items().length > 1 ? 's' : '' }}
+        · {{ totalSpent() | number: '1.2-2' }} € dépensés
+      </span>
+    }
+
+    <div class="browse__view-toggle">
+      <button type="button" [class.active]="viewMode() === 'grid'" (click)="setViewMode('grid')">Grille</button>
+      <button type="button" [class.active]="viewMode() === 'list'" (click)="setViewMode('list')">Liste</button>
+    </div>
+  </header>
+
+  @if (!loading() && !error() && items().length > 0) {
+    <div class="filters">
+      <input
+        type="search"
+        class="filters__search"
+        placeholder="Rechercher un titre…"
+        [value]="searchText()"
+        (input)="onSearchChange($any($event.target).value)"
+      />
+
+      <select class="filters__select" [value]="sortBy()" (change)="onSortChange($any($event.target).value)">
+        <option value="date-desc">Date d'acquisition (récent → ancien)</option>
+        <option value="date-asc">Date d'acquisition (ancien → récent)</option>
+        <option value="price-desc">Prix payé (élevé → bas)</option>
+        <option value="price-asc">Prix payé (bas → élevé)</option>
+        <option value="title">Titre (A → Z)</option>
+      </select>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="browse__status">Chargement…</p>
+  } @else if (error()) {
+    <p class="browse__status browse__status--error">{{ error() }}</p>
+  } @else if (items().length === 0) {
+    <p class="browse__status">Aucun jeu dans la collection pour l'instant.</p>
+  } @else if (groups().length === 0) {
+    <p class="browse__status">Aucun jeu ne correspond à cette recherche.</p>
+  } @else {
+    @for (group of groups(); track group.consoleName) {
+      <section class="console-group">
+        <h3 class="console-group__title">
+          {{ group.consoleName }}
+          <span class="console-group__count">{{ group.items.length }}</span>
+        </h3>
+
+        @if (viewMode() === 'grid') {
+          <div class="browse-grid">
+            @for (item of group.items; track item.id) {
+              <article class="card">
+                @if (coverUrl(item); as url) {
+                  <img class="card__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
+                } @else {
+                  <div class="card__cover card__cover--placeholder">{{ group.consoleName }}</div>
+                }
+
+                <div class="card__body">
+                  <h3 class="card__title">{{ item.title }}</h3>
+
+                  <div class="badges">
+                    @if (item.ll_region) {
+                      <span class="badge badge--region">{{ regionLabel(item.ll_region) }}</span>
+                    }
+                    <span class="badge badge--completeness">{{ completenessLabel(item.ll_completeness) }}</span>
+                    <span class="badge badge--condition">{{ conditionLabel(item.ll_condition_overall) }}</span>
+                    @if (item.nb_quantity > 1) {
+                      <span class="badge badge--quantity">×{{ item.nb_quantity }}</span>
+                    }
+                  </div>
+
+                  @if (item.nb_price_paid !== null) {
+                    <div class="price">{{ item.nb_price_paid | number: '1.2-2' }} €</div>
+                  }
+
+                  <div class="item-actions">
+                    <button type="button" class="edit-btn" (click)="openEdit(item)">Modifier</button>
+                    <button type="button" class="delete-btn" (click)="openDelete(item)">Supprimer</button>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="browse-list">
+            @for (item of group.items; track item.id) {
+              <article class="row">
+                @if (coverUrl(item); as url) {
+                  <img class="row__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
+                } @else {
+                  <div class="row__cover row__cover--placeholder">{{ group.consoleName }}</div>
+                }
+
+                <div class="row__body">
+                  <h3 class="row__title">{{ item.title }}</h3>
+
+                  <div class="row__meta">
+                    <div class="badges">
+                      <span class="badge badge--completeness">{{ completenessLabel(item.ll_completeness) }}</span>
+                      <span class="badge badge--condition">{{ conditionLabel(item.ll_condition_overall) }}</span>
+                      @if (item.nb_quantity > 1) {
+                        <span class="badge badge--quantity">×{{ item.nb_quantity }}</span>
+                      }
+                    </div>
+
+                    @if (item.nb_price_paid !== null) {
+                      <div class="price">{{ item.nb_price_paid | number: '1.2-2' }} €</div>
+                    }
+
+                    <div class="item-actions">
+                      <button type="button" class="edit-btn" (click)="openEdit(item)">Modifier</button>
+                      <button type="button" class="delete-btn" (click)="openDelete(item)">Supprimer</button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    }
+  }
+</section>
+
+@if (editTarget(); as target) {
+  <app-collection-form-modal
+    [heading]="'Modifier « ' + target.title + ' »'"
+    [subtitle]="target.console_name"
+    confirmLabel="Enregistrer"
+    [submitting]="editSubmitting()"
+    [initialValue]="asEditValue(target)"
+    (confirmed)="submitEdit($event)"
+    (cancelled)="closeEdit()"
+  />
+}
+
+@if (deleteTarget(); as target) {
+  <app-confirm-modal
+    heading="Supprimer de la collection ?"
+    [message]="'« ' + target.title + ' » sera définitivement supprimé de ta collection.'"
+    confirmLabel="Supprimer"
+    [submitting]="deleteSubmitting()"
+    (confirmed)="confirmDelete()"
+    (cancelled)="closeDelete()"
+  />
+}

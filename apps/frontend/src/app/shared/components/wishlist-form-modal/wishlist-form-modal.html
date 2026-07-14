@@ -1,0 +1,68 @@
+<div class="modal-backdrop" (click)="cancel()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3 class="modal__title">{{ heading }}</h3>
+    @if (subtitle) {
+      <p class="modal__subtitle">{{ subtitle }}</p>
+    }
+
+    <form (ngSubmit)="submit()">
+      <label class="modal__field">
+        Régions acceptées
+        <span class="modal__regions">
+          @for (opt of regionOptions; track opt.value) {
+            <label class="modal__region-option">
+              <input type="checkbox" [checked]="isRegionSelected(opt.value)" (change)="toggleRegion(opt.value)" />
+              {{ opt.label }}
+            </label>
+          }
+        </span>
+      </label>
+
+      <div class="modal__row">
+        <label class="modal__field">
+          Complétude recherchée
+          <select name="desired-completeness" [(ngModel)]="form.ll_desired_completeness">
+            <option value="">Peu importe</option>
+            @for (opt of completenessOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="modal__field">
+          État recherché
+          <select name="desired-condition" [(ngModel)]="form.ll_desired_condition">
+            <option value="">Peu importe</option>
+            @for (opt of conditionOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <div class="modal__row">
+        <label class="modal__field">
+          Priorité
+          <select name="priority" [(ngModel)]="form.nb_priority">
+            <option value="">Non précisée</option>
+            @for (level of priorityLevels; track level) {
+              <option [value]="level">{{ level }}/5</option>
+            }
+          </select>
+        </label>
+
+        <label class="modal__field">
+          Dernière vérification
+          <input type="date" name="last-checked" [(ngModel)]="form.ts_last_checked" />
+        </label>
+      </div>
+
+      <div class="modal__actions">
+        <button type="button" class="btn btn--ghost" (click)="cancel()">Annuler</button>
+        <button type="submit" class="btn btn--wishlist" [disabled]="submitting">
+          {{ submitting ? 'En cours…' : confirmLabel }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,39 @@
+<div class="kanban">
+  @for (col of columnDefs; track col.value) {
+    <div class="kanban__column">
+      <header class="kanban__column-header" [style.border-top-color]="col.color">
+        <span class="kanban__column-title">{{ col.label }}</span>
+        <span class="kanban__column-count">{{ columns[col.value].length }}</span>
+      </header>
+
+      <div
+        class="kanban__list"
+        cdkDropList
+        [id]="col.value"
+        [cdkDropListData]="columns[col.value]"
+        [cdkDropListConnectedTo]="connectedListIds"
+        (cdkDropListDropped)="onDrop($event, col.value)"
+      >
+        @for (card of columns[col.value]; track card.id) {
+          <div class="kanban-card" cdkDrag [cdkDragData]="card" (click)="onCardClick(card)">
+            @if (card.coverUrl) {
+              <img class="kanban-card__cover" [src]="card.coverUrl" [alt]="'Jaquette de ' + card.title" loading="lazy" />
+            }
+            <div class="kanban-card__body">
+              <p class="kanban-card__title">{{ card.title }}</p>
+              @if (card.subtitle) {
+                <p class="kanban-card__subtitle">{{ card.subtitle }}</p>
+              }
+              @if (card.nb_priority) {
+                <span class="kanban-card__priority">Priorité {{ card.nb_priority }}/5</span>
+              }
+            </div>
+            <div class="kanban-card__placeholder" *cdkDragPlaceholder></div>
+          </div>
+        } @empty {
+          <p class="kanban__empty">—</p>
+        }
+      </div>
+    </div>
+  }
+</div>

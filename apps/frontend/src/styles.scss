@@ -1,0 +1,34 @@
+@use 'styles/variables';
+@use 'styles/colors';
+@use 'styles/typography';
+@use 'styles/browse';
+@use 'styles/modal';
+@use 'styles/animations';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background-color: var(--color-bg);
+  transition: background-color var(--transition-theme), color var(--transition-theme);
+}
+
+::selection {
+  background-color: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+

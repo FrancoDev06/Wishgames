@@ -1,0 +1,29 @@
+<div class="modal-backdrop" (click)="cancel()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3 class="modal__title">{{ heading }}</h3>
+
+    <form (ngSubmit)="submit()">
+      <label class="modal__field">
+        Standard vidéo recherché
+        <select name="video-standard" [(ngModel)]="form.ll_desired_video_standard">
+          <option value="">Peu importe</option>
+          @for (opt of videoStandardOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="modal__field">
+        Dernière vérification
+        <input type="date" name="last-checked" [(ngModel)]="form.ts_last_checked" />
+      </label>
+
+      <div class="modal__actions">
+        <button type="button" class="btn btn--ghost" (click)="cancel()">Annuler</button>
+        <button type="submit" class="btn btn--wishlist" [disabled]="submitting">
+          {{ submitting ? 'En cours…' : confirmLabel }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

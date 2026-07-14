@@ -1,0 +1,8 @@
+// Layout partagé (en-tête, bascule vue, groupes console, grille/liste, carte de base, badges
+// complétude/état/quantité, prix) : voir src/styles/_browse.scss. Ici : uniquement le badge
+// région, spécifique aux jeux (pas de suivi multi-région pour le matériel, §9).
+
+.badge--region {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+}

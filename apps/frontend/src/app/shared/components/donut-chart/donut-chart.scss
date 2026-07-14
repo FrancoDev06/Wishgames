@@ -1,0 +1,59 @@
+.donut-chart {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.donut-chart__svg {
+  flex: none;
+  width: 160px;
+  height: 160px;
+  // Départ à midi plutôt qu'à 3h (angle SVG par défaut).
+  transform: rotate(-90deg);
+  animation: donut-pop 500ms ease both;
+}
+
+.donut-chart__track {
+  fill: none;
+  stroke: var(--color-bg-sunken);
+  stroke-width: 12;
+}
+
+.donut-chart__segment {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: butt;
+}
+
+.donut-chart__legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.donut-chart__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.donut-chart__legend-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-pill);
+}
+
+.donut-chart__legend-label {
+  font-weight: 600;
+}
+
+.donut-chart__legend-value {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}

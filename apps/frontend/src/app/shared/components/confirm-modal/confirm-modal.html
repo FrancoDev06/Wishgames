@@ -1,0 +1,15 @@
+<div class="modal-backdrop" (click)="cancel()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3 class="modal__title">{{ heading }}</h3>
+    @if (message) {
+      <p class="modal__subtitle">{{ message }}</p>
+    }
+
+    <div class="modal__actions">
+      <button type="button" class="btn btn--ghost" (click)="cancel()">{{ cancelLabel }}</button>
+      <button type="button" class="btn btn--danger" [disabled]="submitting" (click)="confirm()">
+        {{ submitting ? 'En cours…' : confirmLabel }}
+      </button>
+    </div>
+  </div>
+</div>

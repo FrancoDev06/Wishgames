@@ -1,0 +1,170 @@
+<section class="dashboard">
+  <header class="dashboard__header">
+    <h2>Dashboard</h2>
+  </header>
+
+  @if (loading()) {
+    <p class="dashboard__status">Chargement…</p>
+  } @else if (error()) {
+    <p class="dashboard__status dashboard__status--error">{{ error() }}</p>
+  } @else if (data(); as d) {
+    <div class="stat-tiles">
+      <div class="stat-tile stat-tile--primary">
+        <span class="stat-tile__icon" aria-hidden="true">📀</span>
+        <div class="stat-tile__body">
+          <span class="stat-tile__value">{{ displayedStats().collectionGames | number: '1.0-0' }}</span>
+          <span class="stat-tile__label">Jeux en collection</span>
+        </div>
+      </div>
+      <div class="stat-tile stat-tile--secondary">
+        <span class="stat-tile__icon" aria-hidden="true">⭐</span>
+        <div class="stat-tile__body">
+          <span class="stat-tile__value">{{ displayedStats().wishlistGames | number: '1.0-0' }}</span>
+          <span class="stat-tile__label">Jeux en wishlist</span>
+        </div>
+      </div>
+      <div class="stat-tile stat-tile--accent">
+        <span class="stat-tile__icon" aria-hidden="true">🎮</span>
+        <div class="stat-tile__body">
+          <span class="stat-tile__value">{{ displayedStats().collectionConsoles | number: '1.0-0' }}</span>
+          <span class="stat-tile__label">Consoles possédées</span>
+        </div>
+      </div>
+      <div class="stat-tile stat-tile--secondary">
+        <span class="stat-tile__icon" aria-hidden="true">🔍</span>
+        <div class="stat-tile__body">
+          <span class="stat-tile__value">{{ displayedStats().wishlistConsoles | number: '1.0-0' }}</span>
+          <span class="stat-tile__label">Consoles recherchées</span>
+        </div>
+      </div>
+      <div class="stat-tile stat-tile--money">
+        <span class="stat-tile__icon" aria-hidden="true">💰</span>
+        <div class="stat-tile__body">
+          <span class="stat-tile__value">{{ formatPrice(displayedStats().totalSpent) }}</span>
+          <span class="stat-tile__label">Budget total dépensé</span>
+        </div>
+      </div>
+    </div>
+
+    <section class="dashboard__section">
+      <h3 class="dashboard__section-title">Répartition du catalogue</h3>
+      <app-donut-chart [slices]="catalogueSplit()" />
+    </section>
+
+    <section class="dashboard__section">
+      <h3 class="dashboard__section-title">Répartition par console</h3>
+
+      @if (byConsole().length === 0) {
+        <p class="dashboard__empty">
+          Aucun jeu classé pour l'instant — <a routerLink="/catalogue">parcours le catalogue</a> pour commencer ta collection.
+        </p>
+      } @else {
+        <table class="console-breakdown">
+          <caption class="sr-only">Nombre de jeux possédés par console</caption>
+          <tbody>
+            @for (row of byConsole(); track row.console_slug) {
+              <tr>
+                <th scope="row" class="console-breakdown__name">
+                  <span class="console-breakdown__swatch" [style.background]="consoleColor(row.console_slug)" aria-hidden="true"></span>
+                  {{ row.console_name }}
+                </th>
+                <td class="console-breakdown__bar-cell">
+                  <div class="console-breakdown__bar-track">
+                    <div class="console-breakdown__bar" [style.width.%]="barWidth(row)"></div>
+                  </div>
+                </td>
+                <td class="console-breakdown__value">{{ row.nb_owned }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+
+    <section class="dashboard__section">
+      <h3 class="dashboard__section-title">Activité récente</h3>
+
+      <div class="activity-filters">
+        @for (opt of activityKindOptions; track opt.value) {
+          <button
+            type="button"
+            class="activity-filter-chip"
+            [class.active]="activityKind() === opt.value"
+            (click)="onActivityFilterChange(opt.value)"
+          >
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+
+      @if (groupedActivity().length === 0 && !activityLoadingMore()) {
+        <p class="dashboard__empty">Aucune activité pour l'instant.</p>
+      } @else {
+        @for (group of groupedActivity(); track group.bucket) {
+          <div class="activity-group">
+            <h4 class="activity-group__label">{{ group.label }}</h4>
+            <ul class="activity-feed">
+              @for (entry of group.entries; track entry.id) {
+                <li
+                  class="activity-row"
+                  role="button"
+                  tabindex="0"
+                  (click)="goToActivityTarget(entry)"
+                  (keyup.enter)="goToActivityTarget(entry)"
+                >
+                  @if (coverUrl(entry); as url) {
+                    <img class="activity-row__cover" [src]="url" [alt]="'Jaquette de ' + entry.ll_title" loading="lazy" />
+                  } @else {
+                    <div class="activity-row__cover activity-row__cover--placeholder">{{ entry.ll_console_name }}</div>
+                  }
+
+                  <span class="activity-row__action-icon" [title]="entry.ll_action" aria-hidden="true">{{
+                    activityActionIcon[entry.ll_action]
+                  }}</span>
+
+                  <div class="activity-row__body">
+                    <div class="activity-row__title">{{ entry.ll_title }}</div>
+                    <div class="activity-row__meta">
+                      <span class="activity-row__console" [style.color]="consoleColor(entry.ll_console_slug)">{{
+                        entry.ll_console_name
+                      }}</span>
+                      <span class="activity-row__dot" aria-hidden="true">·</span>
+                      <span class="activity-row__time">{{ timeAgo(entry.ts_create) }}</span>
+                    </div>
+                  </div>
+
+                  <div class="activity-row__side">
+                    @if (entry.nb_price !== null) {
+                      <span class="activity-row__price">{{ formatPrice(entry.nb_price) }}</span>
+                    }
+                    <span
+                      class="activity-tag"
+                      [class.activity-tag--collection]="entry.ll_kind.startsWith('collection')"
+                      [class.activity-tag--wishlist]="entry.ll_kind.startsWith('wishlist')"
+                    >
+                      {{ entry.ll_kind.startsWith('collection') ? 'Collection' : 'Wishlist' }}{{
+                        entry.ll_kind.endsWith('_console') ? ' · Console' : ''
+                      }}
+                    </span>
+                  </div>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (hasMoreActivity()) {
+          <button type="button" class="activity-load-more" (click)="loadMoreActivity()" [disabled]="activityLoadingMore()">
+            {{ activityLoadingMore() ? 'Chargement…' : 'Voir plus' }}
+          </button>
+        }
+      }
+    </section>
+
+    <nav class="quick-links">
+      <a routerLink="/collection" class="quick-link">Voir la collection</a>
+      <a routerLink="/wishlist" class="quick-link">Voir la wishlist</a>
+      <a routerLink="/catalogue" class="quick-link">Parcourir le catalogue</a>
+    </nav>
+  }
+</section>

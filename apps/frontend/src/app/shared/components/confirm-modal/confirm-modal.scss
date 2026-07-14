@@ -1,0 +1,14 @@
+// Chrome commun (fond, carte, boutons génériques) : voir src/styles/_modal.scss.
+// Ici : petite modale, pas de formulaire — juste un message et deux boutons.
+
+.modal {
+  max-width: 420px;
+}
+
+.modal__subtitle {
+  margin-bottom: var(--space-5);
+}
+
+.modal__actions {
+  margin-top: 0;
+}

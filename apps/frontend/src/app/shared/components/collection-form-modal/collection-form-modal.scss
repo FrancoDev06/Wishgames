@@ -1,0 +1,16 @@
+// Chrome commun (fond, carte, champs, boutons) : voir src/styles/_modal.scss.
+// Ici : uniquement ce qui est spécifique à ce formulaire (état par composant selon la complétude).
+
+.modal__conditions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-4);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  background: var(--color-bg-sunken);
+  border-radius: var(--radius-md);
+}
+
+.modal__conditions .modal__field {
+  margin-bottom: 0;
+}

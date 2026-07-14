@@ -1,0 +1,184 @@
+<section class="browse">
+  <header class="browse__header">
+    @if (showConsolePicker()) {
+      <h2>Catalogue</h2>
+      @if (!loading()) {
+        <span class="browse__count">{{ consoles().length }} consoles</span>
+      }
+    } @else {
+      <button type="button" class="back-link" (click)="backToConsoles()">← Toutes les consoles</button>
+      <h2>{{ selectedConsoleName() || 'Catalogue' }}</h2>
+      @if (!loading() && !error()) {
+        <span class="browse__count">{{ games().length }} / {{ total() }} jeux</span>
+      }
+
+      <div class="browse__view-toggle">
+        <button type="button" [class.active]="viewMode() === 'grid'" (click)="setViewMode('grid')">Grille</button>
+        <button type="button" [class.active]="viewMode() === 'list'" (click)="setViewMode('list')">Liste</button>
+      </div>
+    }
+  </header>
+
+  <div class="filters">
+    <input
+      type="search"
+      class="filters__search"
+      placeholder="Rechercher un titre (toutes consoles)…"
+      [value]="searchText()"
+      (input)="onSearchChange($any($event.target).value)"
+    />
+
+    <select class="filters__select" [value]="consoleFilter()" (change)="onConsoleFilterChange($any($event.target).value)">
+      <option value="">Toutes les consoles</option>
+      @for (console of consoles(); track console.id) {
+        <option [value]="console.ll_slug">{{ console.ll_name }} ({{ console.nb_games }})</option>
+      }
+    </select>
+
+    <div class="filters__status">
+      <button type="button" [class.active]="statusFilter() === 'all'" (click)="setStatusFilter('all')">Tous</button>
+      <button type="button" [class.active]="statusFilter() === 'collection'" (click)="setStatusFilter('collection')">
+        En collection
+      </button>
+      <button type="button" [class.active]="statusFilter() === 'wishlist'" (click)="setStatusFilter('wishlist')">
+        En wishlist
+      </button>
+      <button type="button" [class.active]="statusFilter() === 'none'" (click)="setStatusFilter('none')">
+        Ni l'un ni l'autre
+      </button>
+    </div>
+  </div>
+
+  @if (showConsolePicker()) {
+    <div class="console-tiles">
+      @for (console of consoles(); track console.id) {
+        <button
+          type="button"
+          class="console-tile"
+          [style.background-color]="consoleColor(console.ll_slug)"
+          [style.background-image]="'url(' + consolePhotoUrl(console.ll_slug) + ')'"
+          [attr.title]="console.ll_name"
+          (click)="selectConsole(console.ll_slug)"
+        >
+          <span class="console-tile__icon" aria-hidden="true">🎮</span>
+          <span class="console-tile__content">
+            <span class="console-tile__name">{{ console.ll_name }}</span>
+            <span class="console-tile__slug">{{ console.ll_slug }}</span>
+            <span class="console-tile__count">{{ console.nb_games }} jeux</span>
+          </span>
+        </button>
+      }
+    </div>
+  } @else if (loading()) {
+    <p class="browse__status">Chargement…</p>
+  } @else if (error()) {
+    <p class="browse__status browse__status--error">{{ error() }}</p>
+  } @else if (games().length === 0) {
+    <p class="browse__status">Aucun jeu ne correspond à ces critères.</p>
+  } @else if (viewMode() === 'grid') {
+    <div class="browse-grid">
+      @for (game of games(); track game.id) {
+        <article class="card">
+          <div class="card__banner" [style.background]="consoleColor(game.console_slug)">
+            {{ game.console_name }}
+          </div>
+
+          @if (coverUrl(game); as url) {
+            <img class="card__cover" [src]="url" [alt]="'Jaquette de ' + game.ll_title" loading="lazy" />
+          } @else {
+            <div class="card__cover card__cover--placeholder">{{ game.console_name }}</div>
+          }
+
+          <div class="card__body">
+            <div class="card__meta">{{ game.console_slug }}{{ game.nb_release_year ? ' · ' + game.nb_release_year : '' }}</div>
+            <h3 class="card__title">{{ game.ll_title }}</h3>
+
+            <div class="catalogue-actions">
+              @if (game.in_collection) {
+                <span class="status-badge status-badge--collection">
+                  En collection{{ ownedRegionsLabel(game) ? ' (' + ownedRegionsLabel(game) + ')' : '' }}
+                </span>
+              }
+              @if (hasMoreRegions(game)) {
+                <button type="button" class="add-btn add-btn--collection" (click)="openAddToCollection(game)">+ Collection</button>
+              }
+
+              @if (game.in_wishlist) {
+                <span class="status-badge status-badge--wishlist">En wishlist</span>
+              } @else if (!game.in_collection) {
+                <button type="button" class="add-btn add-btn--wishlist" (click)="openAddToWishlist(game)">+ Wishlist</button>
+              }
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  } @else {
+    <div class="browse-list">
+      @for (game of games(); track game.id) {
+        <article class="row" [style.border-left-color]="consoleColor(game.console_slug)">
+          @if (coverUrl(game); as url) {
+            <img class="row__cover" [src]="url" [alt]="'Jaquette de ' + game.ll_title" loading="lazy" />
+          } @else {
+            <div class="row__cover row__cover--placeholder">{{ game.console_name }}</div>
+          }
+
+          <div class="row__body">
+            <div>
+              <div class="card__meta">{{ game.console_slug }}{{ game.nb_release_year ? ' · ' + game.nb_release_year : '' }}</div>
+              <h3 class="row__title">{{ game.ll_title }}</h3>
+            </div>
+
+            <div class="row__meta">
+              <div class="catalogue-actions">
+                @if (game.in_collection) {
+                  <span class="status-badge status-badge--collection">
+                    En collection{{ ownedRegionsLabel(game) ? ' (' + ownedRegionsLabel(game) + ')' : '' }}
+                  </span>
+                }
+                @if (hasMoreRegions(game)) {
+                  <button type="button" class="add-btn add-btn--collection" (click)="openAddToCollection(game)">+ Collection</button>
+                }
+
+                @if (game.in_wishlist) {
+                  <span class="status-badge status-badge--wishlist">En wishlist</span>
+                } @else if (!game.in_collection) {
+                  <button type="button" class="add-btn add-btn--wishlist" (click)="openAddToWishlist(game)">+ Wishlist</button>
+                }
+              </div>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  @if (loadingMore()) {
+    <p class="browse__status">Chargement de plus de jeux…</p>
+  }
+
+  <div #sentinel class="sentinel" aria-hidden="true"></div>
+</section>
+
+@if (addTarget(); as target) {
+  <app-collection-form-modal
+    [heading]="'Ajouter « ' + target.ll_title + ' » à la collection'"
+    [subtitle]="target.console_name"
+    confirmLabel="Ajouter"
+    [submitting]="addSubmitting()"
+    [excludeRegions]="target.owned_regions"
+    (confirmed)="submitAddToCollection($event)"
+    (cancelled)="closeAddToCollection()"
+  />
+}
+
+@if (wishlistTarget(); as target) {
+  <app-wishlist-form-modal
+    [heading]="'Ajouter « ' + target.ll_title + ' » à la wishlist'"
+    [subtitle]="target.console_name"
+    confirmLabel="Ajouter à la wishlist"
+    [submitting]="wishlistSubmitting()"
+    (confirmed)="submitAddToWishlist($event)"
+    (cancelled)="closeAddToWishlist()"
+  />
+}

@@ -1,0 +1,8 @@
+{
+  "name": "wishgames",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
