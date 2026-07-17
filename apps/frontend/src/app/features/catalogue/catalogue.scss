@@ -71,6 +71,12 @@
   color: var(--color-text-muted);
 }
 
+// ---------- Régions disponibles au catalogue (indépendant de ce qui est possédé) ----------
+.regions {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
 // ---------- Actions (ajout rapide / badges de statut) ----------
 .catalogue-actions {
   display: flex;

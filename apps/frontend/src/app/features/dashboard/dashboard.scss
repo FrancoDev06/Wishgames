@@ -37,79 +37,81 @@
 }
 
 // ---------- Stat tiles (KPI row, §3.4) ----------
-// Chaque métrique porte un accent distinct (icône + liseré) — pas une échelle de couleur nominale
-// comme les barres de répartition (skill dataviz) : ce sont des cartes indépendantes, pas des séries
-// d'un même graphique, donc pas de règle "une seule teinte" à respecter ici.
-.stat-tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: var(--space-4);
-}
-
-.stat-tile {
+// Le budget n'est pas un compteur comme les autres (texte structurellement plus long,
+// donnee la plus importante de la rangee) : il a sa propre carte pleine largeur, avec une
+// taille de police genereuse puisqu'il n'a plus a partager sa case avec un simple "0" ou "1".
+// Les 4 compteurs restent groupes, compacts, en dessous. overflow-wrap en filet de securite
+// pour ne jamais deborder de sa carte meme sur un montant extreme.
+.stat-hero {
   display: flex;
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-5);
-  background: var(--color-bg-elevated);
+  margin-bottom: var(--space-3);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-success) 14%, var(--color-bg-elevated)), var(--color-bg-elevated));
   border: var(--border-width) solid var(--color-border);
-  border-left: 3px solid var(--stat-accent, var(--color-primary));
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  transition: var(--transition-base);
 }
 
-.stat-tile:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
-}
-
-.stat-tile--primary {
-  --stat-accent: var(--color-primary);
-}
-
-.stat-tile--secondary {
-  --stat-accent: var(--color-secondary);
-}
-
-.stat-tile--accent {
-  --stat-accent: var(--color-accent);
-}
-
-.stat-tile--money {
-  --stat-accent: var(--color-success);
-}
-
-.stat-tile__icon {
+.stat-hero__icon {
   flex: none;
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: var(--text-xl);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--stat-accent, var(--color-primary)) 16%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-success) 20%, transparent);
 }
 
-.stat-tile__body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+.stat-hero__body {
   min-width: 0;
 }
 
-.stat-tile__label {
+.stat-hero__label {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
+  margin-bottom: var(--space-1);
 }
 
-.stat-tile__value {
+.stat-hero__value {
   font-family: var(--font-heading);
   font-size: var(--text-3xl);
   font-weight: 700;
-  // Chiffres proportionnels (jamais tabular-nums) sur une grande valeur isolée — voir skill dataviz.
+  line-height: var(--line-height-tight);
   font-variant-numeric: proportional-nums;
+  overflow-wrap: anywhere;
+}
+
+.stat-minis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.stat-mini {
+  flex: 1 1 150px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-elevated);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.stat-mini__value {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  font-variant-numeric: proportional-nums;
+}
+
+.stat-mini__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
 }
 
 // ---------- Répartition par console : table accessible + barre décorative (une seule teinte, ----------

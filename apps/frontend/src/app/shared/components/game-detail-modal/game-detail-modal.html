@@ -1,0 +1,79 @@
+<div class="modal-backdrop" (click)="close()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="detail-header">
+      @if (coverUrl; as url) {
+        <img class="detail-header__cover" [src]="url" [alt]="'Jaquette de ' + game.ll_title" />
+      } @else {
+        <div class="detail-header__cover detail-header__cover--placeholder">{{ game.console_name }}</div>
+      }
+      <div>
+        <h3 class="modal__title">{{ game.ll_title }}</h3>
+        <p class="modal__subtitle">{{ game.console_name }}{{ regionLabel() ? ' · Édition ' + regionLabel() : '' }}</p>
+        @if (game.ll_aka_titles.length) {
+          <p class="detail-aka">Aussi connu sous : {{ game.ll_aka_titles.join(', ') }}</p>
+        }
+      </div>
+    </div>
+
+    <dl class="detail-rows">
+      @if (game.nb_release_year) {
+        <div class="detail-row">
+          <dt>Année</dt>
+          <dd>{{ game.nb_release_year }}</dd>
+        </div>
+      }
+      @if (game.ll_genres.length) {
+        <div class="detail-row">
+          <dt>Genres</dt>
+          <dd>{{ game.ll_genres.join(', ') }}</dd>
+        </div>
+      }
+      @if (game.ll_developers.length) {
+        <div class="detail-row">
+          <dt>Développeur(s)</dt>
+          <dd>{{ game.ll_developers.join(', ') }}</dd>
+        </div>
+      }
+      @if (game.ll_publishers.length) {
+        <div class="detail-row">
+          <dt>Éditeur(s)</dt>
+          <dd>{{ game.ll_publishers.join(', ') }}</dd>
+        </div>
+      }
+      @if (game.nb_rating) {
+        <div class="detail-row">
+          <dt>Note</dt>
+          <dd>{{ game.nb_rating }}/5{{ game.nb_rating_votes ? ' (' + game.nb_rating_votes + ' votes)' : '' }}</dd>
+        </div>
+      }
+    </dl>
+
+    @if (game.ll_description) {
+      <p class="detail-description">{{ game.ll_description }}</p>
+    }
+
+    @if (game.ll_source_url) {
+      <a class="detail-source-link" [href]="game.ll_source_url" target="_blank" rel="noopener noreferrer">Voir la fiche source ↗</a>
+    }
+
+    <div class="modal__actions modal__actions--spread">
+      <div class="detail-status">
+        @if (game.in_collection) {
+          <span class="status-badge status-badge--collection">En collection</span>
+        }
+        @if (game.in_wishlist) {
+          <span class="status-badge status-badge--wishlist">En wishlist</span>
+        }
+      </div>
+      <div class="modal__actions">
+        @if (!game.in_collection) {
+          <button type="button" class="btn btn--ghost" (click)="addToCollectionRequested.emit()">+ Collection</button>
+        }
+        @if (!game.in_wishlist && !game.in_collection) {
+          <button type="button" class="btn btn--ghost" (click)="addToWishlistRequested.emit()">+ Wishlist</button>
+        }
+        <button type="button" class="btn btn--primary" (click)="close()">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -26,12 +26,12 @@ export interface GameWithConsole extends Game {
 }
 
 export interface GameListItem extends GameWithConsole {
+	// Une ligne = une édition régionale (une jaquette FRONT), pas un jeu — un même titre disponible
+	// en Europe/USA/Japon donne plusieurs lignes, chacune avec sa propre jaquette (retour utilisateur,
+	// §2bis) ; region est null pour un jeu sans jaquette FRONT du tout (une seule ligne dans ce cas).
+	region: string | null;
 	cover_front_url: string | null;
+	// Possession/recherche évaluées pour CETTE édition régionale précise (pas le jeu en général).
 	in_collection: boolean;
 	in_wishlist: boolean;
-	// Régions déjà possédées en collection pour ce jeu, et régions disponibles au catalogue
-	// (jaquettes FRONT) — permet au frontend de proposer l'ajout d'une région supplémentaire
-	// tant qu'il en reste (§9, suivi multi-région).
-	owned_regions: string[];
-	available_regions: string[];
 }

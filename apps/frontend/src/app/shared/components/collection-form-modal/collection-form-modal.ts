@@ -60,9 +60,9 @@ export class CollectionFormModal implements OnInit {
   @Input() subtitle = '';
   @Input() confirmLabel = 'Confirmer';
   @Input() submitting = false;
-  // Régions déjà possédées pour ce jeu (ajout d'une région supplémentaire depuis le Catalogue,
-  // §9 suivi multi-région) — retirées des choix pour éviter un conflit UNIQUE(id_game, ll_region).
-  @Input() excludeRegions: string[] = [];
+  // Région imposée (ajout depuis une carte Catalogue précise, une par édition régionale, §2bis) —
+  // le select est alors verrouillé sur cette valeur plutôt que de laisser choisir.
+  @Input() lockedRegion: string | null = null;
   // Pré-remplissage en mode édition (modification d'une ligne de collection existante) — la région
   // n'est volontairement pas modifiable en édition (identifie la ligne, changerait de fiche §9).
   @Input() initialValue: CollectionFormValue | null = null;
@@ -71,6 +71,7 @@ export class CollectionFormModal implements OnInit {
   @Output() cancelled = new EventEmitter<void>();
 
   ngOnInit(): void {
+    if (this.lockedRegion) this.form.ll_region = this.lockedRegion;
     if (!this.initialValue) return;
     const v = this.initialValue;
     this.form = {
@@ -96,9 +97,7 @@ export class CollectionFormModal implements OnInit {
   ];
   protected readonly conditionOptions = CONDITION_OPTIONS;
 
-  protected get regionOptions() {
-    return REGION_OPTIONS.filter((option) => !this.excludeRegions.includes(option.value));
-  }
+  protected readonly regionOptions = REGION_OPTIONS;
 
   protected form: FormState = emptyForm();
 

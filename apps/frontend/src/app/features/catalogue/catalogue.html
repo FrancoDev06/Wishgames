@@ -9,7 +9,7 @@
       <button type="button" class="back-link" (click)="backToConsoles()">← Toutes les consoles</button>
       <h2>{{ selectedConsoleName() || 'Catalogue' }}</h2>
       @if (!loading() && !error()) {
-        <span class="browse__count">{{ games().length }} / {{ total() }} jeux</span>
+        <span class="browse__count">{{ games().length }} / {{ total() }} éditions</span>
       }
 
       <div class="browse__view-toggle">
@@ -49,6 +49,10 @@
     </div>
   </div>
 
+  @if (!showConsolePicker() && !loading() && !error() && games().length > 0) {
+    <p class="browse__hint">Clique sur une carte pour voir le détail du jeu (régions, genres, description…).</p>
+  }
+
   @if (showConsolePicker()) {
     <div class="console-tiles">
       @for (console of consoles(); track console.id) {
@@ -77,8 +81,8 @@
     <p class="browse__status">Aucun jeu ne correspond à ces critères.</p>
   } @else if (viewMode() === 'grid') {
     <div class="browse-grid">
-      @for (game of games(); track game.id) {
-        <article class="card">
+      @for (game of games(); track game.id + '_' + (game.region ?? '')) {
+        <article class="card card--clickable" (click)="openDetail(game)">
           <div class="card__banner" [style.background]="consoleColor(game.console_slug)">
             {{ game.console_name }}
           </div>
@@ -93,13 +97,14 @@
             <div class="card__meta">{{ game.console_slug }}{{ game.nb_release_year ? ' · ' + game.nb_release_year : '' }}</div>
             <h3 class="card__title">{{ game.ll_title }}</h3>
 
-            <div class="catalogue-actions">
+            @if (regionLabel(game); as region) {
+              <div class="regions">Édition {{ region }}</div>
+            }
+
+            <div class="catalogue-actions" (click)="$event.stopPropagation()">
               @if (game.in_collection) {
-                <span class="status-badge status-badge--collection">
-                  En collection{{ ownedRegionsLabel(game) ? ' (' + ownedRegionsLabel(game) + ')' : '' }}
-                </span>
-              }
-              @if (hasMoreRegions(game)) {
+                <span class="status-badge status-badge--collection">En collection</span>
+              } @else {
                 <button type="button" class="add-btn add-btn--collection" (click)="openAddToCollection(game)">+ Collection</button>
               }
 
@@ -115,8 +120,8 @@
     </div>
   } @else {
     <div class="browse-list">
-      @for (game of games(); track game.id) {
-        <article class="row" [style.border-left-color]="consoleColor(game.console_slug)">
+      @for (game of games(); track game.id + '_' + (game.region ?? '')) {
+        <article class="row card--clickable" [style.border-left-color]="consoleColor(game.console_slug)" (click)="openDetail(game)">
           @if (coverUrl(game); as url) {
             <img class="row__cover" [src]="url" [alt]="'Jaquette de ' + game.ll_title" loading="lazy" />
           } @else {
@@ -127,16 +132,16 @@
             <div>
               <div class="card__meta">{{ game.console_slug }}{{ game.nb_release_year ? ' · ' + game.nb_release_year : '' }}</div>
               <h3 class="row__title">{{ game.ll_title }}</h3>
+              @if (regionLabel(game); as region) {
+                <div class="regions">Édition {{ region }}</div>
+              }
             </div>
 
             <div class="row__meta">
-              <div class="catalogue-actions">
+              <div class="catalogue-actions" (click)="$event.stopPropagation()">
                 @if (game.in_collection) {
-                  <span class="status-badge status-badge--collection">
-                    En collection{{ ownedRegionsLabel(game) ? ' (' + ownedRegionsLabel(game) + ')' : '' }}
-                  </span>
-                }
-                @if (hasMoreRegions(game)) {
+                  <span class="status-badge status-badge--collection">En collection</span>
+                } @else {
                   <button type="button" class="add-btn add-btn--collection" (click)="openAddToCollection(game)">+ Collection</button>
                 }
 
@@ -163,10 +168,10 @@
 @if (addTarget(); as target) {
   <app-collection-form-modal
     [heading]="'Ajouter « ' + target.ll_title + ' » à la collection'"
-    [subtitle]="target.console_name"
+    [subtitle]="target.console_name + (regionLabel(target) ? ' · ' + regionLabel(target) : '')"
     confirmLabel="Ajouter"
     [submitting]="addSubmitting()"
-    [excludeRegions]="target.owned_regions"
+    [lockedRegion]="target.region"
     (confirmed)="submitAddToCollection($event)"
     (cancelled)="closeAddToCollection()"
   />
@@ -175,10 +180,21 @@
 @if (wishlistTarget(); as target) {
   <app-wishlist-form-modal
     [heading]="'Ajouter « ' + target.ll_title + ' » à la wishlist'"
-    [subtitle]="target.console_name"
+    [subtitle]="target.console_name + (regionLabel(target) ? ' · ' + regionLabel(target) : '')"
     confirmLabel="Ajouter à la wishlist"
     [submitting]="wishlistSubmitting()"
+    [preselectedRegions]="target.region ? [target.region] : []"
     (confirmed)="submitAddToWishlist($event)"
     (cancelled)="closeAddToWishlist()"
+  />
+}
+
+@if (detailTarget(); as target) {
+  <app-game-detail-modal
+    [game]="target"
+    [coverUrl]="coverUrl(target)"
+    (closed)="closeDetail()"
+    (addToCollectionRequested)="onDetailAddToCollection()"
+    (addToWishlistRequested)="onDetailAddToWishlist()"
   />
 }

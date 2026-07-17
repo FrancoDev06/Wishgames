@@ -15,6 +15,7 @@ const COVER_TYPE_SOURCES: Record<string, string[]> = {
 	BACK: ["Box - Back", "Box - Back - Reconstructed"],
 	SPINE: ["Box - Spine"],
 	MEDIA: ["Disc", "Cart - Front"],
+	BOX_3D: ["Box - 3D"],
 };
 
 // Ordre de priorité région (§2bis : PAL/Europe → USA → Japon), repli sur la première image disponible sinon.
@@ -81,6 +82,8 @@ async function main() {
 		database: process.env.DB_NAME,
 		user: process.env.DB_USER,
 		password: process.env.DB_PASSWORD,
+		// Supabase (et la plupart des hébergeurs Postgres cloud) exigent SSL — même pilotage que DatabaseUtil.
+		ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : undefined,
 	});
 
 	const only = process.env.LAUNCHBOX_ONLY;

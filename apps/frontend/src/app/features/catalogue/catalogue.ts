@@ -9,6 +9,7 @@ import { NotificationService } from '../../core/services/notification.service';
 import { GameListItem, ConsoleOption } from '../../core/models/game.model';
 import { CollectionFormModal, CollectionFormValue } from '../../shared/components/collection-form-modal/collection-form-modal';
 import { WishlistFormModal, WishlistFormValue } from '../../shared/components/wishlist-form-modal/wishlist-form-modal';
+import { GameDetailModal } from '../../shared/components/game-detail-modal/game-detail-modal';
 import { consoleColor } from '../../core/constants/console-colors.constant';
 import { resolveCoverUrl } from '../../core/utils/cover-url.util';
 import { consolePhotoUrl } from '../../core/utils/console-photo.util';
@@ -21,7 +22,7 @@ const PAGE_SIZE = 60;
 
 @Component({
   selector: 'app-catalogue',
-  imports: [CollectionFormModal, WishlistFormModal],
+  imports: [CollectionFormModal, WishlistFormModal, GameDetailModal],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.scss',
 })
@@ -68,6 +69,8 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
 
   protected readonly wishlistTarget = signal<GameListItem | null>(null);
   protected readonly wishlistSubmitting = signal(false);
+
+  protected readonly detailTarget = signal<GameListItem | null>(null);
 
   protected readonly consoleColor = consoleColor;
 
@@ -173,16 +176,33 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
     return resolveCoverUrl(game.cover_front_url, this.coverOrigin);
   }
 
-  // Suivi multi-région (§9) : tant qu'il reste au moins une région du catalogue non encore
-  // possédée, le bouton "+ Collection" reste proposé à côté du badge "En collection" — masqué
-  // seulement une fois toutes les éditions disponibles possédées (ou d'office pour un jeu à
-  // édition unique déjà possédée).
-  protected hasMoreRegions(game: GameListItem): boolean {
-    return game.owned_regions.length < Math.max(game.available_regions.length, 1);
+  // Une carte = une édition régionale précise (§2bis, retour utilisateur : "sur quelle région les
+  // jeux sont-ils disponibles ?") — le libellé de région se lit directement sur game.region.
+  protected regionLabel(game: GameListItem): string | null {
+    return game.region ? regionShortLabel(game.region) : null;
   }
 
-  protected ownedRegionsLabel(game: GameListItem): string {
-    return game.owned_regions.map(regionShortLabel).join(', ');
+  protected openDetail(game: GameListItem): void {
+    this.detailTarget.set(game);
+  }
+
+  protected closeDetail(): void {
+    this.detailTarget.set(null);
+  }
+
+  // Ouvertes depuis la modale de détail : on referme le détail pour ne pas empiler deux modales.
+  protected onDetailAddToCollection(): void {
+    const game = this.detailTarget();
+    if (!game) return;
+    this.closeDetail();
+    this.openAddToCollection(game);
+  }
+
+  protected onDetailAddToWishlist(): void {
+    const game = this.detailTarget();
+    if (!game) return;
+    this.closeDetail();
+    this.openAddToWishlist(game);
   }
 
   protected openAddToWishlist(game: GameListItem): void {
@@ -200,7 +220,16 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
     this.wishlistSubmitting.set(true);
     this.wishlistService.create({ id_game: game.id, ...value }).subscribe({
       next: () => {
-        this.games.update((list) => list.map((g) => (g.id === game.id ? { ...g, in_wishlist: true } : g)));
+        // Une entrée wishlist vaut pour toutes les régions cochées (ou toutes les éditions si
+        // aucune région précisée) : ne marquer "en wishlist" que les cartes concernées, pas
+        // toutes les éditions du jeu (une ligne par édition régionale désormais, §2bis).
+        this.games.update((list) =>
+          list.map((g) =>
+            g.id === game.id && (value.ll_desired_regions.length === 0 || (g.region && value.ll_desired_regions.includes(g.region)))
+              ? { ...g, in_wishlist: true }
+              : g,
+          ),
+        );
         this.notificationService.success(`« ${game.ll_title} » ajouté à la wishlist.`);
         this.wishlistSubmitting.set(false);
         this.closeAddToWishlist();
@@ -227,16 +256,10 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
     this.addSubmitting.set(true);
     this.collectionService.create({ id_game: game.id, ...value }).subscribe({
       next: () => {
+        // Une ligne de collection cible une édition régionale précise : ne marquer "en collection"
+        // que la carte correspondant à cette région (une ligne par édition régionale, §2bis).
         this.games.update((list) =>
-          list.map((g) =>
-            g.id === game.id
-              ? {
-                  ...g,
-                  in_collection: true,
-                  owned_regions: value.ll_region ? [...g.owned_regions, value.ll_region] : g.owned_regions,
-                }
-              : g,
-          ),
+          list.map((g) => (g.id === game.id && g.region === game.region ? { ...g, in_collection: true } : g)),
         );
         this.notificationService.success(`« ${game.ll_title} » ajouté à la collection.`);
         this.addSubmitting.set(false);

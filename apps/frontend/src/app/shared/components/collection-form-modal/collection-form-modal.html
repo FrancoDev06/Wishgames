@@ -8,7 +8,7 @@
     <form (ngSubmit)="submit()">
       <label class="modal__field">
         Région de l'édition
-        <select name="region" [(ngModel)]="form.ll_region" [disabled]="!!initialValue">
+        <select name="region" [(ngModel)]="form.ll_region" [disabled]="!!initialValue || !!lockedRegion">
           <option value="">Non précisée</option>
           @for (opt of regionOptions; track opt.value) {
             <option [value]="opt.value">{{ opt.label }}</option>

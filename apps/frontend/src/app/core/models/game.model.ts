@@ -14,11 +14,13 @@ export interface GameListItem {
   ll_source_url: string | null;
   console_slug: string;
   console_name: string;
+  // Une ligne = une édition régionale (une jaquette), pas un jeu — un même titre disponible en
+  // plusieurs régions donne plusieurs GameListItem, chacun avec sa propre jaquette et son propre
+  // statut collection/wishlist. null pour un jeu sans jaquette FRONT du tout.
+  region: string | null;
   cover_front_url: string | null;
   in_collection: boolean;
   in_wishlist: boolean;
-  owned_regions: string[];
-  available_regions: string[];
 }
 
 export interface ConsoleOption {

@@ -26,7 +26,11 @@ export default class RoutesUtil {
 		instance.use(cors());
 		instance.use(json());
 		instance.use(text());
-		instance.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+		// CSP desactivee : le build Angular utilise un <script> inline pour appliquer le theme
+		// avant bootstrap et un onload inline pour charger styles-*.css en non-bloquant (technique
+		// "media=print puis all") — la CSP par defaut d'helmet (script-src 'self', script-src-attr
+		// 'none') bloque ces deux inline, ce qui casse le theme et l'affichage du CSS.
+		instance.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { policy: "cross-origin" } }));
 		instance.use(urlencoded({ extended: true }));
 		instance.use(logMiddleware({ exclude: [`/${product}/${side}/v${version}/livez`, `/${product}/${side}/v${version}/readyz`] }));
 		instance.use('/covers', express.static(join(process.cwd(), 'public', 'covers')));

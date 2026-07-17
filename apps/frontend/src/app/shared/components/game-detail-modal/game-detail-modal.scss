@@ -1,0 +1,84 @@
+// Chrome commun (fond, carte, boutons génériques, .detail-rows) : voir src/styles/_modal.scss et
+// src/styles/_browse.scss. Ici : mise en page détail (jaquette + infos + actions réparties).
+
+.modal {
+  max-width: 640px;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.detail-header__cover {
+  width: 64px;
+  height: 86px;
+  flex: none;
+  object-fit: contain;
+  background: var(--color-bg-sunken);
+  border-radius: var(--radius-sm);
+}
+
+.detail-header__cover--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  text-align: center;
+  font-size: 8px;
+  color: var(--color-text-muted);
+}
+
+.detail-header .modal__title {
+  margin: 0 0 var(--space-1);
+}
+
+.detail-header .modal__subtitle {
+  margin: 0;
+}
+
+.detail-aka {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.detail-rows {
+  margin-bottom: var(--space-4);
+}
+
+.detail-description {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+.detail-source-link {
+  display: inline-block;
+  margin-bottom: var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.detail-source-link:hover {
+  text-decoration: underline;
+}
+
+.modal__actions--spread {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.detail-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

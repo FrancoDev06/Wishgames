@@ -45,11 +45,15 @@ export class WishlistFormModal implements OnInit {
   @Input() submitting = false;
   // Pré-remplissage en mode édition (modification d'une entrée wishlist existante).
   @Input() initialValue: WishlistFormValue | null = null;
+  // Région pré-cochée (ajout depuis une carte Catalogue précise, une par édition régionale, §2bis) —
+  // simple valeur de départ, reste modifiable : une entrée wishlist peut viser plusieurs régions.
+  @Input() preselectedRegions: string[] = [];
 
   @Output() confirmed = new EventEmitter<WishlistFormValue>();
   @Output() cancelled = new EventEmitter<void>();
 
   ngOnInit(): void {
+    if (this.preselectedRegions.length) this.form.ll_desired_regions = [...this.preselectedRegions];
     if (!this.initialValue) return;
     const v = this.initialValue;
     this.form = {

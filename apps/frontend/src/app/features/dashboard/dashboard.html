@@ -8,42 +8,18 @@
   } @else if (error()) {
     <p class="dashboard__status dashboard__status--error">{{ error() }}</p>
   } @else if (data(); as d) {
-    <div class="stat-tiles">
-      <div class="stat-tile stat-tile--primary">
-        <span class="stat-tile__icon" aria-hidden="true">📀</span>
-        <div class="stat-tile__body">
-          <span class="stat-tile__value">{{ displayedStats().collectionGames | number: '1.0-0' }}</span>
-          <span class="stat-tile__label">Jeux en collection</span>
-        </div>
+    <div class="stat-hero">
+      <span class="stat-hero__icon" aria-hidden="true">💰</span>
+      <div class="stat-hero__body">
+        <div class="stat-hero__label">Budget total dépensé</div>
+        <div class="stat-hero__value">{{ formatPrice(displayedStats().totalSpent) }}</div>
       </div>
-      <div class="stat-tile stat-tile--secondary">
-        <span class="stat-tile__icon" aria-hidden="true">⭐</span>
-        <div class="stat-tile__body">
-          <span class="stat-tile__value">{{ displayedStats().wishlistGames | number: '1.0-0' }}</span>
-          <span class="stat-tile__label">Jeux en wishlist</span>
-        </div>
-      </div>
-      <div class="stat-tile stat-tile--accent">
-        <span class="stat-tile__icon" aria-hidden="true">🎮</span>
-        <div class="stat-tile__body">
-          <span class="stat-tile__value">{{ displayedStats().collectionConsoles | number: '1.0-0' }}</span>
-          <span class="stat-tile__label">Consoles possédées</span>
-        </div>
-      </div>
-      <div class="stat-tile stat-tile--secondary">
-        <span class="stat-tile__icon" aria-hidden="true">🔍</span>
-        <div class="stat-tile__body">
-          <span class="stat-tile__value">{{ displayedStats().wishlistConsoles | number: '1.0-0' }}</span>
-          <span class="stat-tile__label">Consoles recherchées</span>
-        </div>
-      </div>
-      <div class="stat-tile stat-tile--money">
-        <span class="stat-tile__icon" aria-hidden="true">💰</span>
-        <div class="stat-tile__body">
-          <span class="stat-tile__value">{{ formatPrice(displayedStats().totalSpent) }}</span>
-          <span class="stat-tile__label">Budget total dépensé</span>
-        </div>
-      </div>
+    </div>
+    <div class="stat-minis">
+      <div class="stat-mini"><span aria-hidden="true">💿</span><span class="stat-mini__value">{{ displayedStats().collectionGames | number: '1.0-0' }}</span><span class="stat-mini__label">Collection</span></div>
+      <div class="stat-mini"><span aria-hidden="true">⭐</span><span class="stat-mini__value">{{ displayedStats().wishlistGames | number: '1.0-0' }}</span><span class="stat-mini__label">Wishlist</span></div>
+      <div class="stat-mini"><span aria-hidden="true">🎮</span><span class="stat-mini__value">{{ displayedStats().collectionConsoles | number: '1.0-0' }}</span><span class="stat-mini__label">Consoles possédées</span></div>
+      <div class="stat-mini"><span aria-hidden="true">🔍</span><span class="stat-mini__value">{{ displayedStats().wishlistConsoles | number: '1.0-0' }}</span><span class="stat-mini__label">Consoles recherchées</span></div>
     </div>
 
     <section class="dashboard__section">

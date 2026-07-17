@@ -15,17 +15,38 @@ export interface GameListResult {
 	total: number;
 }
 
-// Un jeu peut désormais avoir plusieurs jaquettes FRONT (une par région, §2bis) et plusieurs lignes
-// de collection (une par région possédée) : EXISTS/LATERAL évitent de dupliquer les lignes de résultat
-// qu'un simple LEFT JOIN provoquerait, et fixent une région par défaut pour la jaquette affichée en liste.
-const DEFAULT_COVER_LATERAL = `
-	LEFT JOIN LATERAL (
-		SELECT ll_image_url
-		FROM ref_cover c2
-		WHERE c2.id_game = g.id AND c2.ll_cover_type = 'FRONT'
-		ORDER BY CASE c2.ll_region WHEN 'Europe' THEN 1 WHEN 'North America' THEN 2 WHEN 'Japan' THEN 3 ELSE 4 END
-		LIMIT 1
-	) cov ON true
+// Un jeu peut avoir plusieurs jaquettes FRONT, une par région (§2bis) : LEFT JOIN (pas LATERAL)
+// pour obtenir une ligne de résultat par édition régionale plutôt qu'une seule ligne par jeu avec
+// une jaquette "par défaut" choisie arbitrairement (retour utilisateur — on ne savait plus dans
+// quelle région un jeu était disponible). Un jeu sans jaquette FRONT du tout garde une seule ligne
+// (cov.* à NULL). FRONT reste la jaquette qui définit les lignes/régions ; le rendu 3D (BOX_3D,
+// retour utilisateur — c'est ce qu'on veut voir sur les cartes) est superposé par-dessus quand il
+// existe pour cette même région, avec repli sur le scan plat sinon.
+const COVER_JOIN = `
+	LEFT JOIN ref_cover cov ON cov.id_game = g.id AND cov.ll_cover_type = 'FRONT'
+	LEFT JOIN ref_cover cov3d ON cov3d.id_game = g.id AND cov3d.ll_cover_type = 'BOX_3D' AND cov3d.ll_region IS NOT DISTINCT FROM cov.ll_region
+`;
+
+// Possession/recherche évaluées pour la région précise de CETTE ligne (cov.ll_region), pas pour le
+// jeu toutes régions confondues. Quand la ligne n'a pas de région (pas de jaquette FRONT), on retombe
+// sur "n'importe quelle ligne de collection/wishlist du jeu" faute d'information plus précise.
+const IN_COLLECTION_EXPR = `
+	CASE WHEN cov.ll_region IS NULL
+		THEN EXISTS (SELECT 1 FROM ref_collection rc WHERE rc.id_game = g.id)
+		ELSE EXISTS (SELECT 1 FROM ref_collection rc WHERE rc.id_game = g.id AND rc.ll_region = cov.ll_region)
+	END
+`;
+
+// Une entrée wishlist vaut pour plusieurs régions à la fois (ll_desired_regions, §3.2) : un tableau
+// vide signifie "aucune préférence de région" et vaut donc pour toutes les éditions du jeu.
+const IN_WISHLIST_EXPR = `
+	CASE WHEN cov.ll_region IS NULL
+		THEN EXISTS (SELECT 1 FROM ref_wishlist rw WHERE rw.id_game = g.id)
+		ELSE EXISTS (
+			SELECT 1 FROM ref_wishlist rw
+			WHERE rw.id_game = g.id AND (rw.ll_desired_regions = '{}' OR cov.ll_region = ANY (rw.ll_desired_regions))
+		)
+	END
 `;
 
 export default class GameQueries {
@@ -41,44 +62,32 @@ export default class GameQueries {
 			values.push(`%${filters.search}%`);
 			conditions.push(`g.ll_title ILIKE $${values.length}`);
 		}
-		if (filters.status === "collection") conditions.push(`EXISTS (SELECT 1 FROM ref_collection col2 WHERE col2.id_game = g.id)`);
-		if (filters.status === "wishlist") conditions.push(`EXISTS (SELECT 1 FROM ref_wishlist wl2 WHERE wl2.id_game = g.id)`);
-		if (filters.status === "none")
-			conditions.push(
-				`NOT EXISTS (SELECT 1 FROM ref_collection col2 WHERE col2.id_game = g.id)
-				 AND NOT EXISTS (SELECT 1 FROM ref_wishlist wl2 WHERE wl2.id_game = g.id)`
-			);
+		if (filters.status === "collection") conditions.push(IN_COLLECTION_EXPR);
+		if (filters.status === "wishlist") conditions.push(IN_WISHLIST_EXPR);
+		if (filters.status === "none") conditions.push(`NOT (${IN_COLLECTION_EXPR}) AND NOT (${IN_WISHLIST_EXPR})`);
 
 		const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
-		// Le compte n'a pas besoin de la jaquette : JOIN/WHERE seuls suffisent.
-		const countFrom = `
+		// Le compte porte sur les mêmes lignes (jeu x région) que la liste : le JOIN doit donc être
+		// present ici aussi, sans quoi le total ne correspondrait plus aux lignes paginées.
+		const from = `
 			FROM ref_game g
 			JOIN ref_console c ON c.id = g.id_console
+			${COVER_JOIN}
 			${where}
 		`;
-		const countResult = await DatabaseUtil.query<{ count: string }>(`SELECT COUNT(*)::text AS count ${countFrom}`, values);
+		const countResult = await DatabaseUtil.query<{ count: string }>(`SELECT COUNT(*)::text AS count ${from}`, values);
 		const total = Number(countResult.rows[0]?.count ?? 0);
 
-		// La liste a besoin de la jaquette par défaut : le LATERAL doit précéder le WHERE (clause FROM complète).
-		const listFrom = `
-			FROM ref_game g
-			JOIN ref_console c ON c.id = g.id_console
-			${DEFAULT_COVER_LATERAL}
-			${where}
-		`;
 		const listValues = [...values, filters.limit, filters.offset];
 		const itemsResult = await DatabaseUtil.query<GameListItem>(
 			`SELECT g.*, c.ll_slug AS console_slug, c.ll_name AS console_name,
-			        cov.ll_image_url AS cover_front_url,
-			        EXISTS (SELECT 1 FROM ref_collection col2 WHERE col2.id_game = g.id) AS in_collection,
-			        EXISTS (SELECT 1 FROM ref_wishlist wl2 WHERE wl2.id_game = g.id) AS in_wishlist,
-			        (SELECT COALESCE(array_agg(DISTINCT col3.ll_region) FILTER (WHERE col3.ll_region IS NOT NULL), '{}')
-			           FROM ref_collection col3 WHERE col3.id_game = g.id) AS owned_regions,
-			        (SELECT COALESCE(array_agg(DISTINCT c3.ll_region) FILTER (WHERE c3.ll_region IS NOT NULL), '{}')
-			           FROM ref_cover c3 WHERE c3.id_game = g.id AND c3.ll_cover_type = 'FRONT') AS available_regions
-			 ${listFrom}
-			 ORDER BY g.ll_title
+			        cov.ll_region AS region,
+			        COALESCE(cov3d.ll_image_url, cov.ll_image_url) AS cover_front_url,
+			        ${IN_COLLECTION_EXPR} AS in_collection,
+			        ${IN_WISHLIST_EXPR} AS in_wishlist
+			 ${from}
+			 ORDER BY g.ll_title, CASE cov.ll_region WHEN 'Europe' THEN 1 WHEN 'North America' THEN 2 WHEN 'Japan' THEN 3 ELSE 4 END
 			 LIMIT $${listValues.length - 1} OFFSET $${listValues.length}`,
 			listValues
 		);
