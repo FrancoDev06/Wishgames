@@ -538,3 +538,56 @@
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
+
+// ---------- Mobile : moins de marge, grilles plus denses, ligne compacte ----------
+@media (max-width: 768px) {
+  .browse {
+    padding: var(--space-4);
+  }
+
+  .browse__header {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .header-toggles {
+    flex-wrap: wrap;
+    flex-basis: 100%;
+    margin-left: 0;
+    row-gap: var(--space-2);
+  }
+
+  .filters__search {
+    flex-basis: 100%;
+  }
+
+  .browse-grid,
+  .console-tiles {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .console-tile {
+    height: 140px;
+  }
+
+  .row {
+    padding-right: var(--space-3);
+  }
+
+  .row__cover {
+    width: 72px;
+    height: 96px;
+  }
+
+  .row__body {
+    padding: var(--space-3) 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .browse-grid,
+  .console-tiles {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+}

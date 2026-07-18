@@ -121,3 +121,20 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+// ---------- Mobile : moins de marge autour de la carte, formulaires sur une colonne ----------
+@media (max-width: 600px) {
+  .modal-backdrop {
+    padding: var(--space-3);
+    align-items: flex-start;
+  }
+
+  .modal {
+    padding: var(--space-5) var(--space-4);
+    max-height: calc(100vh - var(--space-6));
+  }
+
+  .modal__row {
+    grid-template-columns: 1fr;
+  }
+}

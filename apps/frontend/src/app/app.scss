@@ -38,3 +38,39 @@
   background: var(--color-primary);
   color: var(--color-primary-contrast);
 }
+
+// ---------- Mobile : titre + bascule thème sur la ligne du haut, nav en dessous
+// (scroll horizontal plutôt que retour à la ligne des pastilles, moins lisible). ----------
+@media (max-width: 768px) {
+  .app-header {
+    padding: var(--space-4) var(--space-5);
+    gap: var(--space-3);
+  }
+
+  .app-header h1 {
+    order: 1;
+    font-size: var(--text-lg);
+  }
+
+  app-theme-switcher {
+    order: 2;
+  }
+
+  .app-nav {
+    order: 3;
+    flex-basis: 100%;
+    margin-left: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .app-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .app-nav__link {
+    flex: none;
+  }
+}

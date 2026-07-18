@@ -135,3 +135,12 @@
 .kanban-card.cdk-drag-preview {
   background: var(--color-bg-elevated);
 }
+
+// ---------- Mobile : une colonne (quasi) pleine largeur à la fois, façon "swipe" ----------
+@media (max-width: 480px) {
+  .kanban__column {
+    flex-basis: 88vw;
+    min-width: 240px;
+    max-width: none;
+  }
+}

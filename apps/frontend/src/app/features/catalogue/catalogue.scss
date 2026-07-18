@@ -89,3 +89,9 @@
 .sentinel {
   height: 1px;
 }
+
+@media (max-width: 480px) {
+  .filters__status {
+    flex-wrap: wrap;
+  }
+}

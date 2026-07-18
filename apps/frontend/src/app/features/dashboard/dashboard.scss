@@ -404,3 +404,28 @@
 .quick-link:hover {
   background: var(--color-primary-hover);
 }
+
+// ---------- Mobile : moins de marge, hero/activité qui s'empilent proprement ----------
+@media (max-width: 768px) {
+  .dashboard {
+    padding: var(--space-4);
+    gap: var(--space-6);
+  }
+
+  .stat-hero {
+    flex-wrap: wrap;
+  }
+
+  .console-breakdown__name {
+    white-space: normal;
+  }
+
+  .activity-row {
+    flex-wrap: wrap;
+  }
+
+  .activity-row__side {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
