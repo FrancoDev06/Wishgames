@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-export type ThemeId = 'minimal' | 'dark-gaming' | 'neon' | 'retro';
+export type ThemeId = 'minimal' | 'dark-gaming' | 'neon' | 'retro' | 'mobile';
 
 export interface ThemeOption {
   id: ThemeId;
@@ -15,6 +15,9 @@ export const THEMES: ThemeOption[] = [
   { id: 'dark-gaming', label: 'Dark Gaming' },
   { id: 'neon', label: 'Neon' },
   { id: 'retro', label: 'Retro' },
+  // Reprend l'identité visuelle de l'app mobile Flutter "Retro Wishlist" (lib/app_theme.dart) :
+  // violet/cyan, fond clair, cartes plates à bordure fine — pour une cohérence web/mobile.
+  { id: 'mobile', label: 'Mobile' },
 ];
 
 @Injectable({ providedIn: 'root' })
