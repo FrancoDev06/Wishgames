@@ -4,7 +4,7 @@ import { COMPLETENESS_OPTIONS, CONDITION_OPTIONS, REGION_OPTIONS } from '../../.
 import { toDateInputValue } from '../../../core/utils/date.util';
 
 export interface WishlistFormValue {
-  ll_desired_regions: string[];
+  ll_region: string | null;
   ll_desired_completeness: string | null;
   ll_desired_condition: string | null;
   nb_priority: number | null;
@@ -12,7 +12,7 @@ export interface WishlistFormValue {
 }
 
 interface FormState {
-  ll_desired_regions: string[];
+  ll_region: string;
   ll_desired_completeness: string;
   ll_desired_condition: string;
   nb_priority: string;
@@ -21,7 +21,7 @@ interface FormState {
 
 function emptyForm(): FormState {
   return {
-    ll_desired_regions: [],
+    ll_region: '',
     ll_desired_completeness: '',
     ll_desired_condition: '',
     nb_priority: '',
@@ -30,7 +30,7 @@ function emptyForm(): FormState {
 }
 
 // Formulaire réutilisable pour "ajouter un jeu à la wishlist" avec ses critères de recherche
-// (§3.2 : région/complétude/état désirés, priorité, date de dernière vérification — tous optionnels,
+// (§3.2 : complétude/état désirés, priorité, date de dernière vérification — tous optionnels,
 // ce sont des critères de recherche et pas des exigences strictes).
 @Component({
   selector: 'app-wishlist-form-modal',
@@ -45,19 +45,21 @@ export class WishlistFormModal implements OnInit {
   @Input() submitting = false;
   // Pré-remplissage en mode édition (modification d'une entrée wishlist existante).
   @Input() initialValue: WishlistFormValue | null = null;
-  // Région pré-cochée (ajout depuis une carte Catalogue précise, une par édition régionale, §2bis) —
-  // simple valeur de départ, reste modifiable : une entrée wishlist peut viser plusieurs régions.
-  @Input() preselectedRegions: string[] = [];
+  // Région imposée (ajout depuis une carte Catalogue précise, une par édition régionale, §2bis) —
+  // le select est alors verrouillé sur cette valeur, même logique que CollectionFormModal : une
+  // entrée wishlist cible une édition régionale précise, plusieurs entrées possibles pour un même
+  // jeu (une par région suivie séparément, §9).
+  @Input() lockedRegion: string | null = null;
 
   @Output() confirmed = new EventEmitter<WishlistFormValue>();
   @Output() cancelled = new EventEmitter<void>();
 
   ngOnInit(): void {
-    if (this.preselectedRegions.length) this.form.ll_desired_regions = [...this.preselectedRegions];
+    if (this.lockedRegion) this.form.ll_region = this.lockedRegion;
     if (!this.initialValue) return;
     const v = this.initialValue;
     this.form = {
-      ll_desired_regions: [...v.ll_desired_regions],
+      ll_region: v.ll_region ?? '',
       ll_desired_completeness: v.ll_desired_completeness ?? '',
       ll_desired_condition: v.ll_desired_condition ?? '',
       nb_priority: v.nb_priority ? String(v.nb_priority) : '',
@@ -72,20 +74,9 @@ export class WishlistFormModal implements OnInit {
 
   protected form: FormState = emptyForm();
 
-  protected toggleRegion(value: string): void {
-    const regions = this.form.ll_desired_regions;
-    const index = regions.indexOf(value);
-    if (index === -1) regions.push(value);
-    else regions.splice(index, 1);
-  }
-
-  protected isRegionSelected(value: string): boolean {
-    return this.form.ll_desired_regions.includes(value);
-  }
-
   protected submit(): void {
     this.confirmed.emit({
-      ll_desired_regions: this.form.ll_desired_regions,
+      ll_region: this.form.ll_region || null,
       ll_desired_completeness: this.form.ll_desired_completeness || null,
       ll_desired_condition: this.form.ll_desired_condition || null,
       nb_priority: this.form.nb_priority ? Number(this.form.nb_priority) : null,

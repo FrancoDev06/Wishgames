@@ -9,7 +9,7 @@ export interface WishlistCreatePayload {
 	ts_last_checked?: string | null;
 	ll_desired_completeness?: string | null;
 	ll_desired_condition?: string | null;
-	ll_desired_regions?: string[];
+	ll_region?: string | null;
 	nb_priority?: number | null;
 }
 
@@ -77,15 +77,15 @@ export default class WishlistQueries {
 	static async create(payload: WishlistCreatePayload): Promise<WishlistItem> {
 		const result = await DatabaseUtil.query<WishlistItem>(
 			`INSERT INTO ref_wishlist
-			 (id_game, ts_last_checked, ll_desired_completeness, ll_desired_condition, ll_desired_regions, nb_priority)
-			 VALUES ($1, $2, $3, $4, COALESCE($5, '{}'::text[]), $6)
+			 (id_game, ts_last_checked, ll_desired_completeness, ll_desired_condition, ll_region, nb_priority)
+			 VALUES ($1, $2, $3, $4, $5, $6)
 			 RETURNING *`,
 			[
 				payload.id_game,
 				payload.ts_last_checked ?? null,
 				payload.ll_desired_completeness ?? null,
 				payload.ll_desired_condition ?? null,
-				payload.ll_desired_regions ?? null,
+				payload.ll_region ?? null,
 				payload.nb_priority ?? null,
 			]
 		);

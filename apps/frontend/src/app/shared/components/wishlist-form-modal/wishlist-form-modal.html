@@ -7,15 +7,13 @@
 
     <form (ngSubmit)="submit()">
       <label class="modal__field">
-        Régions acceptées
-        <span class="modal__regions">
+        Région de l'édition
+        <select name="region" [(ngModel)]="form.ll_region" [disabled]="!!initialValue || !!lockedRegion">
+          <option value="">Non précisée</option>
           @for (opt of regionOptions; track opt.value) {
-            <label class="modal__region-option">
-              <input type="checkbox" [checked]="isRegionSelected(opt.value)" (change)="toggleRegion(opt.value)" />
-              {{ opt.label }}
-            </label>
+            <option [value]="opt.value">{{ opt.label }}</option>
           }
-        </span>
+        </select>
       </label>
 
       <div class="modal__row">

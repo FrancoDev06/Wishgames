@@ -37,15 +37,13 @@ const IN_COLLECTION_EXPR = `
 	END
 `;
 
-// Une entrée wishlist vaut pour plusieurs régions à la fois (ll_desired_regions, §3.2) : un tableau
-// vide signifie "aucune préférence de région" et vaut donc pour toutes les éditions du jeu.
+// Recherche évaluée pour la région précise de CETTE ligne (cov.ll_region), même logique que
+// IN_COLLECTION_EXPR — une entrée wishlist peut désormais cibler une édition régionale précise,
+// plusieurs entrées possibles pour un même jeu (une par région suivie séparément, §2bis/§9).
 const IN_WISHLIST_EXPR = `
 	CASE WHEN cov.ll_region IS NULL
 		THEN EXISTS (SELECT 1 FROM ref_wishlist rw WHERE rw.id_game = g.id)
-		ELSE EXISTS (
-			SELECT 1 FROM ref_wishlist rw
-			WHERE rw.id_game = g.id AND (rw.ll_desired_regions = '{}' OR cov.ll_region = ANY (rw.ll_desired_regions))
-		)
+		ELSE EXISTS (SELECT 1 FROM ref_wishlist rw WHERE rw.id_game = g.id AND rw.ll_region = cov.ll_region)
 	END
 `;
 

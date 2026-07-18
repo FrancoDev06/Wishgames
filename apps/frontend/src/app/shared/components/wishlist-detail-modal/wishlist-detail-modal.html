@@ -17,10 +17,10 @@
           <dd>{{ item.nb_priority }}/5</dd>
         </div>
       }
-      @if (item.ll_desired_regions.length) {
+      @if (item.ll_region) {
         <div class="detail-row">
-          <dt>Régions acceptées</dt>
-          <dd>{{ regionsLabel() }}</dd>
+          <dt>Édition recherchée</dt>
+          <dd>{{ regionLabel() }}</dd>
         </div>
       }
       @if (item.ll_desired_completeness) {

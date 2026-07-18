@@ -9,7 +9,7 @@ import { WishlistStatus } from '../constants/wishlist-status.constants';
 
 export interface WishlistCreatePayload {
   id_game: string;
-  ll_desired_regions?: string[];
+  ll_region?: string | null;
   ll_desired_completeness?: string | null;
   ll_desired_condition?: string | null;
   nb_priority?: number | null;

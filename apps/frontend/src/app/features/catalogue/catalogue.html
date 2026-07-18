@@ -183,7 +183,7 @@
     [subtitle]="target.console_name + (regionLabel(target) ? ' · ' + regionLabel(target) : '')"
     confirmLabel="Ajouter à la wishlist"
     [submitting]="wishlistSubmitting()"
-    [preselectedRegions]="target.region ? [target.region] : []"
+    [lockedRegion]="target.region"
     (confirmed)="submitAddToWishlist($event)"
     (cancelled)="closeAddToWishlist()"
   />

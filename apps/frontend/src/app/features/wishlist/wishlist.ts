@@ -12,7 +12,7 @@ import { ConfirmModal } from '../../shared/components/confirm-modal/confirm-moda
 import { WishlistKanban, KanbanCardData } from '../../shared/components/wishlist-kanban/wishlist-kanban';
 import { WishlistPriceView } from '../../shared/components/wishlist-price-view/wishlist-price-view';
 import { resolveCoverUrl } from '../../core/utils/cover-url.util';
-import { completenessLabel, conditionLabel } from '../../core/constants/game-state.constants';
+import { completenessLabel, conditionLabel, regionLabel } from '../../core/constants/game-state.constants';
 import { WishlistStatus } from '../../core/constants/wishlist-status.constants';
 
 export type ViewMode = 'grid' | 'list';
@@ -142,8 +142,8 @@ export class Wishlist implements OnInit {
     return resolveCoverUrl(item.cover_front_url, this.coverOrigin);
   }
 
-  protected regionsLabel(item: WishlistItem): string {
-    return item.ll_desired_regions.join(' · ');
+  protected regionLabel(value: string | null): string {
+    return regionLabel(value);
   }
 
   protected completenessLabel(value: string): string {
@@ -183,7 +183,7 @@ export class Wishlist implements OnInit {
 
   protected asEditValue(item: WishlistItem): WishlistFormValue {
     return {
-      ll_desired_regions: item.ll_desired_regions,
+      ll_region: item.ll_region,
       ll_desired_completeness: item.ll_desired_completeness,
       ll_desired_condition: item.ll_desired_condition,
       nb_priority: item.nb_priority,

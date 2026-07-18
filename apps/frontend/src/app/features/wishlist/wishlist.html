@@ -83,8 +83,11 @@
                 <div class="card__body">
                   <h3 class="card__title">{{ item.title }}</h3>
 
-                  @if (item.ll_desired_completeness || item.ll_desired_condition) {
+                  @if (item.ll_region || item.ll_desired_completeness || item.ll_desired_condition) {
                     <div class="badges">
+                      @if (item.ll_region) {
+                        <span class="badge badge--region">{{ regionLabel(item.ll_region) }}</span>
+                      }
                       @if (item.ll_desired_completeness) {
                         <span class="badge badge--completeness">{{ completenessLabel(item.ll_desired_completeness) }}</span>
                       }
@@ -103,10 +106,6 @@
                       </span>
                       <span class="priority__label">Priorité {{ item.nb_priority }}/5</span>
                     </div>
-                  }
-
-                  @if (item.ll_desired_regions.length) {
-                    <div class="regions">{{ regionsLabel(item) }}</div>
                   }
 
                   @if (item.nb_offers) {
@@ -130,8 +129,11 @@
                   <h3 class="row__title">{{ item.title }}</h3>
 
                   <div class="row__meta">
-                    @if (item.ll_desired_completeness || item.ll_desired_condition) {
+                    @if (item.ll_region || item.ll_desired_completeness || item.ll_desired_condition) {
                       <div class="badges">
+                        @if (item.ll_region) {
+                          <span class="badge badge--region">{{ regionLabel(item.ll_region) }}</span>
+                        }
                         @if (item.ll_desired_completeness) {
                           <span class="badge badge--completeness">{{ completenessLabel(item.ll_desired_completeness) }}</span>
                         }
@@ -150,10 +152,6 @@
                         </span>
                         <span class="priority__label">Priorité {{ item.nb_priority }}/5</span>
                       </div>
-                    }
-
-                    @if (item.ll_desired_regions.length) {
-                      <div class="regions">{{ regionsLabel(item) }}</div>
                     }
 
                     @if (item.nb_offers) {

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { OffersPanel, OfferItem, OfferFormValue } from '../offers-panel/offers-panel';
 import { WishlistItem } from '../../../core/models/wishlist.model';
-import { completenessLabel, conditionLabel, regionShortLabel } from '../../../core/constants/game-state.constants';
+import { completenessLabel, conditionLabel, regionLabel } from '../../../core/constants/game-state.constants';
 import { toDateInputValue } from '../../../core/utils/date.util';
 
 // Vue détaillée d'un jeu recherché (§3.2), ouverte au clic sur la carte plutôt que d'empiler les
@@ -35,7 +35,7 @@ export class WishlistDetailModal {
     this.closed.emit();
   }
 
-  protected regionsLabel(): string {
-    return this.item.ll_desired_regions.map(regionShortLabel).join(', ');
+  protected regionLabel(): string {
+    return regionLabel(this.item.ll_region);
   }
 }

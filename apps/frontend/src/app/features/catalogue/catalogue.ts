@@ -220,15 +220,10 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
     this.wishlistSubmitting.set(true);
     this.wishlistService.create({ id_game: game.id, ...value }).subscribe({
       next: () => {
-        // Une entrée wishlist vaut pour toutes les régions cochées (ou toutes les éditions si
-        // aucune région précisée) : ne marquer "en wishlist" que les cartes concernées, pas
-        // toutes les éditions du jeu (une ligne par édition régionale désormais, §2bis).
+        // Une entrée wishlist cible une édition régionale précise : ne marquer "en wishlist"
+        // que la carte correspondant à cette région (une ligne par édition régionale, §2bis).
         this.games.update((list) =>
-          list.map((g) =>
-            g.id === game.id && (value.ll_desired_regions.length === 0 || (g.region && value.ll_desired_regions.includes(g.region)))
-              ? { ...g, in_wishlist: true }
-              : g,
-          ),
+          list.map((g) => (g.id === game.id && g.region === game.region ? { ...g, in_wishlist: true } : g)),
         );
         this.notificationService.success(`« ${game.ll_title} » ajouté à la wishlist.`);
         this.wishlistSubmitting.set(false);

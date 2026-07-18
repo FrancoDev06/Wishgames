@@ -1,28 +1,5 @@
 // Chrome commun (fond, carte, champs, boutons génériques) : voir src/styles/_modal.scss.
-// Ici : uniquement ce qui est spécifique à ce formulaire (sélecteur multi-régions, bouton dédié).
-
-.modal__regions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
-.modal__region-option {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  font-weight: 400;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-pill);
-  border: var(--border-width) solid var(--color-border-strong);
-  background: var(--color-bg);
-  cursor: pointer;
-}
-
-.modal__region-option input {
-  width: auto;
-}
+// Ici : uniquement ce qui est spécifique à ce formulaire (bouton dédié).
 
 .btn--wishlist {
   background: var(--color-danger);

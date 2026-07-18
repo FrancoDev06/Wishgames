@@ -6,7 +6,7 @@ export interface WishlistItem {
   ts_last_checked: string | null;
   ll_desired_completeness: string | null;
   ll_desired_condition: string | null;
-  ll_desired_regions: string[];
+  ll_region: string | null;
   nb_priority: number | null;
   ll_status: WishlistStatus;
   ts_create: string;

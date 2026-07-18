@@ -1,9 +1,8 @@
 // Import ponctuel de la wishlist Excel vers ref_wishlist (§2/§3.2 du cahier des charges).
 // Usage : bun run scripts/import-wishlist-excel.ts   (exécuté depuis apps/backend, .env chargé automatiquement par Bun)
 //
-// Une ligne du fichier Excel = (jeu, région). On regroupe les lignes par jeu et on stocke les régions
-// acceptées dans ref_wishlist.ll_desired_regions (décision utilisateur : une seule entrée wishlist par jeu,
-// pour pouvoir comparer les offres entre régions et prendre la moins chère via ref_wishlist_offer).
+// Une ligne du fichier Excel = (jeu, région). On regroupe les lignes par jeu puis on insère une entrée
+// ref_wishlist par région (une ligne par édition régionale suivie séparément, comme ref_collection).
 // Rapprochement avec le catalogue par titre normalisé, exact (pas de matching flou) : les titres non
 // trouvés sont listés dans un rapport, rien n'est inséré pour eux.
 
@@ -137,12 +136,15 @@ async function main() {
 				}
 
 				const idGame = match.rows[0].id;
-				await client.query(
-					`INSERT INTO ref_wishlist (id_game, ll_desired_regions, nb_priority)
-					 VALUES ($1, $2, $3)
-					 ON CONFLICT (id_game) DO UPDATE SET ll_desired_regions = EXCLUDED.ll_desired_regions, nb_priority = EXCLUDED.nb_priority`,
-					[idGame, [...game.regions], game.priority]
-				);
+				const regions = game.regions.size > 0 ? [...game.regions] : [null];
+				for (const region of regions) {
+					await client.query(
+						`INSERT INTO ref_wishlist (id_game, ll_region, nb_priority)
+						 VALUES ($1, $2, $3)
+						 ON CONFLICT (id_game, ll_region) DO UPDATE SET nb_priority = EXCLUDED.nb_priority`,
+						[idGame, region, game.priority]
+					);
+				}
 				totalMatched++;
 			}
 		}
