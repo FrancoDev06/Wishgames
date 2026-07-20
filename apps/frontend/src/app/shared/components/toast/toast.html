@@ -6,7 +6,10 @@
       [class.toast--error]="notification.level === 'error'"
       role="status"
     >
-      <span>{{ notification.message }}</span>
+      <span class="toast__icon" [class.toast__icon--error]="notification.level === 'error'" aria-hidden="true">
+        {{ notification.level === 'error' ? '!' : '✓' }}
+      </span>
+      <span class="toast__message">{{ notification.message }}</span>
       <button type="button" (click)="notificationService.dismiss(notification.id)" aria-label="Fermer la notification">×</button>
     </div>
   }

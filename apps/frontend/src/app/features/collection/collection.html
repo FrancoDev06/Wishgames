@@ -1,108 +1,90 @@
 <section class="browse">
   <header class="browse__header">
-    <h2>Collection</h2>
+    <div>
+      <h2>Collection</h2>
+      <div class="page-subtitle">Ce que tu possèdes déjà</div>
+    </div>
+
     @if (!loading() && !error()) {
-      <span class="browse__count">
-        {{ items().length }} jeu{{ items().length > 1 ? 'x' : '' }} possédé{{ items().length > 1 ? 's' : '' }}
-        · {{ totalSpent() | number: '1.2-2' }} € dépensés
-      </span>
+      @if (tab() === 'jeux') {
+        <span class="browse__count">
+          {{ items().length }} jeu{{ items().length > 1 ? 'x' : '' }} possédé{{ items().length > 1 ? 's' : '' }}
+          · {{ totalSpent() | number: '1.2-2' }} € dépensés
+        </span>
+      } @else {
+        <span class="browse__count">{{ consoleItems().length }} console{{ consoleItems().length > 1 ? 's' : '' }} possédée{{ consoleItems().length > 1 ? 's' : '' }}</span>
+      }
     }
 
-    <div class="browse__view-toggle">
-      <button type="button" [class.active]="viewMode() === 'grid'" (click)="setViewMode('grid')">Grille</button>
-      <button type="button" [class.active]="viewMode() === 'list'" (click)="setViewMode('list')">Liste</button>
+    <div class="header-toggles">
+      <div class="browse__view-toggle">
+        <button type="button" [class.active]="viewMode() === 'grid'" (click)="setViewMode('grid')">Grille</button>
+        <button type="button" [class.active]="viewMode() === 'list'" (click)="setViewMode('list')">Liste</button>
+      </div>
     </div>
   </header>
 
-  @if (!loading() && !error() && items().length > 0) {
-    <div class="filters">
-      <input
-        type="search"
-        class="filters__search"
-        placeholder="Rechercher un titre…"
-        [value]="searchText()"
-        (input)="onSearchChange($any($event.target).value)"
-      />
-
-      <select class="filters__select" [value]="sortBy()" (change)="onSortChange($any($event.target).value)">
-        <option value="date-desc">Date d'acquisition (récent → ancien)</option>
-        <option value="date-asc">Date d'acquisition (ancien → récent)</option>
-        <option value="price-desc">Prix payé (élevé → bas)</option>
-        <option value="price-asc">Prix payé (bas → élevé)</option>
-        <option value="title">Titre (A → Z)</option>
-      </select>
-    </div>
-  }
+  <div class="tabs">
+    <button type="button" class="tabs__item" [class.tabs__item--active]="tab() === 'jeux'" (click)="setTab('jeux')">🎮 Jeux</button>
+    <button type="button" class="tabs__item" [class.tabs__item--active]="tab() === 'consoles'" (click)="setTab('consoles')">🕹️ Consoles</button>
+  </div>
 
   @if (loading()) {
     <p class="browse__status">Chargement…</p>
   } @else if (error()) {
     <p class="browse__status browse__status--error">{{ error() }}</p>
-  } @else if (items().length === 0) {
-    <p class="browse__status">Aucun jeu dans la collection pour l'instant.</p>
-  } @else if (groups().length === 0) {
-    <p class="browse__status">Aucun jeu ne correspond à cette recherche.</p>
-  } @else {
-    @for (group of groups(); track group.consoleName) {
-      <section class="console-group">
-        <h3 class="console-group__title">
-          {{ group.consoleName }}
-          <span class="console-group__count">{{ group.items.length }}</span>
-        </h3>
+  } @else if (tab() === 'jeux') {
+    @if (items().length > 0) {
+      <div class="filters">
+        <input
+          type="search"
+          class="filters__search"
+          placeholder="Rechercher un titre…"
+          [value]="searchText()"
+          (input)="onSearchChange($any($event.target).value)"
+        />
 
-        @if (viewMode() === 'grid') {
-          <div class="browse-grid">
-            @for (item of group.items; track item.id) {
-              <article class="card">
-                @if (coverUrl(item); as url) {
-                  <img class="card__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
-                } @else {
-                  <div class="card__cover card__cover--placeholder">{{ group.consoleName }}</div>
-                }
+        <select class="filters__select" [value]="sortBy()" (change)="onSortChange($any($event.target).value)">
+          <option value="date-desc">Date d'acquisition (récent → ancien)</option>
+          <option value="date-asc">Date d'acquisition (ancien → récent)</option>
+          <option value="price-desc">Prix payé (élevé → bas)</option>
+          <option value="price-asc">Prix payé (bas → élevé)</option>
+          <option value="title">Titre (A → Z)</option>
+        </select>
+      </div>
+    }
 
-                <div class="card__body">
-                  <h3 class="card__title">{{ item.title }}</h3>
+    @if (items().length === 0) {
+      <p class="browse__status">Aucun jeu dans la collection pour l'instant.</p>
+    } @else if (groups().length === 0) {
+      <p class="browse__status">Aucun jeu ne correspond à cette recherche.</p>
+    } @else {
+      @for (group of groups(); track group.consoleName) {
+        <section class="console-group">
+          <h3 class="console-group__title">
+            {{ group.consoleName }}
+            <span class="console-group__count">{{ group.items.length }}</span>
+          </h3>
 
-                  <div class="badges">
-                    @if (item.ll_region) {
-                      <span class="badge badge--region">{{ regionLabel(item.ll_region) }}</span>
-                    }
-                    <span class="badge badge--completeness">{{ completenessLabel(item.ll_completeness) }}</span>
-                    <span class="badge badge--condition">{{ conditionLabel(item.ll_condition_overall) }}</span>
-                    @if (item.nb_quantity > 1) {
-                      <span class="badge badge--quantity">×{{ item.nb_quantity }}</span>
-                    }
-                  </div>
-
-                  @if (item.nb_price_paid !== null) {
-                    <div class="price">{{ item.nb_price_paid | number: '1.2-2' }} €</div>
+          @if (viewMode() === 'grid') {
+            <div class="browse-grid">
+              @for (item of group.items; track item.id) {
+                <article class="card">
+                  @if (coverUrl(item); as url) {
+                    <img class="card__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
+                  } @else {
+                    <div class="card__cover card__cover--placeholder">{{ group.consoleName }}</div>
                   }
 
-                  <div class="item-actions">
-                    <button type="button" class="edit-btn" (click)="openEdit(item)">Modifier</button>
-                    <button type="button" class="delete-btn" (click)="openDelete(item)">Supprimer</button>
-                  </div>
-                </div>
-              </article>
-            }
-          </div>
-        } @else {
-          <div class="browse-list">
-            @for (item of group.items; track item.id) {
-              <article class="row">
-                @if (coverUrl(item); as url) {
-                  <img class="row__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
-                } @else {
-                  <div class="row__cover row__cover--placeholder">{{ group.consoleName }}</div>
-                }
+                  <div class="card__body">
+                    <h3 class="card__title">{{ item.title }}</h3>
 
-                <div class="row__body">
-                  <h3 class="row__title">{{ item.title }}</h3>
-
-                  <div class="row__meta">
                     <div class="badges">
-                      <span class="badge badge--completeness">{{ completenessLabel(item.ll_completeness) }}</span>
-                      <span class="badge badge--condition">{{ conditionLabel(item.ll_condition_overall) }}</span>
+                      @if (item.ll_region) {
+                        <span class="badge" [style.background]="regionColor(item.ll_region)">{{ regionLabel(item.ll_region) }}</span>
+                      }
+                      <span class="badge" [style.background]="completenessColor(item.ll_completeness)">{{ completenessLabel(item.ll_completeness) }}</span>
+                      <span class="badge" [style.background]="conditionColor(item.ll_condition_overall)">{{ conditionLabel(item.ll_condition_overall) }}</span>
                       @if (item.nb_quantity > 1) {
                         <span class="badge badge--quantity">×{{ item.nb_quantity }}</span>
                       }
@@ -117,11 +99,172 @@
                       <button type="button" class="delete-btn" (click)="openDelete(item)">Supprimer</button>
                     </div>
                   </div>
+                </article>
+              }
+            </div>
+          } @else {
+            <div class="browse-list">
+              @for (item of group.items; track item.id) {
+                <article class="row">
+                  @if (coverUrl(item); as url) {
+                    <img class="row__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
+                  } @else {
+                    <div class="row__cover row__cover--placeholder">{{ group.consoleName }}</div>
+                  }
+
+                  <div class="row__body">
+                    <h3 class="row__title">{{ item.title }}</h3>
+
+                    <div class="row__meta">
+                      <div class="badges">
+                        @if (item.ll_region) {
+                          <span class="badge" [style.background]="regionColor(item.ll_region)">{{ regionLabel(item.ll_region) }}</span>
+                        }
+                        <span class="badge" [style.background]="completenessColor(item.ll_completeness)">{{ completenessLabel(item.ll_completeness) }}</span>
+                        <span class="badge" [style.background]="conditionColor(item.ll_condition_overall)">{{ conditionLabel(item.ll_condition_overall) }}</span>
+                        @if (item.nb_quantity > 1) {
+                          <span class="badge badge--quantity">×{{ item.nb_quantity }}</span>
+                        }
+                      </div>
+
+                      @if (item.nb_price_paid !== null) {
+                        <div class="price">{{ item.nb_price_paid | number: '1.2-2' }} €</div>
+                      }
+
+                      <div class="item-actions">
+                        <button type="button" class="edit-btn" (click)="openEdit(item)">Modifier</button>
+                        <button type="button" class="delete-btn" (click)="openDelete(item)">Supprimer</button>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+        </section>
+      }
+    }
+  } @else {
+    @if (consoleItems().length > 0) {
+      <section class="console-section">
+        <h3 class="console-section__title">Ma collection</h3>
+
+        @if (viewMode() === 'grid') {
+          <div class="console-grid">
+            @for (item of consoleItems(); track item.id) {
+              <article class="console-card">
+                <div class="console-card__banner" [style.background]="consoleColor(item.console_slug)">
+                  <span class="console-card__banner-name">{{ item.console_name }}</span>
+                  @if (item.nb_quantity > 1) {
+                    <span class="console-card__qty">×{{ item.nb_quantity }}</span>
+                  }
+                </div>
+
+                <div class="console-card__body">
+                  <div class="badges">
+                    <span class="badge" [style.background]="completenessColor(item.ll_completeness)">{{ completenessLabel(item.ll_completeness) }}</span>
+                    <span class="badge" [style.background]="conditionColor(item.ll_condition_overall)">{{ conditionLabel(item.ll_condition_overall) }}</span>
+                    @if (item.ll_video_standard) {
+                      <span class="badge badge--video">{{ videoStandardLabel(item.ll_video_standard) }}</span>
+                    }
+                  </div>
+
+                  <dl class="detail-rows">
+                    <div class="detail-row">
+                      <dt>Câbles</dt>
+                      <dd [class.on]="item.flag_with_cables">{{ item.flag_with_cables ? 'Présents' : 'Absents' }}</dd>
+                    </div>
+                    <div class="detail-row">
+                      <dt>Manette</dt>
+                      <dd [class.on]="item.flag_with_controller">{{ item.flag_with_controller ? 'Présente' : 'Absente' }}</dd>
+                    </div>
+                    @if (item.nb_price_paid !== null) {
+                      <div class="detail-row">
+                        <dt>Prix payé</dt>
+                        <dd>{{ item.nb_price_paid }} €</dd>
+                      </div>
+                    }
+                    @if (item.ll_purchase_location) {
+                      <div class="detail-row">
+                        <dt>Lieu d'achat</dt>
+                        <dd>{{ item.ll_purchase_location }}</dd>
+                      </div>
+                    }
+                    @if (item.ts_acquired) {
+                      <div class="detail-row">
+                        <dt>Acquise le</dt>
+                        <dd>{{ formatDate(item.ts_acquired) }}</dd>
+                      </div>
+                    }
+                  </dl>
+
+                  @if (item.ll_notes) {
+                    <p class="notes-block">{{ item.ll_notes }}</p>
+                  }
+
+                  <div class="item-actions">
+                    <button type="button" class="edit-btn" (click)="openEditConsole(item)">Modifier</button>
+                    <button type="button" class="delete-btn" (click)="openDeleteConsole(item)">Supprimer</button>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="console-list">
+            @for (item of consoleItems(); track item.id) {
+              <article class="console-row" [style.border-left-color]="consoleColor(item.console_slug)">
+                <div class="console-row__main">
+                  <h4 class="console-row__name">{{ item.console_name }}</h4>
+                  @if (item.nb_quantity > 1) {
+                    <span class="badge badge--quantity">×{{ item.nb_quantity }}</span>
+                  }
+                  <div class="badges">
+                    <span class="badge" [style.background]="completenessColor(item.ll_completeness)">{{ completenessLabel(item.ll_completeness) }}</span>
+                    <span class="badge" [style.background]="conditionColor(item.ll_condition_overall)">{{ conditionLabel(item.ll_condition_overall) }}</span>
+                    @if (item.ll_video_standard) {
+                      <span class="badge badge--video">{{ videoStandardLabel(item.ll_video_standard) }}</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="console-row__meta">
+                  @if (item.nb_price_paid !== null) {
+                    <span class="price">{{ item.nb_price_paid }} €</span>
+                  }
+                  @if (item.ts_acquired) {
+                    <span class="console-row__date">{{ formatDate(item.ts_acquired) }}</span>
+                  }
+                  <div class="item-actions">
+                    <button type="button" class="edit-btn" (click)="openEditConsole(item)">Modifier</button>
+                    <button type="button" class="delete-btn" (click)="openDeleteConsole(item)">Supprimer</button>
+                  </div>
                 </div>
               </article>
             }
           </div>
         }
+      </section>
+    } @else {
+      <p class="browse__status">Aucune console dans la collection pour l'instant.</p>
+    }
+
+    @if (consolesToAdd().length > 0) {
+      <section class="console-section">
+        <h3 class="console-section__title">Ajouter une console</h3>
+        <div class="console-tiles">
+          @for (console of consolesToAdd(); track console.id) {
+            <button type="button" class="console-pick-card" [attr.title]="console.ll_name" (click)="openAddConsole(console)">
+              <div class="console-pick-card__cover">
+                <img [src]="consolePhotoUrl(console.ll_slug)" (error)="hidePhoto($event)" alt="" loading="lazy" />
+              </div>
+              <div class="console-pick-card__body">
+                <h4 class="console-pick-card__name">{{ console.ll_name }}</h4>
+                <div class="console-pick-card__slug">{{ console.ll_slug }}</div>
+              </div>
+            </button>
+          }
+        </div>
       </section>
     }
   }
@@ -147,5 +290,37 @@
     [submitting]="deleteSubmitting()"
     (confirmed)="confirmDelete()"
     (cancelled)="closeDelete()"
+  />
+}
+
+@if (addConsoleTarget(); as target) {
+  <app-console-form-modal
+    [heading]="'Ajouter « ' + target.ll_name + ' » à la collection'"
+    confirmLabel="Ajouter"
+    [submitting]="addConsoleSubmitting()"
+    (confirmed)="submitAddConsole($event)"
+    (cancelled)="closeAddConsole()"
+  />
+}
+
+@if (editConsoleTarget(); as target) {
+  <app-console-form-modal
+    [heading]="'Modifier « ' + target.console_name + ' »'"
+    confirmLabel="Enregistrer"
+    [submitting]="editConsoleSubmitting()"
+    [initialValue]="asConsoleEditValue(target)"
+    (confirmed)="submitEditConsole($event)"
+    (cancelled)="closeEditConsole()"
+  />
+}
+
+@if (deleteConsoleTarget(); as target) {
+  <app-confirm-modal
+    heading="Supprimer de la collection ?"
+    [message]="'« ' + target.console_name + ' » sera définitivement supprimée de ta collection.'"
+    confirmLabel="Supprimer"
+    [submitting]="deleteConsoleSubmitting()"
+    (confirmed)="confirmDeleteConsole()"
+    (cancelled)="closeDeleteConsole()"
   />
 }

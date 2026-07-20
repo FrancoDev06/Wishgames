@@ -3,13 +3,23 @@ import { DecimalPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environments';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { PlatformService } from '../../core/services/platform.service';
 import { ActivityKind, ActivityLogEntry, ConsoleBreakdown, DashboardData } from '../../core/models/dashboard.model';
+import { ConsoleOption } from '../../core/models/game.model';
 import { resolveCoverUrl } from '../../core/utils/cover-url.util';
 import { timeAgo, dayBucket, DAY_BUCKET_LABEL, DayBucket } from '../../core/utils/date.util';
 import { animateCount } from '../../core/utils/animate-count.util';
 import { consoleColor } from '../../core/constants/console-colors.constant';
 import { ACTIVITY_ACTION_ICON, ACTIVITY_KIND_OPTIONS } from '../../core/constants/activity-icons.constant';
 import { DonutChart, DonutSlice } from '../../shared/components/donut-chart/donut-chart';
+
+interface CompletionItem {
+  consoleSlug: string;
+  consoleName: string;
+  owned: number;
+  total: number;
+  pct: number;
+}
 
 interface DisplayedStats {
   collectionGames: number;
@@ -40,8 +50,11 @@ const ACTIVITY_PAGE_SIZE = 15;
 })
 export class Dashboard implements OnInit {
   private readonly dashboardService = inject(DashboardService);
+  private readonly platformService = inject(PlatformService);
   private readonly router = inject(Router);
   private readonly coverOrigin = environment.apiOrigin;
+
+  private readonly allConsoles = signal<ConsoleOption[]>([]);
 
   protected readonly data = signal<DashboardData | null>(null);
   protected readonly loading = signal(true);
@@ -67,6 +80,23 @@ export class Dashboard implements OnInit {
   });
 
   protected readonly maxOwned = computed(() => Math.max(1, ...this.byConsole().map((row) => row.nb_owned)));
+
+  // Progression de complétion par console : jeux possédés / total au catalogue pour cette console
+  // (ConsoleOption.nb_games, déjà utilisé par le picker Catalogue) — jointure par slug.
+  protected readonly completionItems = computed<CompletionItem[]>(() => {
+    const totals = new Map(this.allConsoles().map((c) => [c.ll_slug, c.nb_games]));
+    return this.byConsole()
+      .map((row) => {
+        const total = totals.get(row.console_slug) ?? row.nb_owned;
+        return {
+          consoleSlug: row.console_slug,
+          consoleName: row.console_name,
+          owned: row.nb_owned,
+          total,
+          pct: total > 0 ? Math.round((row.nb_owned / total) * 100) : 0,
+        };
+      });
+  });
 
   // Donut Collection / Wishlist / reste du catalogue (retour utilisateur, refonte §3.4) — ne
   // remplace PAS la barre par console ci-dessus (17 tranches y serait illisible, cf. skill dataviz),
@@ -107,6 +137,10 @@ export class Dashboard implements OnInit {
   ngOnInit(): void {
     this.fetch();
     this.loadActivity(true);
+    this.platformService.list().subscribe({
+      next: (response) => this.allConsoles.set(response.data),
+      error: () => undefined, // pas bloquant : la progression par console reste vide
+    });
   }
 
   private fetch(): void {

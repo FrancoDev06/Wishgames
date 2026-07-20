@@ -1,6 +1,7 @@
 <section class="dashboard">
   <header class="dashboard__header">
     <h2>Dashboard</h2>
+    <div class="page-subtitle">Vue d'ensemble de ta collection</div>
   </header>
 
   @if (loading()) {
@@ -8,54 +9,73 @@
   } @else if (error()) {
     <p class="dashboard__status dashboard__status--error">{{ error() }}</p>
   } @else if (data(); as d) {
-    <div class="stat-hero">
-      <span class="stat-hero__icon" aria-hidden="true">💰</span>
-      <div class="stat-hero__body">
-        <div class="stat-hero__label">Budget total dépensé</div>
-        <div class="stat-hero__value">{{ formatPrice(displayedStats().totalSpent) }}</div>
+    <div class="hairline-grid">
+      <div class="hairline-grid__cell">
+        <div class="hairline-grid__label">Items possédés</div>
+        <div class="hairline-grid__value">{{ displayedStats().collectionGames + displayedStats().collectionConsoles | number: '1.0-0' }}</div>
+      </div>
+      <div class="hairline-grid__cell hairline-grid__cell--emphasized">
+        <div class="hairline-grid__label">Valeur totale</div>
+        <div class="hairline-grid__value">{{ formatPrice(displayedStats().totalSpent) }}</div>
+      </div>
+      <div class="hairline-grid__cell">
+        <div class="hairline-grid__label">Jeux possédés</div>
+        <div class="hairline-grid__value">{{ displayedStats().collectionGames | number: '1.0-0' }}</div>
+      </div>
+      <div class="hairline-grid__cell">
+        <div class="hairline-grid__label">Consoles possédées</div>
+        <div class="hairline-grid__value">{{ displayedStats().collectionConsoles | number: '1.0-0' }}</div>
       </div>
     </div>
-    <div class="stat-minis">
-      <div class="stat-mini"><span aria-hidden="true">💿</span><span class="stat-mini__value">{{ displayedStats().collectionGames | number: '1.0-0' }}</span><span class="stat-mini__label">Collection</span></div>
-      <div class="stat-mini"><span aria-hidden="true">⭐</span><span class="stat-mini__value">{{ displayedStats().wishlistGames | number: '1.0-0' }}</span><span class="stat-mini__label">Wishlist</span></div>
-      <div class="stat-mini"><span aria-hidden="true">🎮</span><span class="stat-mini__value">{{ displayedStats().collectionConsoles | number: '1.0-0' }}</span><span class="stat-mini__label">Consoles possédées</span></div>
-      <div class="stat-mini"><span aria-hidden="true">🔍</span><span class="stat-mini__value">{{ displayedStats().wishlistConsoles | number: '1.0-0' }}</span><span class="stat-mini__label">Consoles recherchées</span></div>
+
+    <div class="dashboard__charts">
+      <div class="dashboard__chart-panel">
+        <h3 class="dashboard__section-title">Répartition des jeux par console</h3>
+
+        @if (byConsole().length === 0) {
+          <p class="dashboard__empty">
+            Aucun jeu classé pour l'instant — <a routerLink="/catalogue">parcours le catalogue</a> pour commencer ta collection.
+          </p>
+        } @else {
+          <div class="console-chart" role="img" aria-label="Nombre de jeux possédés par console">
+            @for (row of byConsole(); track row.console_slug; let i = $index) {
+              <div class="console-chart__col">
+                <div
+                  class="console-chart__bar"
+                  [class.console-chart__bar--top]="i === 0"
+                  [style.height.%]="barWidth(row)"
+                  [title]="row.console_name + ' : ' + row.nb_owned"
+                ></div>
+                <div class="console-chart__label">{{ row.console_name }}</div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="dashboard__chart-panel">
+        <h3 class="dashboard__section-title">Répartition du catalogue</h3>
+        <app-donut-chart [slices]="catalogueSplit()" />
+      </div>
     </div>
 
-    <section class="dashboard__section">
-      <h3 class="dashboard__section-title">Répartition du catalogue</h3>
-      <app-donut-chart [slices]="catalogueSplit()" />
-    </section>
+    @if (completionItems().length > 0) {
+      <section class="dashboard__section dashboard__section--card">
+        <h3 class="dashboard__section-title">Progression de complétion par console</h3>
 
-    <section class="dashboard__section">
-      <h3 class="dashboard__section-title">Répartition par console</h3>
-
-      @if (byConsole().length === 0) {
-        <p class="dashboard__empty">
-          Aucun jeu classé pour l'instant — <a routerLink="/catalogue">parcours le catalogue</a> pour commencer ta collection.
-        </p>
-      } @else {
-        <table class="console-breakdown">
-          <caption class="sr-only">Nombre de jeux possédés par console</caption>
-          <tbody>
-            @for (row of byConsole(); track row.console_slug) {
-              <tr>
-                <th scope="row" class="console-breakdown__name">
-                  <span class="console-breakdown__swatch" [style.background]="consoleColor(row.console_slug)" aria-hidden="true"></span>
-                  {{ row.console_name }}
-                </th>
-                <td class="console-breakdown__bar-cell">
-                  <div class="console-breakdown__bar-track">
-                    <div class="console-breakdown__bar" [style.width.%]="barWidth(row)"></div>
-                  </div>
-                </td>
-                <td class="console-breakdown__value">{{ row.nb_owned }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-    </section>
+        @for (item of completionItems(); track item.consoleSlug) {
+          <div class="completion-row">
+            <div class="completion-row__head">
+              <span>{{ item.consoleName }}</span>
+              <span class="completion-row__fraction">{{ item.owned }}/{{ item.total }}</span>
+            </div>
+            <div class="completion-bar">
+              <div class="completion-bar__fill" [style.width.%]="item.pct"></div>
+            </div>
+          </div>
+        }
+      </section>
+    }
 
     <section class="dashboard__section">
       <h3 class="dashboard__section-title">Activité récente</h3>

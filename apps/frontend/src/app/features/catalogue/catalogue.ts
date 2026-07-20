@@ -1,28 +1,38 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
-import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environments';
 import { GameService, GameStatusFilter } from '../../core/services/game.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { WishlistService } from '../../core/services/wishlist.service';
 import { CollectionService } from '../../core/services/collection.service';
+import { ConsoleCollectionService } from '../../core/services/console-collection.service';
+import { ConsoleWishlistService } from '../../core/services/console-wishlist.service';
+import { DashboardService } from '../../core/services/dashboard.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { GameListItem, ConsoleOption } from '../../core/models/game.model';
 import { CollectionFormModal, CollectionFormValue } from '../../shared/components/collection-form-modal/collection-form-modal';
 import { WishlistFormModal, WishlistFormValue } from '../../shared/components/wishlist-form-modal/wishlist-form-modal';
 import { GameDetailModal } from '../../shared/components/game-detail-modal/game-detail-modal';
+import { ConsoleFormModal, ConsoleFormValue } from '../../shared/components/console-form-modal/console-form-modal';
+import {
+  ConsoleWishlistFormModal,
+  ConsoleWishlistFormValue,
+} from '../../shared/components/console-wishlist-form-modal/console-wishlist-form-modal';
 import { consoleColor } from '../../core/constants/console-colors.constant';
 import { resolveCoverUrl } from '../../core/utils/cover-url.util';
 import { consolePhotoUrl } from '../../core/utils/console-photo.util';
 import { regionShortLabel } from '../../core/constants/game-state.constants';
 
+export type Tab = 'jeux' | 'consoles';
 export type ViewMode = 'grid' | 'list';
 export type StatusOption = GameStatusFilter | 'all';
+export type ConsoleStatusOption = 'all' | 'owned' | 'not-owned';
 
 const PAGE_SIZE = 60;
 
 @Component({
   selector: 'app-catalogue',
-  imports: [CollectionFormModal, WishlistFormModal, GameDetailModal],
+  imports: [CollectionFormModal, WishlistFormModal, GameDetailModal, ConsoleFormModal, ConsoleWishlistFormModal],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.scss',
 })
@@ -31,8 +41,13 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   private readonly platformService = inject(PlatformService);
   private readonly wishlistService = inject(WishlistService);
   private readonly collectionService = inject(CollectionService);
+  private readonly consoleCollectionService = inject(ConsoleCollectionService);
+  private readonly consoleWishlistService = inject(ConsoleWishlistService);
+  private readonly dashboardService = inject(DashboardService);
   private readonly notificationService = inject(NotificationService);
   private readonly coverOrigin = environment.apiOrigin;
+
+  protected readonly tab = signal<Tab>('jeux');
 
   @ViewChild('sentinel') private sentinelRef?: ElementRef<HTMLDivElement>;
   private observer?: IntersectionObserver;
@@ -78,10 +93,146 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
     return consolePhotoUrl(slug, this.coverOrigin);
   }
 
+  // Pas de garantie que la photo existe (consolePhotoUrl construit toujours une URL) : si elle
+  // 404, on la masque pour laisser voir le fond coloré derrière plutôt que l'icône d'image cassée.
+  protected hidePhoto(event: Event): void {
+    (event.target as HTMLImageElement).style.visibility = 'hidden';
+  }
+
+  // Nombre de jeux possédés par console (DashboardService.by_console) — sert à afficher, sur les
+  // tuiles du picker "par console" du tab Jeux, un badge possédé + une fraction "X/Y jeux" plutôt
+  // que le simple total au catalogue, cf. maquette (Catalogue owned badge + fraction).
+  private readonly ownedGamesByConsole = signal<Map<string, number>>(new Map());
+
+  protected ownedGamesFor(slug: string): number {
+    return this.ownedGamesByConsole().get(slug) ?? 0;
+  }
+
+  // ---------- Onglet Consoles : référence complète (PlatformService), pas de drill-down (une
+  // seule ligne par console, pas d'édition régionale pour le matériel, §9) ----------
+  protected readonly consolesLoading = signal(true);
+  protected readonly consoleSearchText = signal('');
+  protected readonly consoleStatusFilter = signal<ConsoleStatusOption>('all');
+
+  private readonly ownedConsoleIds = signal<Set<string>>(new Set());
+  private readonly wishlistedConsoleIds = signal<Set<string>>(new Set());
+
+  protected readonly filteredConsoles = computed(() => {
+    const search = this.consoleSearchText().trim().toLowerCase();
+    const status = this.consoleStatusFilter();
+    const owned = this.ownedConsoleIds();
+
+    return this.consoles()
+      .filter((c) => (search ? c.ll_name.toLowerCase().includes(search) : true))
+      .filter((c) => {
+        if (status === 'owned') return owned.has(c.id);
+        if (status === 'not-owned') return !owned.has(c.id);
+        return true;
+      });
+  });
+
+  protected readonly addConsoleTarget = signal<ConsoleOption | null>(null);
+  protected readonly addConsoleSubmitting = signal(false);
+
+  protected readonly wishlistConsoleTarget = signal<ConsoleOption | null>(null);
+  protected readonly wishlistConsoleSubmitting = signal(false);
+
+  protected isConsoleOwned(console: ConsoleOption): boolean {
+    return this.ownedConsoleIds().has(console.id);
+  }
+
+  protected isConsoleWishlisted(console: ConsoleOption): boolean {
+    return this.wishlistedConsoleIds().has(console.id);
+  }
+
+  protected setTab(tab: Tab): void {
+    this.tab.set(tab);
+  }
+
+  protected setConsoleSearchText(value: string): void {
+    this.consoleSearchText.set(value);
+  }
+
+  protected setConsoleStatusFilter(status: ConsoleStatusOption): void {
+    this.consoleStatusFilter.set(status);
+  }
+
+  protected openAddConsoleToCollection(console: ConsoleOption): void {
+    this.addConsoleTarget.set(console);
+  }
+
+  protected closeAddConsoleToCollection(): void {
+    this.addConsoleTarget.set(null);
+  }
+
+  protected submitAddConsoleToCollection(value: ConsoleFormValue): void {
+    const console = this.addConsoleTarget();
+    if (!console) return;
+
+    this.addConsoleSubmitting.set(true);
+    this.consoleCollectionService.create({ id_console: console.id, ...value }).subscribe({
+      next: () => {
+        this.ownedConsoleIds.update((set) => new Set(set).add(console.id));
+        this.notificationService.success(`« ${console.ll_name} » ajoutée à la collection.`);
+        this.addConsoleSubmitting.set(false);
+        this.closeAddConsoleToCollection();
+      },
+      error: () => {
+        this.notificationService.error("Échec de l'ajout de la console.");
+        this.addConsoleSubmitting.set(false);
+      },
+    });
+  }
+
+  protected openAddConsoleToWishlist(console: ConsoleOption): void {
+    this.wishlistConsoleTarget.set(console);
+  }
+
+  protected closeAddConsoleToWishlist(): void {
+    this.wishlistConsoleTarget.set(null);
+  }
+
+  protected submitAddConsoleToWishlist(value: ConsoleWishlistFormValue): void {
+    const console = this.wishlistConsoleTarget();
+    if (!console) return;
+
+    this.wishlistConsoleSubmitting.set(true);
+    this.consoleWishlistService.create({ id_console: console.id, ...value }).subscribe({
+      next: () => {
+        this.wishlistedConsoleIds.update((set) => new Set(set).add(console.id));
+        this.notificationService.success(`« ${console.ll_name} » ajoutée à la wishlist.`);
+        this.wishlistConsoleSubmitting.set(false);
+        this.closeAddConsoleToWishlist();
+      },
+      error: () => {
+        this.notificationService.error("Échec de l'ajout à la wishlist.");
+        this.wishlistConsoleSubmitting.set(false);
+      },
+    });
+  }
+
   ngOnInit(): void {
-    this.platformService.list().subscribe({
-      next: (response) => this.consoles.set(response.data),
-      error: () => undefined, // le filtre console reste vide, pas bloquant pour le catalogue
+    forkJoin({
+      consoles: this.platformService.list(),
+      collection: this.consoleCollectionService.list(),
+      wishlist: this.consoleWishlistService.list(),
+    }).subscribe({
+      next: ({ consoles, collection, wishlist }) => {
+        this.consoles.set(consoles.data);
+        this.ownedConsoleIds.set(new Set(collection.data.map((i) => i.id_console)));
+        this.wishlistedConsoleIds.set(new Set(wishlist.data.map((i) => i.id_console)));
+        this.consolesLoading.set(false);
+      },
+      error: () => {
+        this.consolesLoading.set(false); // le filtre console reste vide, pas bloquant pour l'onglet Jeux
+      },
+    });
+
+    this.dashboardService.get().subscribe({
+      next: (response) => {
+        this.ownedGamesByConsole.set(new Map(response.data.by_console.map((row) => [row.console_slug, row.nb_owned])));
+      },
+      error: () => undefined, // pas bloquant : les tuiles retombent sur le total au catalogue seul
     });
 
     this.searchInput$.pipe(debounceTime(300), distinctUntilChanged()).subscribe(() => this.fetchPage(true));

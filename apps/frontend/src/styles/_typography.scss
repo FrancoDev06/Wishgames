@@ -39,14 +39,27 @@ h6 {
 h1 {
   font-size: var(--text-3xl);
 }
+
+// Titre de page (Dashboard/Collection/Catalogue/Wishlist utilisent tous <h2> comme titre
+// principal) : 26px/800/-0.02em, cf. maquette "Éditorial aurora chromée".
 h2 {
-  font-size: var(--text-2xl);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 h3 {
   font-size: var(--text-xl);
 }
 h4 {
   font-size: var(--text-lg);
+}
+
+// Sous-titre de page, sous le <h2>, cf. maquette ("Vue d'ensemble de ta collection", etc.).
+.page-subtitle {
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-top: 2px;
 }
 
 small {

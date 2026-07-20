@@ -36,157 +36,96 @@
   margin: 0 0 var(--space-4);
 }
 
-// ---------- Stat tiles (KPI row, §3.4) ----------
-// Le budget n'est pas un compteur comme les autres (texte structurellement plus long,
-// donnee la plus importante de la rangee) : il a sa propre carte pleine largeur, avec une
-// taille de police genereuse puisqu'il n'a plus a partager sa case avec un simple "0" ou "1".
-// Les 4 compteurs restent groupes, compacts, en dessous. overflow-wrap en filet de securite
-// pour ne jamais deborder de sa carte meme sur un montant extreme.
-.stat-hero {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
+// ---------- Panneau à deux colonnes (barres par console + donut), grille hairline 58/42 ----------
+.dashboard__charts {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 2px;
+  background: var(--color-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.dashboard__chart-panel {
+  background: var(--color-bg);
   padding: var(--space-5);
-  margin-bottom: var(--space-3);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--color-success) 14%, var(--color-bg-elevated)), var(--color-bg-elevated));
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
 }
 
-.stat-hero__icon {
-  flex: none;
-  width: 52px;
-  height: 52px;
+// ---------- Répartition par console : colonnes, une seule teinte neutre sauf la console la mieux
+// fournie qui ressort en dégradé accent (cf. maquette). Le nom de chaque console sert déjà de
+// légende ; une couleur par console n'ajouterait rien (§ skill dataviz). ----------
+.console-chart {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--text-xl);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--color-success) 20%, transparent);
+  align-items: flex-end;
+  gap: var(--space-4);
+  height: 120px;
 }
 
-.stat-hero__body {
+.console-chart__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  height: 100%;
   min-width: 0;
 }
 
-.stat-hero__label {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-1);
+.console-chart__bar {
+  width: 100%;
+  min-height: 3px;
+  border-radius: 6px 6px 0 0;
+  background: var(--color-border-strong);
 }
 
-.stat-hero__value {
-  font-family: var(--font-heading);
-  font-size: var(--text-3xl);
-  font-weight: 700;
-  line-height: var(--line-height-tight);
-  font-variant-numeric: proportional-nums;
-  overflow-wrap: anywhere;
+.console-chart__bar--top {
+  background: var(--gradient-accent);
 }
 
-.stat-minis {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
-.stat-mini {
-  flex: 1 1 150px;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-bg-elevated);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--radius-md);
-}
-
-.stat-mini__value {
-  font-family: var(--font-heading);
-  font-size: var(--text-lg);
-  font-weight: 700;
-  font-variant-numeric: proportional-nums;
-}
-
-.stat-mini__label {
+.console-chart__label {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
-// ---------- Répartition par console : table accessible + barre décorative (une seule teinte, ----------
-// la magnitude est nominale ; la couleur par console n'ajouterait rien que le libellé ne montre déjà).
-// Le petit liseré coloré devant chaque nom reprend la couleur déjà associée à la console ailleurs
-// dans l'app (tuiles, bannières) — identité visuelle, pas un encodage de la magnitude du graphique.
-.console-breakdown {
-  width: 100%;
-  border-collapse: collapse;
+// ---------- Progression de complétion par console : carte pleine largeur, cf. maquette ----------
+.dashboard__section--card {
+  padding: var(--space-5);
+  background: var(--color-bg);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
 }
 
-.console-breakdown tr + tr th,
-.console-breakdown tr + tr td {
-  border-top: var(--border-width) solid var(--color-border);
+.completion-row + .completion-row {
+  margin-top: var(--space-4);
 }
 
-.console-breakdown__name {
+.completion-row__head {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  text-align: left;
-  font-weight: 600;
+  justify-content: space-between;
   font-size: var(--text-sm);
-  padding: var(--space-3) var(--space-4) var(--space-3) 0;
-  white-space: nowrap;
-  width: 1%;
+  margin-bottom: var(--space-2);
 }
 
-.console-breakdown__swatch {
-  flex: none;
-  width: 10px;
-  height: 10px;
-  border-radius: var(--radius-pill);
-}
-
-.console-breakdown__bar-cell {
-  padding: var(--space-3) var(--space-4) var(--space-3) 0;
-  width: 100%;
-}
-
-.console-breakdown__bar-track {
-  height: 14px;
-  border-radius: var(--radius-pill);
-  background: var(--color-bg-sunken);
-  overflow: hidden;
-}
-
-.console-breakdown__bar {
-  height: 100%;
-  min-width: 3px;
-  background: var(--color-primary);
-  // Extrémité arrondie côté valeur, carrée à la base (§ skill dataviz, mark specs).
-  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
-}
-
-.console-breakdown__value {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  font-size: var(--text-sm);
+.completion-row__fraction {
   color: var(--color-text-muted);
-  padding: var(--space-3) 0;
-  width: 1%;
-  white-space: nowrap;
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+.completion-bar {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+}
+
+.completion-bar__fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--gradient-accent);
 }
 
 // ---------- Activité récente ----------
@@ -412,12 +351,12 @@
     gap: var(--space-6);
   }
 
-  .stat-hero {
-    flex-wrap: wrap;
+  .hairline-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .console-breakdown__name {
-    white-space: normal;
+  .dashboard__charts {
+    grid-template-columns: 1fr;
   }
 
   .activity-row {

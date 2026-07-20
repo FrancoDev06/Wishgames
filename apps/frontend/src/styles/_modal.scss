@@ -6,7 +6,7 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -84,12 +84,12 @@
 }
 
 .btn--primary {
-  background: var(--color-primary);
+  background: var(--gradient-accent);
   color: var(--color-primary-contrast);
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
+  filter: brightness(1.08);
 }
 
 .btn--primary:disabled {

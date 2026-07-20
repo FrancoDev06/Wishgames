@@ -33,6 +33,38 @@
   margin: 0 0 var(--space-4);
 }
 
+// Onglets soulignés Jeux/Consoles (Collection, Catalogue, Wishlist) — cf. maquette : actif =
+// texte clair + soulignement 2px, inactif = texte estompé + soulignement transparent.
+.tabs {
+  display: flex;
+  gap: var(--space-5);
+  margin: var(--space-5) 0;
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.tabs__item {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  padding: 0 0 var(--space-3);
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #6a6b6e;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.tabs__item--active {
+  color: var(--color-text);
+  border-bottom-color: var(--color-secondary);
+}
+
+// Onglets à 3 (Dashboard : Global/Jeux/Consoles) — soulignement violet plutôt que cyan.
+.tabs--dash .tabs__item--active {
+  border-bottom-color: var(--color-primary);
+}
+
 // Barre de filtres/tri (recherche + tri), partagée entre Catalogue, Wishlist et Collection.
 .filters {
   display: flex;
@@ -251,108 +283,113 @@
   flex-wrap: wrap;
 }
 
-// ---------- Tuiles "par console" (écran d'accueil Catalogue, picker Consoles physiques) ----------
-// Hauteur fixe + nom sur 2 lignes max (line-clamp) : toutes les tuiles ont le même gabarit quelle
-// que soit la longueur du nom de la console (retour utilisateur — avant ça, "Nintendo Famicom Disk
-// System" faisait une tuile 2x plus haute que "Sega Genesis"). Contenu ancré en bas + pictogramme
-// décoratif en haut à droite pour un rendu moins plat que la simple pastille de couleur unie.
+// ---------- Cartes "console à choisir" (picker Jeux du Catalogue, onglet Consoles du Catalogue,
+// tuiles d'ajout Collection/Wishlist) : visuel en haut + infos en dessous, comme les cartes jeu —
+// cf. maquette (image/logo puis titre/infos empilés), pas une photo plein cadre avec texte en
+// surimpression (retour utilisateur : "dans une carte on met l'image et en dessous le titre"). ----------
 .console-tiles {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: var(--space-5);
 }
 
-.console-tile {
+.console-pick-card {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  align-items: flex-start;
-  height: 168px;
-  padding: var(--space-5);
-  border-radius: var(--radius-lg);
-  border: none;
-  cursor: pointer;
-  color: #fff;
-  text-align: left;
+  width: 100%;
+  background: var(--color-bg-elevated);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  background-size: cover;
-  background-position: center;
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  text-align: left;
+  color: var(--color-text);
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
 }
 
-// Voile sombre concentré sur le bas de la tuile (zone du texte) : les photos de consoles
-// (Wikimedia) sont presque toutes shootées sur fond blanc/clair, donc un dégradé pensé pour un
-// aplat de couleur (retour utilisateur, capture à l'appui) ne suffit plus à garantir la lisibilité
-// du texte blanc — la zone basse doit rester sombre quel que soit le contenu de l'image dessous.
-.console-tile::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.15) 45%, rgba(0, 0, 0, 0.85) 100%);
-  pointer-events: none;
+.console-pick-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-secondary);
+  box-shadow: var(--shadow-glow);
 }
 
-.console-tile__name,
-.console-tile__count {
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-}
-
-.console-tile__icon {
-  position: absolute;
-  top: var(--space-3);
-  right: var(--space-2);
-  font-size: 2.75rem;
-  line-height: 1;
-  opacity: 0.2;
-  transform: rotate(8deg);
-  pointer-events: none;
-}
-
-.console-tile:hover {
-  transform: translateY(-3px) scale(1.015);
-  box-shadow: var(--shadow-md);
-}
-
-.console-tile__content {
+// Fond blanc : les photos de consoles (Wikimedia) sont presque toutes shootées sur fond blanc —
+// un fond neutre sombre laissait un liseré blanc irrégulier autour de chaque photo (visible et de
+// taille différente selon le cadrage d'origine, retour utilisateur). Le blanc absorbe ce fond
+// d'origine et donne un gabarit visuellement homogène à toutes les cartes.
+.console-pick-card__cover {
   position: relative;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #fff;
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.console-pick-card__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.console-pick-card__owned {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--color-secondary);
+  color: var(--color-text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.console-pick-card__body {
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  width: 100%;
-  min-width: 0;
+  flex: 1;
 }
 
-.console-tile__name {
-  font-family: var(--font-heading);
-  font-size: var(--text-lg);
+.console-pick-card__name {
+  font-size: var(--text-base);
   font-weight: 700;
-  line-height: 1.2;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  margin: 0;
 }
 
-.console-tile__slug {
-  align-self: flex-start;
+.console-pick-card__slug {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-pill);
-  background: rgba(0, 0, 0, 0.25);
-  max-width: 100%;
-  white-space: nowrap;
+  color: var(--color-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.console-tile__count {
-  position: relative;
+.console-pick-card__count {
   font-size: var(--text-sm);
-  font-weight: 700;
-  opacity: 0.95;
+  color: var(--color-text-muted);
+}
+
+.console-pick-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-2);
 }
 
 // ---------- Boutons d'ajout rapide / badges de statut (Catalogue, Consoles physiques) ----------
@@ -369,12 +406,12 @@
 }
 
 .add-btn--collection {
-  background: var(--color-primary);
+  background: var(--gradient-accent);
   color: var(--color-primary-contrast);
 }
 
 .add-btn--collection:hover {
-  background: var(--color-primary-hover);
+  filter: brightness(1.08);
 }
 
 .add-btn--wishlist {
@@ -420,14 +457,6 @@
   border-radius: var(--radius-pill);
   color: var(--color-text-inverse);
   white-space: nowrap;
-}
-
-.badge--completeness {
-  background: var(--color-secondary);
-}
-
-.badge--condition {
-  background: var(--color-success);
 }
 
 .badge--quantity {
@@ -523,20 +552,182 @@
   color: var(--color-text-muted);
 }
 
+// Badge tertiaire (standard vidéo) : neutre plutôt qu'une 3e couleur pleine, pour ne pas diluer
+// le violet/cyan des badges principaux (§ direction artistique : accent utilisé avec parcimonie).
 .badge--video {
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
+  background: transparent;
+  border: var(--border-width) solid var(--color-border-strong);
+  color: var(--color-text-muted);
 }
 
-// ---------- Carte cliquable (ouvre une modale de détail) ----------
+// ---------- Carte cliquable (ouvre une modale de détail) : glow cyan au survol, cf. maquette ----------
 .card--clickable {
   cursor: pointer;
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
 }
 
 .card--clickable:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  border-color: var(--color-secondary);
+  box-shadow: var(--shadow-glow);
+}
+
+// ---------- Consoles physiques (onglet Consoles de Collection/Wishlist) ----------
+// Carte plus large que la carte jeu (pas de jaquette, bannière colorée + plus de champs).
+.console-section {
+  margin-bottom: var(--space-7);
+}
+
+.console-section__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-heading);
+  text-transform: var(--text-transform-heading);
+  margin: 0 0 var(--space-4);
+}
+
+.console-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-5);
+}
+
+.console-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-elevated);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.console-card__banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  color: #fff;
+}
+
+.console-card__banner-name {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-heading);
+}
+
+.console-card__qty {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.25);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.console-card__body {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.offers-hint {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.console-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.console-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-bg-elevated);
+  border: var(--border-width) solid var(--color-border);
+  border-left-width: 4px;
+  border-left-style: solid;
+  border-radius: var(--radius-md);
+}
+
+.console-row__main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.console-row__name {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: 700;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.console-row__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.console-row__date {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+// ---------- Grille "hairline" (Dashboard) : cellules séparées par un filet de 2px sur fond
+// --color-border, cheaper/plus net que des bordures individuelles. La 2e cellule est la cellule
+// "valeur" emphasée (fond --color-bg-emphasized, cf. maquette Dashboard §Stat row). ----------
+.hairline-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 2px;
+  background: var(--color-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.hairline-grid__cell {
+  background: var(--color-bg);
+  padding: var(--space-5);
+}
+
+.hairline-grid__cell--emphasized {
+  background: var(--color-bg-emphasized);
+}
+
+.hairline-grid__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.hairline-grid__cell--emphasized .hairline-grid__label {
+  color: var(--color-accent-emphasized);
+}
+
+.hairline-grid__value {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.hairline-grid__cell--emphasized .hairline-grid__value {
+  color: var(--color-secondary);
 }
 
 // ---------- Mobile : moins de marge, grilles plus denses, ligne compacte ----------

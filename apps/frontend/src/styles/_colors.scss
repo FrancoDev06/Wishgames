@@ -1,189 +1,38 @@
-// Theme definitions. Every token that changes look-and-feel between the 4
-// themes (Minimal / Dark Gaming / Neon / Retro) lives here as a CSS custom
-// property, scoped by [data-theme] on <html>. Switching the attribute swaps
-// the whole app instantly (see ThemeService).
-//
-// :root holds the Minimal theme as the fallback so the app never renders
-// unstyled if data-theme is missing.
+// Design tokens — thème unique "Éditorial aurora chromée" : dark, éditorial, restreint.
+// Un seul dégradé accent (violet -> cyan) utilisé avec parcimonie (boutons primaires,
+// soulignement d'onglet actif, barres de progression). Pas de thème alternatif : ces
+// valeurs sont les seules que l'app utilise, plus de [data-theme].
 
-:root,
-:root[data-theme='minimal'] {
-  --color-bg: #ffffff;
-  --color-bg-elevated: #f7f7f8;
-  --color-bg-sunken: #f0f0f2;
-  --color-border: #e2e2e6;
-  --color-border-strong: #c9c9d1;
-  --color-text: #1a1a1e;
-  --color-text-muted: #65656d;
-  --color-text-inverse: #ffffff;
+:root {
+  --color-bg: #0f0f13;
+  --color-bg-elevated: #15151b;
+  --color-bg-sunken: #0c0c10;
+  --color-bg-emphasized: #161822;
+  --color-border: #26262c;
+  --color-border-strong: #34343c;
+  --color-text: #eceae4;
+  --color-text-muted: #8a8b8e;
+  --color-text-faint: #5f6066;
+  --color-text-inverse: #0f0f13;
 
-  --color-primary: #3d5afe;
-  --color-primary-hover: #2f46d1;
-  --color-primary-contrast: #ffffff;
-  --color-secondary: #6b7280;
-  --color-accent: #3d5afe;
+  --color-primary: #a78bfa;
+  --color-primary-hover: #b79dfb;
+  --color-primary-contrast: #0f0f13;
+  --color-secondary: #67e8f9;
+  --color-accent: #a78bfa;
+  --color-accent-cyan: #67e8f9;
+  --color-accent-emphasized: #9fe8f4;
+  --gradient-accent: linear-gradient(120deg, #a78bfa, #67e8f9);
 
-  --color-success: #1ca551;
-  --color-warning: #c98a12;
-  --color-danger: #d1453d;
-  --color-focus-ring: rgba(61, 90, 254, 0.4);
+  --color-success: #67e8f9;
+  --color-warning: #f472b6;
+  --color-danger: #f472b6;
+  --color-focus-ring: rgba(167, 139, 250, 0.45);
 
-  --font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
-  --letter-spacing-heading: normal;
-  --text-transform-heading: none;
-
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 14px;
-  --radius-pill: 999px;
-
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
-}
-
-:root[data-theme='dark-gaming'] {
-  --color-bg: #12141c;
-  --color-bg-elevated: #1b1f2a;
-  --color-bg-sunken: #0c0e14;
-  --color-border: #2b3040;
-  --color-border-strong: #3c4257;
-  --color-text: #e7e9ee;
-  --color-text-muted: #9aa0b2;
-  --color-text-inverse: #12141c;
-
-  --color-primary: #5b8cff;
-  --color-primary-hover: #82a6ff;
-  --color-primary-contrast: #0c0e14;
-  --color-secondary: #7c5cff;
-  --color-accent: #5b8cff;
-
-  --color-success: #3ddc84;
-  --color-warning: #ffb84d;
-  --color-danger: #ff5c72;
-  --color-focus-ring: rgba(91, 140, 255, 0.45);
-
-  --font-heading: 'Segoe UI Semibold', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
-  --letter-spacing-heading: -0.01em;
-  --text-transform-heading: none;
-
-  --radius-sm: 4px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-pill: 999px;
-
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
-}
-
-:root[data-theme='neon'] {
-  --color-bg: #0a0a12;
-  --color-bg-elevated: #141426;
-  --color-bg-sunken: #050508;
-  --color-border: #2a2340;
-  --color-border-strong: #4a3d75;
-  --color-text: #f1e9ff;
-  --color-text-muted: #a898c9;
-  --color-text-inverse: #0a0a12;
-
-  --color-primary: #ff2fd0;
-  --color-primary-hover: #ff6bde;
-  --color-primary-contrast: #0a0a12;
-  --color-secondary: #2ff3ff;
-  --color-accent: #2ff3ff;
-
-  --color-success: #39ff9d;
-  --color-warning: #ffe14d;
-  --color-danger: #ff3860;
-  --color-focus-ring: rgba(255, 47, 208, 0.5);
-
-  --font-heading: 'Arial Narrow', Arial, sans-serif;
-  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
-  --letter-spacing-heading: 0.04em;
-  --text-transform-heading: uppercase;
-
-  --radius-sm: 2px;
-  --radius-md: 8px;
-  --radius-lg: 20px;
-  --radius-pill: 999px;
-
-  --shadow-sm: 0 0 4px rgba(255, 47, 208, 0.35);
-  --shadow-md: 0 0 16px rgba(255, 47, 208, 0.55), 0 0 2px rgba(255, 47, 208, 0.8);
-  --shadow-lg: 0 0 32px rgba(47, 243, 255, 0.5), 0 0 4px rgba(255, 47, 208, 0.8);
-}
-
-:root[data-theme='retro'] {
-  --color-bg: #221c14;
-  --color-bg-elevated: #2f2718;
-  --color-bg-sunken: #1a150f;
-  --color-border: #4d3f26;
-  --color-border-strong: #6b5732;
-  --color-text: #f4e9d8;
-  --color-text-muted: #c2a97e;
-  --color-text-inverse: #221c14;
-
-  --color-primary: #e8a33d;
-  --color-primary-hover: #f4b95c;
-  --color-primary-contrast: #221c14;
-  --color-secondary: #3fae8a;
-  --color-accent: #e8534a;
-
-  --color-success: #7fbf4d;
-  --color-warning: #e8a33d;
-  --color-danger: #e8534a;
-  --color-focus-ring: rgba(232, 163, 61, 0.5);
-
-  --font-heading: 'Courier New', ui-monospace, Consolas, monospace;
-  --font-body: 'Courier New', ui-monospace, Consolas, monospace;
-  --font-mono: ui-monospace, 'Courier New', Consolas, monospace;
-  --letter-spacing-heading: 0.05em;
-  --text-transform-heading: uppercase;
-
-  --radius-sm: 0;
-  --radius-md: 0;
-  --radius-lg: 2px;
-  --radius-pill: 2px;
-
-  --shadow-sm: 2px 2px 0 rgba(0, 0, 0, 0.5);
-  --shadow-md: 4px 4px 0 rgba(0, 0, 0, 0.6);
-  --shadow-lg: 6px 6px 0 rgba(0, 0, 0, 0.7);
-}
-
-// Reprend lib/app_theme.dart de l'app mobile Flutter "Retro Wishlist" : fond clair iOS,
-// cartes plates (elevation 0, juste une bordure fine) plutôt qu'une ombre marquée, violet en
-// primaire, cyan en secondaire. Le rose/magenta de AppTheme.consoleColor (distinct du violet et
-// du cyan déjà pris) sert d'accent, comme --color-accent est utilisé un peu partout dans WishGames.
-:root[data-theme='mobile'] {
-  --color-bg: #f2f2f7;
-  --color-bg-elevated: #ffffff;
-  --color-bg-sunken: #e8e8ed;
-  --color-border: #dddde0;
-  --color-border-strong: #c7c7cc;
-  --color-text: #1c1c1e;
-  --color-text-muted: #8e8e93;
-  --color-text-inverse: #ffffff;
-
-  --color-primary: #7b5ea7;
-  --color-primary-hover: #6a4f90;
-  --color-primary-contrast: #ffffff;
-  --color-secondary: #0097a7;
-  --color-accent: #bf3a70;
-
-  --color-success: #2e9e52;
-  --color-warning: #e07800;
-  --color-danger: #d32f2f;
-  --color-focus-ring: rgba(123, 94, 167, 0.4);
-
-  --font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
-  --letter-spacing-heading: normal;
+  --font-heading: 'Manrope', sans-serif;
+  --font-body: 'Manrope', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  --letter-spacing-heading: -0.02em;
   --text-transform-heading: none;
 
   --radius-sm: 8px;
@@ -191,7 +40,8 @@
   --radius-lg: 16px;
   --radius-pill: 999px;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 0 1px #67e8f9, 0 12px 28px rgba(103, 232, 249, 0.15);
 }

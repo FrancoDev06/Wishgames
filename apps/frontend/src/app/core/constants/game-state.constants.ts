@@ -68,6 +68,50 @@ export function regionShortLabel(value: string): string {
   return REGION_SHORT_LABELS[value] ?? value;
 }
 
+// ---------- Couleurs par valeur (badges Collection/Wishlist) ----------
+// Retour utilisateur : les badges complétude/état avaient tous la même couleur fixe par
+// catégorie (ex. complétude toujours cyan), peu importe la valeur — impossible de repérer un
+// jeu loose vs complet en un coup d'œil. Chaque échelle est ordonnée du moins au plus
+// désirable ; les régions sont catégorielles (pas d'ordre), une couleur distincte chacune.
+
+const COMPLETENESS_COLORS: Record<string, string> = {
+  LOOSE: '#6b7280',
+  LOOSE_MANUAL: '#5c8a99',
+  BOXED: '#4f8ea3',
+  CIB: '#3fae8a',
+  SEALED: '#d6a536',
+  NOS: '#e0793a',
+};
+
+export function completenessColor(value: string): string {
+  return COMPLETENESS_COLORS[value] ?? '#6b7280';
+}
+
+const CONDITION_COLORS: Record<string, string> = {
+  POOR: '#d9484b',
+  FAIR: '#e0793a',
+  GOOD: '#d6a536',
+  VERY_GOOD: '#a3c15a',
+  EXCELLENT: '#6e9b57',
+  NEAR_MINT: '#3fae8a',
+  MINT: '#67e8f9',
+};
+
+export function conditionColor(value: string): string {
+  return CONDITION_COLORS[value] ?? '#8a8b8e';
+}
+
+const REGION_COLORS: Record<string, string> = {
+  Europe: '#5b8cff',
+  'North America': '#e0546a',
+  Japan: '#f4a640',
+};
+
+export function regionColor(value: string | null): string {
+  if (!value) return '#8a8b8e';
+  return REGION_COLORS[value] ?? '#8a8b8e';
+}
+
 // Quel composant physique demander selon la complétude choisie (§3.1) : le jeu (média) est
 // toujours pertinent ; la boîte et la notice ne le sont que si la complétude les inclut. Partagé
 // entre CollectionFormModal (ajout/achat) et OffersPanel (état constaté sur une offre précise).

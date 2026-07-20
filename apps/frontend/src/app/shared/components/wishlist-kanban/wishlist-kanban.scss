@@ -71,14 +71,14 @@
   background: var(--color-bg-elevated);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
   padding: var(--space-3);
   cursor: grab;
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
 }
 
 .kanban-card:hover {
-  box-shadow: var(--shadow-md);
+  border-color: var(--color-secondary);
+  box-shadow: var(--shadow-glow);
 }
 
 .kanban-card__cover {
@@ -121,7 +121,7 @@
 .cdk-drag-preview {
   box-sizing: border-box;
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
 }
 
 .cdk-drag-placeholder {

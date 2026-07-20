@@ -2,12 +2,6 @@
 // Modale d'achat : voir shared/components/collection-form-modal.
 // Ici : uniquement ce qui est spécifique à la Wishlist (priorité, régions, bouton Acheter).
 
-// ---------- Région recherchée (une entrée wishlist par édition régionale, comme la collection) ----------
-.badge--region {
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
-}
-
 .card .priority {
   margin-top: auto;
   padding-top: var(--space-2);

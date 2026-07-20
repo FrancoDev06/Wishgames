@@ -26,6 +26,11 @@
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
+  // Bascule sidebar (desktop) <-> bottom tab bar (mobile), cf. design handoff §Shell.
+  --breakpoint-nav: 860px;
+
+  --sidebar-width: 220px;
+  --bottom-nav-height: 64px;
 
   // Échelle sémantique de priorité (wishlist, §3.2) : faible -> urgente.
   // Volontairement indépendante des tokens de thème (--color-accent etc.) pour

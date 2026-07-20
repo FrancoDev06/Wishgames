@@ -1,144 +1,126 @@
 <section class="browse">
   <header class="browse__header">
-    <h2>Wishlist</h2>
+    <div>
+      <h2>Wishlist</h2>
+      <div class="page-subtitle">Ce que tu aimerais ajouter</div>
+    </div>
+
     @if (!loading() && !error()) {
-      <span class="browse__count">
-        {{ items().length }} jeu{{ items().length > 1 ? 'x' : '' }} recherché{{ items().length > 1 ? 's' : '' }}
-      </span>
+      @if (tab() === 'jeux') {
+        <span class="browse__count">
+          {{ items().length }} jeu{{ items().length > 1 ? 'x' : '' }} recherché{{ items().length > 1 ? 's' : '' }}
+        </span>
+      } @else {
+        <span class="browse__count">{{ consoleItems().length }} console{{ consoleItems().length > 1 ? 's' : '' }} recherchée{{ consoleItems().length > 1 ? 's' : '' }}</span>
+      }
     }
 
     <div class="header-toggles">
-      <div class="browse__view-toggle">
-        <button type="button" [class.active]="displayMode() === 'cards'" (click)="setDisplayMode('cards')">Cartes</button>
-        <button type="button" [class.active]="displayMode() === 'kanban'" (click)="setDisplayMode('kanban')">Chasse</button>
-        <button type="button" [class.active]="displayMode() === 'prices'" (click)="setDisplayMode('prices')">Prix</button>
-      </div>
-
-      @if (displayMode() === 'cards') {
+      @if (tab() === 'jeux') {
         <div class="browse__view-toggle">
-          <button type="button" [class.active]="viewMode() === 'grid'" (click)="setViewMode('grid')">Grille</button>
-          <button type="button" [class.active]="viewMode() === 'list'" (click)="setViewMode('list')">Liste</button>
+          <button type="button" [class.active]="displayMode() === 'cards'" (click)="setDisplayMode('cards')">Cartes</button>
+          <button type="button" [class.active]="displayMode() === 'kanban'" (click)="setDisplayMode('kanban')">Chasse</button>
+          <button type="button" [class.active]="displayMode() === 'prices'" (click)="setDisplayMode('prices')">Prix</button>
         </div>
+
+        @if (displayMode() === 'cards') {
+          <div class="browse__view-toggle">
+            <button type="button" [class.active]="viewMode() === 'grid'" (click)="setViewMode('grid')">Grille</button>
+            <button type="button" [class.active]="viewMode() === 'list'" (click)="setViewMode('list')">Liste</button>
+          </div>
+        }
+      } @else {
+        <div class="browse__view-toggle">
+          <button type="button" [class.active]="consoleDisplayMode() === 'cards'" (click)="setConsoleDisplayMode('cards')">Cartes</button>
+          <button type="button" [class.active]="consoleDisplayMode() === 'kanban'" (click)="setConsoleDisplayMode('kanban')">Chasse</button>
+        </div>
+
+        @if (consoleDisplayMode() === 'cards') {
+          <div class="browse__view-toggle">
+            <button type="button" [class.active]="viewMode() === 'grid'" (click)="setViewMode('grid')">Grille</button>
+            <button type="button" [class.active]="viewMode() === 'list'" (click)="setViewMode('list')">Liste</button>
+          </div>
+        }
       }
     </div>
   </header>
 
-  @if (!loading() && !error() && items().length > 0) {
-    <div class="filters">
-      <input
-        type="search"
-        class="filters__search"
-        placeholder="Rechercher un titre…"
-        [value]="searchText()"
-        (input)="onSearchChange($any($event.target).value)"
-      />
-
-      <select class="filters__select" [value]="sortBy()" (change)="onSortChange($any($event.target).value)">
-        <option value="priority">Priorité (haute → basse)</option>
-        <option value="date-desc">Date d'ajout (récent → ancien)</option>
-        <option value="date-asc">Date d'ajout (ancien → récent)</option>
-        <option value="title">Titre (A → Z)</option>
-      </select>
-    </div>
-  }
+  <div class="tabs">
+    <button type="button" class="tabs__item" [class.tabs__item--active]="tab() === 'jeux'" (click)="setTab('jeux')">🎮 Jeux</button>
+    <button type="button" class="tabs__item" [class.tabs__item--active]="tab() === 'consoles'" (click)="setTab('consoles')">🕹️ Consoles</button>
+  </div>
 
   @if (loading()) {
     <p class="browse__status">Chargement…</p>
   } @else if (error()) {
     <p class="browse__status browse__status--error">{{ error() }}</p>
-  } @else if (items().length === 0) {
-    <p class="browse__status">Aucun jeu dans la wishlist pour l'instant.</p>
-  } @else if (displayMode() === 'kanban') {
-    <p class="browse__hint">Glisse une carte vers une autre colonne pour suivre ta progression ; dépose-la sur « Acheté » pour lancer l'achat.</p>
-    <app-wishlist-kanban
-      [cards]="kanbanCards()"
-      (statusChanged)="onKanbanStatusChanged($event)"
-      (buyRequested)="onKanbanBuyRequested($event)"
-      (cardClicked)="onKanbanCardClicked($event)"
-    />
-  } @else if (displayMode() === 'prices') {
-    <app-wishlist-price-view [items]="filteredSorted()" (itemClicked)="onPriceItemClicked($event)" />
-  } @else if (groups().length === 0) {
-    <p class="browse__status">Aucun jeu ne correspond à cette recherche.</p>
-  } @else {
-    <p class="browse__hint">Clique sur une carte pour voir le détail, modifier, acheter ou gérer les offres.</p>
+  } @else if (tab() === 'jeux') {
+    @if (items().length > 0) {
+      <div class="filters">
+        <input
+          type="search"
+          class="filters__search"
+          placeholder="Rechercher un titre…"
+          [value]="searchText()"
+          (input)="onSearchChange($any($event.target).value)"
+        />
 
-    @for (group of groups(); track group.consoleName) {
-      <section class="console-group">
-        <h3 class="console-group__title">
-          {{ group.consoleName }}
-          <span class="console-group__count">{{ group.items.length }}</span>
-        </h3>
+        <select class="filters__select" [value]="sortBy()" (change)="onSortChange($any($event.target).value)">
+          <option value="priority">Priorité (haute → basse)</option>
+          <option value="date-desc">Date d'ajout (récent → ancien)</option>
+          <option value="date-asc">Date d'ajout (ancien → récent)</option>
+          <option value="title">Titre (A → Z)</option>
+        </select>
+      </div>
+    }
 
-        @if (viewMode() === 'grid') {
-          <div class="browse-grid">
-            @for (item of group.items; track item.id) {
-              <article class="card card--clickable" (click)="openDetail(item)">
-                @if (coverUrl(item); as url) {
-                  <img class="card__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
-                } @else {
-                  <div class="card__cover card__cover--placeholder">{{ group.consoleName }}</div>
-                }
+    @if (items().length === 0) {
+      <p class="browse__status">Aucun jeu dans la wishlist pour l'instant.</p>
+    } @else if (displayMode() === 'kanban') {
+      <p class="browse__hint">Glisse une carte vers une autre colonne pour suivre ta progression ; dépose-la sur « Acheté » pour lancer l'achat.</p>
+      <app-wishlist-kanban
+        [cards]="kanbanCards()"
+        (statusChanged)="onKanbanStatusChanged($event)"
+        (buyRequested)="onKanbanBuyRequested($event)"
+        (cardClicked)="onKanbanCardClicked($event)"
+      />
+    } @else if (displayMode() === 'prices') {
+      <app-wishlist-price-view [items]="filteredSorted()" (itemClicked)="onPriceItemClicked($event)" />
+    } @else if (groups().length === 0) {
+      <p class="browse__status">Aucun jeu ne correspond à cette recherche.</p>
+    } @else {
+      <p class="browse__hint">Clique sur une carte pour voir le détail, modifier, acheter ou gérer les offres.</p>
 
-                <div class="card__body">
-                  <h3 class="card__title">{{ item.title }}</h3>
+      @for (group of groups(); track group.consoleName) {
+        <section class="console-group">
+          <h3 class="console-group__title">
+            {{ group.consoleName }}
+            <span class="console-group__count">{{ group.items.length }}</span>
+          </h3>
 
-                  @if (item.ll_region || item.ll_desired_completeness || item.ll_desired_condition) {
-                    <div class="badges">
-                      @if (item.ll_region) {
-                        <span class="badge badge--region">{{ regionLabel(item.ll_region) }}</span>
-                      }
-                      @if (item.ll_desired_completeness) {
-                        <span class="badge badge--completeness">{{ completenessLabel(item.ll_desired_completeness) }}</span>
-                      }
-                      @if (item.ll_desired_condition) {
-                        <span class="badge badge--condition">{{ conditionLabel(item.ll_desired_condition) }}</span>
-                      }
-                    </div>
+          @if (viewMode() === 'grid') {
+            <div class="browse-grid">
+              @for (item of group.items; track item.id) {
+                <article class="card card--clickable" (click)="openDetail(item)">
+                  @if (coverUrl(item); as url) {
+                    <img class="card__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
+                  } @else {
+                    <div class="card__cover card__cover--placeholder">{{ group.consoleName }}</div>
                   }
 
-                  @if (item.nb_priority) {
-                    <div class="priority" [attr.data-level]="item.nb_priority">
-                      <span class="priority__bars">
-                        @for (level of priorityLevels; track level) {
-                          <i [class.on]="level <= item.nb_priority!"></i>
-                        }
-                      </span>
-                      <span class="priority__label">Priorité {{ item.nb_priority }}/5</span>
-                    </div>
-                  }
+                  <div class="card__body">
+                    <h3 class="card__title">{{ item.title }}</h3>
 
-                  @if (item.nb_offers) {
-                    <div class="offers-hint">{{ item.nb_offers }} offre{{ item.nb_offers > 1 ? 's' : '' }}</div>
-                  }
-                </div>
-              </article>
-            }
-          </div>
-        } @else {
-          <div class="browse-list">
-            @for (item of group.items; track item.id) {
-              <article class="row card--clickable" (click)="openDetail(item)">
-                @if (coverUrl(item); as url) {
-                  <img class="row__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
-                } @else {
-                  <div class="row__cover row__cover--placeholder">{{ group.consoleName }}</div>
-                }
-
-                <div class="row__body">
-                  <h3 class="row__title">{{ item.title }}</h3>
-
-                  <div class="row__meta">
                     @if (item.ll_region || item.ll_desired_completeness || item.ll_desired_condition) {
                       <div class="badges">
                         @if (item.ll_region) {
-                          <span class="badge badge--region">{{ regionLabel(item.ll_region) }}</span>
+                          <span class="badge" [style.background]="regionColor(item.ll_region)">{{ regionLabel(item.ll_region) }}</span>
                         }
                         @if (item.ll_desired_completeness) {
-                          <span class="badge badge--completeness">{{ completenessLabel(item.ll_desired_completeness) }}</span>
+                          <span class="badge" [style.background]="completenessColor(item.ll_desired_completeness)">{{ completenessLabel(item.ll_desired_completeness) }}</span>
                         }
                         @if (item.ll_desired_condition) {
-                          <span class="badge badge--condition">{{ conditionLabel(item.ll_desired_condition) }}</span>
+                          <span class="badge" [style.background]="conditionColor(item.ll_desired_condition)">{{ conditionLabel(item.ll_desired_condition) }}</span>
                         }
                       </div>
                     }
@@ -158,11 +140,162 @@
                       <div class="offers-hint">{{ item.nb_offers }} offre{{ item.nb_offers > 1 ? 's' : '' }}</div>
                     }
                   </div>
+                </article>
+              }
+            </div>
+          } @else {
+            <div class="browse-list">
+              @for (item of group.items; track item.id) {
+                <article class="row card--clickable" (click)="openDetail(item)">
+                  @if (coverUrl(item); as url) {
+                    <img class="row__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
+                  } @else {
+                    <div class="row__cover row__cover--placeholder">{{ group.consoleName }}</div>
+                  }
+
+                  <div class="row__body">
+                    <h3 class="row__title">{{ item.title }}</h3>
+
+                    <div class="row__meta">
+                      @if (item.ll_region || item.ll_desired_completeness || item.ll_desired_condition) {
+                        <div class="badges">
+                          @if (item.ll_region) {
+                            <span class="badge" [style.background]="regionColor(item.ll_region)">{{ regionLabel(item.ll_region) }}</span>
+                          }
+                          @if (item.ll_desired_completeness) {
+                            <span class="badge" [style.background]="completenessColor(item.ll_desired_completeness)">{{ completenessLabel(item.ll_desired_completeness) }}</span>
+                          }
+                          @if (item.ll_desired_condition) {
+                            <span class="badge" [style.background]="conditionColor(item.ll_desired_condition)">{{ conditionLabel(item.ll_desired_condition) }}</span>
+                          }
+                        </div>
+                      }
+
+                      @if (item.nb_priority) {
+                        <div class="priority" [attr.data-level]="item.nb_priority">
+                          <span class="priority__bars">
+                            @for (level of priorityLevels; track level) {
+                              <i [class.on]="level <= item.nb_priority!"></i>
+                            }
+                          </span>
+                          <span class="priority__label">Priorité {{ item.nb_priority }}/5</span>
+                        </div>
+                      }
+
+                      @if (item.nb_offers) {
+                        <div class="offers-hint">{{ item.nb_offers }} offre{{ item.nb_offers > 1 ? 's' : '' }}</div>
+                      }
+                    </div>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+        </section>
+      }
+    }
+  } @else {
+    @if (consoleItems().length > 0 && consoleDisplayMode() === 'kanban') {
+      <section class="console-section">
+        <h3 class="console-section__title">Consoles recherchées</h3>
+        <p class="browse__hint">Glisse une carte vers une autre colonne pour suivre ta progression ; dépose-la sur « Acheté » pour lancer l'achat.</p>
+        <app-wishlist-kanban
+          [cards]="consoleKanbanCards()"
+          (statusChanged)="onConsoleKanbanStatusChanged($event)"
+          (buyRequested)="onConsoleKanbanBuyRequested($event)"
+          (cardClicked)="onConsoleKanbanCardClicked($event)"
+        />
+      </section>
+    }
+
+    @if (consoleItems().length > 0 && consoleDisplayMode() === 'cards') {
+      <section class="console-section">
+        <h3 class="console-section__title">Consoles recherchées</h3>
+        <p class="browse__hint">Clique sur une carte pour voir le détail, modifier, acheter ou gérer les offres.</p>
+
+        @if (viewMode() === 'grid') {
+          <div class="console-grid">
+            @for (item of consoleItems(); track item.id) {
+              <article class="console-card card--clickable" (click)="openConsoleDetail(item)">
+                <div class="console-card__banner" [style.background]="consoleColor(item.console_slug)">
+                  <span class="console-card__banner-name">{{ item.console_name }}</span>
+                </div>
+
+                <div class="console-card__body">
+                  @if (item.ll_desired_video_standard) {
+                    <div class="badges">
+                      <span class="badge badge--video">{{ videoStandardLabel(item.ll_desired_video_standard) }}</span>
+                    </div>
+                  }
+
+                  @if (item.ts_last_checked) {
+                    <dl class="detail-rows">
+                      <div class="detail-row">
+                        <dt>Vérifiée le</dt>
+                        <dd>{{ formatDate(item.ts_last_checked) }}</dd>
+                      </div>
+                    </dl>
+                  }
+
+                  @if (item.nb_offers) {
+                    <div class="offers-hint">{{ item.nb_offers }} offre{{ item.nb_offers > 1 ? 's' : '' }}</div>
+                  }
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="console-list">
+            @for (item of consoleItems(); track item.id) {
+              <article
+                class="console-row card--clickable"
+                [style.border-left-color]="consoleColor(item.console_slug)"
+                (click)="openConsoleDetail(item)"
+              >
+                <div class="console-row__main">
+                  <h4 class="console-row__name">{{ item.console_name }}</h4>
+                  @if (item.ll_desired_video_standard) {
+                    <div class="badges">
+                      <span class="badge badge--video">{{ videoStandardLabel(item.ll_desired_video_standard) }}</span>
+                    </div>
+                  }
+                </div>
+
+                <div class="console-row__meta">
+                  @if (item.ts_last_checked) {
+                    <span class="console-row__date">Vérifiée le {{ formatDate(item.ts_last_checked) }}</span>
+                  }
+                  @if (item.nb_offers) {
+                    <span class="offers-hint">{{ item.nb_offers }} offre{{ item.nb_offers > 1 ? 's' : '' }}</span>
+                  }
                 </div>
               </article>
             }
           </div>
         }
+      </section>
+    }
+
+    @if (consoleItems().length === 0) {
+      <p class="browse__status">Aucune console dans la wishlist pour l'instant.</p>
+    }
+
+    @if (consolesToAdd().length > 0) {
+      <section class="console-section">
+        <h3 class="console-section__title">Rechercher une console</h3>
+        <div class="console-tiles">
+          @for (console of consolesToAdd(); track console.id) {
+            <button type="button" class="console-pick-card" [attr.title]="console.ll_name" (click)="openAddConsole(console)">
+              <div class="console-pick-card__cover">
+                <img [src]="consolePhotoUrl(console.ll_slug)" (error)="hidePhoto($event)" alt="" loading="lazy" />
+              </div>
+              <div class="console-pick-card__body">
+                <h4 class="console-pick-card__name">{{ console.ll_name }}</h4>
+                <div class="console-pick-card__slug">{{ console.ll_slug }}</div>
+              </div>
+            </button>
+          }
+        </div>
       </section>
     }
   }
@@ -215,5 +348,62 @@
     [submitting]="deleteSubmitting()"
     (confirmed)="confirmDelete()"
     (cancelled)="closeDelete()"
+  />
+}
+
+@if (addConsoleTarget(); as target) {
+  <app-console-wishlist-form-modal
+    [heading]="'Rechercher « ' + target.ll_name + ' »'"
+    confirmLabel="Ajouter à la wishlist"
+    [submitting]="addConsoleSubmitting()"
+    (confirmed)="submitAddConsole($event)"
+    (cancelled)="closeAddConsole()"
+  />
+}
+
+@if (buyConsoleTarget(); as target) {
+  <app-console-form-modal
+    [heading]="'Acheter « ' + target.console_name + ' »'"
+    confirmLabel="Confirmer l'achat"
+    [submitting]="buyConsoleSubmitting()"
+    (confirmed)="submitBuyConsole($event)"
+    (cancelled)="closeBuyConsole()"
+  />
+}
+
+@if (editConsoleTarget(); as target) {
+  <app-console-wishlist-form-modal
+    [heading]="'Modifier « ' + target.console_name + ' »'"
+    confirmLabel="Enregistrer"
+    [submitting]="editConsoleSubmitting()"
+    [initialValue]="asConsoleEditValue(target)"
+    (confirmed)="submitEditConsole($event)"
+    (cancelled)="closeEditConsole()"
+  />
+}
+
+@if (deleteConsoleTarget(); as target) {
+  <app-confirm-modal
+    heading="Retirer de la wishlist ?"
+    [message]="'« ' + target.console_name + ' » sera définitivement retirée de ta wishlist.'"
+    confirmLabel="Retirer"
+    [submitting]="deleteConsoleSubmitting()"
+    (confirmed)="confirmDeleteConsole()"
+    (cancelled)="closeDeleteConsole()"
+  />
+}
+
+@if (consoleDetailTarget(); as target) {
+  <app-console-wishlist-detail-modal
+    [item]="target"
+    [offers]="consoleOffers()"
+    [offersSubmitting]="consoleOffersSubmitting()"
+    (offerAdded)="addConsoleOffer($event)"
+    (offerUpdated)="updateConsoleOffer($event)"
+    (offerDeleted)="deleteConsoleOffer($event)"
+    (editRequested)="editConsoleFromDetail()"
+    (buyRequested)="buyConsoleFromDetail()"
+    (deleteRequested)="deleteConsoleFromDetail()"
+    (closed)="closeConsoleDetail()"
   />
 }

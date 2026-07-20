@@ -1,22 +1,47 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environments';
 import { WishlistService } from '../../core/services/wishlist.service';
 import { WishlistOfferService } from '../../core/services/wishlist-offer.service';
+import { PlatformService } from '../../core/services/platform.service';
+import { ConsoleWishlistService, ConsoleBuyPayload } from '../../core/services/console-wishlist.service';
+import { ConsoleWishlistOfferService } from '../../core/services/console-wishlist-offer.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { WishlistItem } from '../../core/models/wishlist.model';
+import { ConsoleOption } from '../../core/models/game.model';
+import { ConsoleWishlistItem } from '../../core/models/console-wishlist.model';
 import { CollectionFormModal, CollectionFormValue } from '../../shared/components/collection-form-modal/collection-form-modal';
 import { WishlistFormModal, WishlistFormValue } from '../../shared/components/wishlist-form-modal/wishlist-form-modal';
 import { WishlistDetailModal } from '../../shared/components/wishlist-detail-modal/wishlist-detail-modal';
+import { ConsoleFormModal, ConsoleFormValue } from '../../shared/components/console-form-modal/console-form-modal';
+import {
+  ConsoleWishlistFormModal,
+  ConsoleWishlistFormValue,
+} from '../../shared/components/console-wishlist-form-modal/console-wishlist-form-modal';
+import { ConsoleWishlistDetailModal } from '../../shared/components/console-wishlist-detail-modal/console-wishlist-detail-modal';
 import { OfferItem, OfferFormValue } from '../../shared/components/offers-panel/offers-panel';
 import { ConfirmModal } from '../../shared/components/confirm-modal/confirm-modal';
 import { WishlistKanban, KanbanCardData } from '../../shared/components/wishlist-kanban/wishlist-kanban';
 import { WishlistPriceView } from '../../shared/components/wishlist-price-view/wishlist-price-view';
 import { resolveCoverUrl } from '../../core/utils/cover-url.util';
-import { completenessLabel, conditionLabel, regionLabel } from '../../core/constants/game-state.constants';
+import { consolePhotoUrl } from '../../core/utils/console-photo.util';
+import {
+  completenessLabel,
+  completenessColor,
+  conditionLabel,
+  conditionColor,
+  regionLabel,
+  regionColor,
+  videoStandardLabel,
+} from '../../core/constants/game-state.constants';
+import { consoleColor } from '../../core/constants/console-colors.constant';
 import { WishlistStatus } from '../../core/constants/wishlist-status.constants';
+import { toDateInputValue } from '../../core/utils/date.util';
 
+export type Tab = 'jeux' | 'consoles';
 export type ViewMode = 'grid' | 'list';
 export type DisplayMode = 'cards' | 'kanban' | 'prices';
+export type ConsoleDisplayMode = 'cards' | 'kanban';
 export type SortOption = 'priority' | 'date-desc' | 'date-asc' | 'title';
 
 export interface ConsoleGroup {
@@ -31,24 +56,43 @@ const SORT_COMPARATORS: Record<SortOption, (a: WishlistItem, b: WishlistItem) =>
   title: (a, b) => a.title.localeCompare(b.title),
 };
 
+// Page "Ce que tu aimerais ajouter" : onglet Jeux (déjà existant) + onglet Consoles (repris de
+// l'ancienne page /consoles, §refonte design — fusion en 4 pages avec onglet Jeux/Consoles au lieu
+// d'une page dédiée, cf. maquette "Éditorial aurora chromée").
 @Component({
   selector: 'app-wishlist',
-  imports: [CollectionFormModal, WishlistFormModal, WishlistDetailModal, ConfirmModal, WishlistKanban, WishlistPriceView],
+  imports: [
+    CollectionFormModal,
+    WishlistFormModal,
+    WishlistDetailModal,
+    ConsoleFormModal,
+    ConsoleWishlistFormModal,
+    ConsoleWishlistDetailModal,
+    ConfirmModal,
+    WishlistKanban,
+    WishlistPriceView,
+  ],
   templateUrl: './wishlist.html',
   styleUrl: './wishlist.scss',
 })
 export class Wishlist implements OnInit {
   private readonly wishlistService = inject(WishlistService);
   private readonly wishlistOfferService = inject(WishlistOfferService);
+  private readonly platformService = inject(PlatformService);
+  private readonly consoleWishlistService = inject(ConsoleWishlistService);
+  private readonly consoleWishlistOfferService = inject(ConsoleWishlistOfferService);
   private readonly notificationService = inject(NotificationService);
   private readonly coverOrigin = environment.apiOrigin;
 
   protected readonly priorityLevels = [1, 2, 3, 4, 5];
 
-  protected readonly items = signal<WishlistItem[]>([]);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
+  protected readonly tab = signal<Tab>('jeux');
   protected readonly viewMode = signal<ViewMode>('grid');
+
+  // ---------- Jeux ----------
+  protected readonly items = signal<WishlistItem[]>([]);
   protected readonly displayMode = signal<DisplayMode>('cards');
 
   protected readonly searchText = signal('');
@@ -104,15 +148,66 @@ export class Wishlist implements OnInit {
     }))
   );
 
-  ngOnInit(): void {
-    this.fetch();
+  // ---------- Consoles ----------
+  protected readonly allConsoles = signal<ConsoleOption[]>([]);
+  protected readonly consoleItems = signal<ConsoleWishlistItem[]>([]);
+  protected readonly consoleDisplayMode = signal<ConsoleDisplayMode>('cards');
+
+  private readonly wishlistedConsoleIds = computed(() => new Set(this.consoleItems().map((i) => i.id_console)));
+  protected readonly consolesToAdd = computed(() => this.allConsoles().filter((c) => !this.wishlistedConsoleIds().has(c.id)));
+
+  protected readonly addConsoleTarget = signal<ConsoleOption | null>(null);
+  protected readonly addConsoleSubmitting = signal(false);
+
+  protected readonly buyConsoleTarget = signal<ConsoleWishlistItem | null>(null);
+  protected readonly buyConsoleSubmitting = signal(false);
+
+  protected readonly editConsoleTarget = signal<ConsoleWishlistItem | null>(null);
+  protected readonly editConsoleSubmitting = signal(false);
+
+  protected readonly deleteConsoleTarget = signal<ConsoleWishlistItem | null>(null);
+  protected readonly deleteConsoleSubmitting = signal(false);
+
+  protected readonly consoleDetailTarget = signal<ConsoleWishlistItem | null>(null);
+  protected readonly consoleOffers = signal<OfferItem[]>([]);
+  protected readonly consoleOffersSubmitting = signal(false);
+
+  protected readonly consoleKanbanCards = computed<KanbanCardData[]>(() =>
+    this.consoleItems().map((item) => ({
+      id: item.id,
+      title: item.console_name,
+      subtitle: null,
+      coverUrl: null,
+      nb_priority: null,
+      ll_status: item.ll_status,
+    })),
+  );
+
+  protected readonly consoleColor = consoleColor;
+  protected readonly videoStandardLabel = videoStandardLabel;
+  protected readonly formatDate = toDateInputValue;
+
+  protected consolePhotoUrl(slug: string): string {
+    return consolePhotoUrl(slug, this.coverOrigin);
   }
 
-  private fetch(): void {
+  // Pas de garantie que la photo existe (consolePhotoUrl construit toujours une URL) : si elle
+  // 404, on la masque pour laisser voir le fond coloré derrière plutôt que l'icône d'image cassée.
+  protected hidePhoto(event: Event): void {
+    (event.target as HTMLImageElement).style.visibility = 'hidden';
+  }
+
+  ngOnInit(): void {
     this.loading.set(true);
-    this.wishlistService.list().subscribe({
-      next: (response) => {
-        this.items.set(response.data);
+    forkJoin({
+      games: this.wishlistService.list(),
+      consoles: this.platformService.list(),
+      consoleWishlist: this.consoleWishlistService.list(),
+    }).subscribe({
+      next: ({ games, consoles, consoleWishlist }) => {
+        this.items.set(games.data);
+        this.allConsoles.set(consoles.data);
+        this.consoleItems.set(consoleWishlist.data);
         this.loading.set(false);
       },
       error: () => {
@@ -122,12 +217,20 @@ export class Wishlist implements OnInit {
     });
   }
 
+  protected setTab(tab: Tab): void {
+    this.tab.set(tab);
+  }
+
   protected setViewMode(mode: ViewMode): void {
     this.viewMode.set(mode);
   }
 
   protected setDisplayMode(mode: DisplayMode): void {
     this.displayMode.set(mode);
+  }
+
+  protected setConsoleDisplayMode(mode: ConsoleDisplayMode): void {
+    this.consoleDisplayMode.set(mode);
   }
 
   protected onSearchChange(value: string): void {
@@ -146,12 +249,24 @@ export class Wishlist implements OnInit {
     return regionLabel(value);
   }
 
+  protected regionColor(value: string | null): string {
+    return regionColor(value);
+  }
+
   protected completenessLabel(value: string): string {
     return completenessLabel(value);
   }
 
+  protected completenessColor(value: string): string {
+    return completenessColor(value);
+  }
+
   protected conditionLabel(value: string): string {
     return conditionLabel(value);
+  }
+
+  protected conditionColor(value: string): string {
+    return conditionColor(value);
   }
 
   protected openBuy(item: WishlistItem): void {
@@ -353,6 +468,225 @@ export class Wishlist implements OnInit {
       next: () => {
         this.offers.update((list) => list.filter((o) => o.id !== id));
         if (item) this.updateOffersCount(item.id, -1);
+      },
+      error: () => this.notificationService.error("Échec de la suppression de l'offre."),
+    });
+  }
+
+  // ---------- Consoles : actions ----------
+  protected openAddConsole(console: ConsoleOption): void {
+    this.addConsoleTarget.set(console);
+  }
+
+  protected closeAddConsole(): void {
+    this.addConsoleTarget.set(null);
+  }
+
+  protected submitAddConsole(value: ConsoleWishlistFormValue): void {
+    const console = this.addConsoleTarget();
+    if (!console) return;
+
+    this.addConsoleSubmitting.set(true);
+    this.consoleWishlistService.create({ id_console: console.id, ...value }).subscribe({
+      next: (response) => {
+        this.consoleItems.update((list) => [
+          ...list,
+          { ...response.data, console_slug: console.ll_slug, console_name: console.ll_name, nb_offers: 0 },
+        ]);
+        this.notificationService.success(`« ${console.ll_name} » ajoutée à la wishlist.`);
+        this.addConsoleSubmitting.set(false);
+        this.closeAddConsole();
+      },
+      error: () => {
+        this.notificationService.error("Échec de l'ajout à la wishlist.");
+        this.addConsoleSubmitting.set(false);
+      },
+    });
+  }
+
+  protected openBuyConsole(item: ConsoleWishlistItem): void {
+    this.buyConsoleTarget.set(item);
+  }
+
+  protected closeBuyConsole(): void {
+    this.buyConsoleTarget.set(null);
+  }
+
+  protected submitBuyConsole(value: ConsoleBuyPayload): void {
+    const item = this.buyConsoleTarget();
+    if (!item) return;
+
+    this.buyConsoleSubmitting.set(true);
+    this.consoleWishlistService.buy(item.id, value).subscribe({
+      next: () => {
+        this.consoleItems.update((list) => list.filter((i) => i.id !== item.id));
+        this.notificationService.success(`« ${item.console_name} » ajoutée à la collection.`);
+        this.buyConsoleSubmitting.set(false);
+        this.closeBuyConsole();
+      },
+      error: () => {
+        this.notificationService.error("Échec de l'achat.");
+        this.buyConsoleSubmitting.set(false);
+      },
+    });
+  }
+
+  protected asConsoleEditValue(item: ConsoleWishlistItem): ConsoleWishlistFormValue {
+    return {
+      ll_desired_video_standard: item.ll_desired_video_standard,
+      ts_last_checked: item.ts_last_checked,
+    };
+  }
+
+  protected openEditConsole(item: ConsoleWishlistItem): void {
+    this.editConsoleTarget.set(item);
+  }
+
+  protected closeEditConsole(): void {
+    this.editConsoleTarget.set(null);
+  }
+
+  protected submitEditConsole(value: ConsoleWishlistFormValue): void {
+    const item = this.editConsoleTarget();
+    if (!item) return;
+
+    this.editConsoleSubmitting.set(true);
+    this.consoleWishlistService.update(item.id, value).subscribe({
+      next: (response) => {
+        this.consoleItems.update((list) => list.map((i) => (i.id === item.id ? { ...i, ...response.data } : i)));
+        this.notificationService.success(`« ${item.console_name} » mise à jour.`);
+        this.editConsoleSubmitting.set(false);
+        this.closeEditConsole();
+      },
+      error: () => {
+        this.notificationService.error('Échec de la mise à jour.');
+        this.editConsoleSubmitting.set(false);
+      },
+    });
+  }
+
+  protected openDeleteConsole(item: ConsoleWishlistItem): void {
+    this.deleteConsoleTarget.set(item);
+  }
+
+  protected closeDeleteConsole(): void {
+    this.deleteConsoleTarget.set(null);
+  }
+
+  protected confirmDeleteConsole(): void {
+    const item = this.deleteConsoleTarget();
+    if (!item) return;
+
+    this.deleteConsoleSubmitting.set(true);
+    this.consoleWishlistService.delete(item.id).subscribe({
+      next: () => {
+        this.consoleItems.update((list) => list.filter((i) => i.id !== item.id));
+        this.notificationService.success(`« ${item.console_name} » retirée de la wishlist.`);
+        this.deleteConsoleSubmitting.set(false);
+        this.closeDeleteConsole();
+      },
+      error: () => {
+        this.notificationService.error('Échec de la suppression.');
+        this.deleteConsoleSubmitting.set(false);
+      },
+    });
+  }
+
+  protected openConsoleDetail(item: ConsoleWishlistItem): void {
+    this.consoleDetailTarget.set(item);
+    this.consoleOffers.set([]);
+    this.consoleWishlistOfferService.list(item.id).subscribe({
+      next: (response) => this.consoleOffers.set(response.data),
+      error: () => this.notificationService.error('Impossible de charger les offres.'),
+    });
+  }
+
+  protected closeConsoleDetail(): void {
+    this.consoleDetailTarget.set(null);
+  }
+
+  private findConsoleItem(id: string): ConsoleWishlistItem | undefined {
+    return this.consoleItems().find((i) => i.id === id);
+  }
+
+  protected onConsoleKanbanCardClicked(id: string): void {
+    const item = this.findConsoleItem(id);
+    if (item) this.openConsoleDetail(item);
+  }
+
+  protected onConsoleKanbanBuyRequested(id: string): void {
+    const item = this.findConsoleItem(id);
+    if (item) this.openBuyConsole(item);
+  }
+
+  protected onConsoleKanbanStatusChanged(event: { id: string; ll_status: WishlistStatus }): void {
+    const previous = this.findConsoleItem(event.id)?.ll_status;
+    if (!previous) return;
+
+    this.consoleItems.update((list) => list.map((i) => (i.id === event.id ? { ...i, ll_status: event.ll_status } : i)));
+    this.consoleWishlistService.update(event.id, { ll_status: event.ll_status }).subscribe({
+      error: () => {
+        this.consoleItems.update((list) => list.map((i) => (i.id === event.id ? { ...i, ll_status: previous } : i)));
+        this.notificationService.error('Échec de la mise à jour du statut.');
+      },
+    });
+  }
+
+  protected editConsoleFromDetail(): void {
+    const item = this.consoleDetailTarget();
+    this.closeConsoleDetail();
+    if (item) this.openEditConsole(item);
+  }
+
+  protected buyConsoleFromDetail(): void {
+    const item = this.consoleDetailTarget();
+    this.closeConsoleDetail();
+    if (item) this.openBuyConsole(item);
+  }
+
+  protected deleteConsoleFromDetail(): void {
+    const item = this.consoleDetailTarget();
+    this.closeConsoleDetail();
+    if (item) this.openDeleteConsole(item);
+  }
+
+  protected addConsoleOffer(value: OfferFormValue): void {
+    const item = this.consoleDetailTarget();
+    if (!item) return;
+
+    this.consoleOffersSubmitting.set(true);
+    this.consoleWishlistOfferService.create(item.id, value).subscribe({
+      next: (response) => {
+        this.consoleOffers.update((list) => [...list, response.data]);
+        this.updateConsoleOffersCount(item.id, 1);
+        this.consoleOffersSubmitting.set(false);
+      },
+      error: () => {
+        this.notificationService.error("Échec de l'ajout de l'offre.");
+        this.consoleOffersSubmitting.set(false);
+      },
+    });
+  }
+
+  private updateConsoleOffersCount(itemId: string, delta: number): void {
+    this.consoleItems.update((list) => list.map((i) => (i.id === itemId ? { ...i, nb_offers: i.nb_offers + delta } : i)));
+  }
+
+  protected updateConsoleOffer(event: { id: string; value: OfferFormValue }): void {
+    this.consoleWishlistOfferService.update(event.id, event.value).subscribe({
+      next: (response) => {
+        this.consoleOffers.update((list) => list.map((o) => (o.id === event.id ? response.data : o)));
+      },
+      error: () => this.notificationService.error("Échec de la mise à jour de l'offre."),
+    });
+  }
+
+  protected deleteConsoleOffer(id: string): void {
+    const item = this.consoleDetailTarget();
+    this.consoleWishlistOfferService.delete(id).subscribe({
+      next: () => {
+        this.consoleOffers.update((list) => list.filter((o) => o.id !== id));
+        if (item) this.updateConsoleOffersCount(item.id, -1);
       },
       error: () => this.notificationService.error("Échec de la suppression de l'offre."),
     });

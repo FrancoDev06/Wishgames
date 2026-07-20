@@ -1,7 +1,18 @@
 <section class="browse">
   <header class="browse__header">
-    @if (showConsolePicker()) {
-      <h2>Catalogue</h2>
+    @if (tab() === 'consoles') {
+      <div>
+        <h2>Catalogue</h2>
+        <div class="page-subtitle">Toutes les références disponibles</div>
+      </div>
+      @if (!consolesLoading()) {
+        <span class="browse__count">{{ filteredConsoles().length }} / {{ consoles().length }} consoles</span>
+      }
+    } @else if (showConsolePicker()) {
+      <div>
+        <h2>Catalogue</h2>
+        <div class="page-subtitle">Toutes les références disponibles</div>
+      </div>
       @if (!loading()) {
         <span class="browse__count">{{ consoles().length }} consoles</span>
       }
@@ -19,6 +30,66 @@
     }
   </header>
 
+  <div class="tabs">
+    <button type="button" class="tabs__item" [class.tabs__item--active]="tab() === 'jeux'" (click)="setTab('jeux')">🎮 Jeux</button>
+    <button type="button" class="tabs__item" [class.tabs__item--active]="tab() === 'consoles'" (click)="setTab('consoles')">🕹️ Consoles</button>
+  </div>
+
+  @if (tab() === 'consoles') {
+    <div class="filters">
+      <input
+        type="search"
+        class="filters__search"
+        placeholder="Rechercher une console…"
+        [value]="consoleSearchText()"
+        (input)="setConsoleSearchText($any($event.target).value)"
+      />
+
+      <div class="filters__status">
+        <button type="button" [class.active]="consoleStatusFilter() === 'all'" (click)="setConsoleStatusFilter('all')">Tous</button>
+        <button type="button" [class.active]="consoleStatusFilter() === 'owned'" (click)="setConsoleStatusFilter('owned')">Possédés</button>
+        <button type="button" [class.active]="consoleStatusFilter() === 'not-owned'" (click)="setConsoleStatusFilter('not-owned')">
+          Non possédés
+        </button>
+      </div>
+    </div>
+
+    @if (consolesLoading()) {
+      <p class="browse__status">Chargement…</p>
+    } @else if (filteredConsoles().length === 0) {
+      <p class="browse__status">Aucune console ne correspond à ces critères.</p>
+    } @else {
+      <div class="console-tiles">
+        @for (console of filteredConsoles(); track console.id) {
+          <div class="console-pick-card">
+            <div class="console-pick-card__cover">
+              <img [src]="consolePhotoUrl(console.ll_slug)" (error)="hidePhoto($event)" alt="" loading="lazy" />
+              @if (isConsoleOwned(console)) {
+                <span class="console-pick-card__owned" aria-hidden="true">✓</span>
+              }
+            </div>
+            <div class="console-pick-card__body">
+              <h4 class="console-pick-card__name">{{ console.ll_name }}</h4>
+              <div class="console-pick-card__slug">{{ console.ll_slug }}</div>
+              <div class="console-pick-card__actions">
+                @if (isConsoleOwned(console)) {
+                  <span class="status-badge status-badge--collection">En collection</span>
+                } @else {
+                  <button type="button" class="add-btn add-btn--collection" (click)="openAddConsoleToCollection(console)">+ Collection</button>
+                }
+
+                @if (isConsoleWishlisted(console)) {
+                  <span class="status-badge status-badge--wishlist">En wishlist</span>
+                } @else if (!isConsoleOwned(console)) {
+                  <button type="button" class="add-btn add-btn--wishlist" (click)="openAddConsoleToWishlist(console)">+ Wishlist</button>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  } @else {
   <div class="filters">
     <input
       type="search"
@@ -56,20 +127,24 @@
   @if (showConsolePicker()) {
     <div class="console-tiles">
       @for (console of consoles(); track console.id) {
-        <button
-          type="button"
-          class="console-tile"
-          [style.background-color]="consoleColor(console.ll_slug)"
-          [style.background-image]="'url(' + consolePhotoUrl(console.ll_slug) + ')'"
-          [attr.title]="console.ll_name"
-          (click)="selectConsole(console.ll_slug)"
-        >
-          <span class="console-tile__icon" aria-hidden="true">🎮</span>
-          <span class="console-tile__content">
-            <span class="console-tile__name">{{ console.ll_name }}</span>
-            <span class="console-tile__slug">{{ console.ll_slug }}</span>
-            <span class="console-tile__count">{{ console.nb_games }} jeux</span>
-          </span>
+        <button type="button" class="console-pick-card" [attr.title]="console.ll_name" (click)="selectConsole(console.ll_slug)">
+          <div class="console-pick-card__cover">
+            <img [src]="consolePhotoUrl(console.ll_slug)" (error)="hidePhoto($event)" alt="" loading="lazy" />
+            @if (ownedGamesFor(console.ll_slug) > 0) {
+              <span class="console-pick-card__owned" aria-hidden="true">✓</span>
+            }
+          </div>
+          <div class="console-pick-card__body">
+            <h4 class="console-pick-card__name">{{ console.ll_name }}</h4>
+            <div class="console-pick-card__slug">{{ console.ll_slug }}</div>
+            <div class="console-pick-card__count">
+              @if (ownedGamesFor(console.ll_slug) > 0) {
+                {{ ownedGamesFor(console.ll_slug) }}/{{ console.nb_games }} jeux
+              } @else {
+                {{ console.nb_games }} jeux au catalogue
+              }
+            </div>
+          </div>
         </button>
       }
     </div>
@@ -163,6 +238,7 @@
   }
 
   <div #sentinel class="sentinel" aria-hidden="true"></div>
+  }
 </section>
 
 @if (addTarget(); as target) {
@@ -196,5 +272,25 @@
     (closed)="closeDetail()"
     (addToCollectionRequested)="onDetailAddToCollection()"
     (addToWishlistRequested)="onDetailAddToWishlist()"
+  />
+}
+
+@if (addConsoleTarget(); as target) {
+  <app-console-form-modal
+    [heading]="'Ajouter « ' + target.ll_name + ' » à la collection'"
+    confirmLabel="Ajouter"
+    [submitting]="addConsoleSubmitting()"
+    (confirmed)="submitAddConsoleToCollection($event)"
+    (cancelled)="closeAddConsoleToCollection()"
+  />
+}
+
+@if (wishlistConsoleTarget(); as target) {
+  <app-console-wishlist-form-modal
+    [heading]="'Rechercher « ' + target.ll_name + ' »'"
+    confirmLabel="Ajouter à la wishlist"
+    [submitting]="wishlistConsoleSubmitting()"
+    (confirmed)="submitAddConsoleToWishlist($event)"
+    (cancelled)="closeAddConsoleToWishlist()"
   />
 }

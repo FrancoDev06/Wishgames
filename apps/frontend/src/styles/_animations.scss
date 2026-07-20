@@ -1,7 +1,6 @@
-// Animations du Dashboard (§3.4 refonte) — sobres par défaut (fade/pop d'entrée, remplissage
-// progressif des barres/donut via @starting-style, count-up géré en JS car une interpolation
-// numérique n'est pas faisable en CSS pur, voir animate-count.util.ts), effets plus marqués sur les
-// thèmes Neon (glow) et Retro (pixel-snap), scopés via [data-theme] comme _colors.scss.
+// Micro-animations : fade/pop d'entrée sobres, remplissage progressif des barres/donut via
+// @starting-style, count-up géré en JS (interpolation numérique non faisable en CSS pur, voir
+// animate-count.util.ts), toast d'entrée (translateY + fade), hover glow sur les cartes cliquables.
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -33,49 +32,34 @@
   }
 }
 
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .dashboard__section,
 .stat-tiles,
-.activity-row {
+.hairline-grid,
+.activity-row,
+.browse-grid > *,
+.browse-list > *,
+.console-tiles > * {
   animation: fade-slide-in 400ms ease both;
 }
 
 // Remplissage progressif de la barre de répartition par console — sans JS, la largeur finale est
 // déjà posée par le binding Angular, seul l'état de départ (0%) est déclaré ici.
-.console-breakdown__bar {
+.console-breakdown__bar,
+.completion-bar__fill {
   transition: width 600ms ease;
 
   @starting-style {
     width: 0%;
-  }
-}
-
-// ---------- Neon : glow pulsé sur les stat tiles ----------
-[data-theme='neon'] .stat-tile {
-  animation: fade-slide-in 400ms ease both, neon-pulse 2.4s ease-in-out 400ms infinite;
-}
-
-@keyframes neon-pulse {
-  0%,
-  100% {
-    box-shadow: var(--shadow-md);
-  }
-  50% {
-    box-shadow: 0 0 24px color-mix(in srgb, var(--stat-accent, var(--color-primary)) 70%, transparent);
-  }
-}
-
-// ---------- Retro : entrée façon "pixel-snap" sur les lignes d'activité ----------
-[data-theme='retro'] .activity-row {
-  animation: pixel-snap 180ms steps(2) both;
-}
-
-@keyframes pixel-snap {
-  from {
-    opacity: 0;
-    transform: translateX(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
   }
 }
