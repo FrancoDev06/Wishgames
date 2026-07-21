@@ -9,7 +9,7 @@ import { ConsoleOption } from '../../core/models/game.model';
 import { resolveCoverUrl } from '../../core/utils/cover-url.util';
 import { timeAgo, dayBucket, DAY_BUCKET_LABEL, DayBucket } from '../../core/utils/date.util';
 import { animateCount } from '../../core/utils/animate-count.util';
-import { consoleColor } from '../../core/constants/console-colors.constant';
+import { consoleColor, consoleGradient } from '../../core/constants/console-colors.constant';
 import { ACTIVITY_ACTION_ICON, ACTIVITY_KIND_OPTIONS } from '../../core/constants/activity-icons.constant';
 import { DonutChart, DonutSlice } from '../../shared/components/donut-chart/donut-chart';
 
@@ -38,10 +38,9 @@ interface ActivityGroup {
 const ACTIVITY_PAGE_SIZE = 15;
 
 // Écran d'accueil (§3.4) : statistiques instantanées (count-up), donut Collection/Wishlist/reste du
-// catalogue, répartition par console (barres, une seule teinte — magnitude nominale, cf. skill
-// dataviz : la couleur par console n'apporterait rien que le nom de console en légende ne montre
-// déjà), flux d'activité paginé/filtrable/groupé par jour (ref_activity_log, §3.4 refonte), accès
-// rapides.
+// catalogue, répartition par console (barres en dégradé consoleGradient(), une couleur par console
+// cohérente avec catalogue/collection/wishlist), flux d'activité paginé/filtrable/groupé par jour
+// (ref_activity_log, §3.4 refonte), accès rapides.
 @Component({
   selector: 'app-dashboard',
   imports: [RouterLink, DonutChart, DecimalPipe],
@@ -60,6 +59,7 @@ export class Dashboard implements OnInit {
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly consoleColor = consoleColor;
+  protected readonly consoleGradient = consoleGradient;
   protected readonly timeAgo = timeAgo;
   protected readonly activityKindOptions = ACTIVITY_KIND_OPTIONS;
   protected readonly activityActionIcon = ACTIVITY_ACTION_ICON;

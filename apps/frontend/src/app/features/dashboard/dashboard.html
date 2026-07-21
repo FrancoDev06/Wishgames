@@ -38,15 +38,15 @@
           </p>
         } @else {
           <div class="console-chart" role="img" aria-label="Nombre de jeux possédés par console">
-            @for (row of byConsole(); track row.console_slug; let i = $index) {
+            @for (row of byConsole(); track row.console_slug) {
               <div class="console-chart__col">
                 <div
                   class="console-chart__bar"
-                  [class.console-chart__bar--top]="i === 0"
                   [style.height.%]="barWidth(row)"
+                  [style.background]="consoleGradient(row.console_slug)"
                   [title]="row.console_name + ' : ' + row.nb_owned"
                 ></div>
-                <div class="console-chart__label">{{ row.console_name }}</div>
+                <div class="console-chart__label" [style.color]="consoleColor(row.console_slug)">{{ row.console_name }}</div>
               </div>
             }
           </div>

@@ -39,7 +39,7 @@
 // ---------- Panneau à deux colonnes (barres par console + donut), grille hairline 58/42 ----------
 .dashboard__charts {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   gap: 2px;
   background: var(--color-border);
   border-radius: 2px;
@@ -49,11 +49,13 @@
 .dashboard__chart-panel {
   background: var(--color-bg);
   padding: var(--space-5);
+  min-width: 0;
 }
 
-// ---------- Répartition par console : colonnes, une seule teinte neutre sauf la console la mieux
-// fournie qui ressort en dégradé accent (cf. maquette). Le nom de chaque console sert déjà de
-// légende ; une couleur par console n'ajouterait rien (§ skill dataviz). ----------
+// ---------- Répartition par console : une couleur par console (consoleColor(), déjà utilisée sur
+// les bannières catalogue/collection/wishlist) déclinée en dégradé clair -> couleur
+// (consoleGradient()), pour rester cohérent d'un écran à l'autre. Le libellé reprend la même
+// teinte, vive, au lieu du gris neutre. ----------
 .console-chart {
   display: flex;
   align-items: flex-end;
@@ -76,16 +78,11 @@
   width: 100%;
   min-height: 3px;
   border-radius: 6px 6px 0 0;
-  background: var(--color-border-strong);
-}
-
-.console-chart__bar--top {
-  background: var(--gradient-accent);
 }
 
 .console-chart__label {
   font-size: var(--text-xs);
-  color: var(--color-text-muted);
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -352,11 +349,11 @@
   }
 
   .hairline-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .dashboard__charts {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .activity-row {

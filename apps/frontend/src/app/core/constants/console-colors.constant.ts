@@ -32,3 +32,9 @@ export function consoleColor(slug: string): string {
   for (const char of slug) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
   return FALLBACK_PALETTE[hash % FALLBACK_PALETTE.length];
 }
+
+// Même couleur que consoleColor(), déclinée en dégradé clair -> couleur (barres du dashboard).
+export function consoleGradient(slug: string): string {
+  const color = consoleColor(slug);
+  return `linear-gradient(180deg, color-mix(in srgb, ${color} 45%, white), ${color})`;
+}
