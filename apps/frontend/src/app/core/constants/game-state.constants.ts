@@ -23,12 +23,36 @@ export const CONDITION_OPTIONS: OptionItem[] = [
   { value: 'POOR', label: 'Poor' },
 ];
 
-// Régions suivies par le catalogue (priorité d'import Europe -> USA -> Japon, §2bis) : une même
-// fiche jeu peut désormais être possédée séparément dans chacune de ces éditions.
+// Régions suivies par le catalogue : une même fiche jeu peut être possédée séparément dans chacune
+// de ces éditions. Le catalogue importe désormais une édition par région distincte trouvée chez
+// LaunchBox (pas seulement Europe/USA/Japon — le PAL y est souvent étiqueté par pays précis), d'où
+// la liste complète ci-dessous plutôt que 3 valeurs.
 export const REGION_OPTIONS: OptionItem[] = [
   { value: 'Europe', label: 'Europe (PAL)' },
+  { value: 'France', label: 'France (PAL)' },
+  { value: 'Germany', label: 'Allemagne (PAL)' },
+  { value: 'Spain', label: 'Espagne (PAL)' },
+  { value: 'Italy', label: 'Italie (PAL)' },
+  { value: 'United Kingdom', label: 'Royaume-Uni (PAL)' },
+  { value: 'The Netherlands', label: 'Pays-Bas (PAL)' },
+  { value: 'Sweden', label: 'Suède (PAL)' },
+  { value: 'Norway', label: 'Norvège (PAL)' },
+  { value: 'Finland', label: 'Finlande (PAL)' },
+  { value: 'Greece', label: 'Grèce (PAL)' },
   { value: 'North America', label: 'USA (NTSC)' },
+  { value: 'United States', label: 'États-Unis (NTSC)' },
+  { value: 'Canada', label: 'Canada (NTSC)' },
   { value: 'Japan', label: 'Japon (NTSC-J)' },
+  { value: 'Korea', label: 'Corée' },
+  { value: 'China', label: 'Chine' },
+  { value: 'Hong Kong', label: 'Hong Kong' },
+  { value: 'Asia', label: 'Asie' },
+  { value: 'Brazil', label: 'Brésil' },
+  { value: 'South America', label: 'Amérique du Sud' },
+  { value: 'Australia', label: 'Australie' },
+  { value: 'Oceania', label: 'Océanie' },
+  { value: 'Russia', label: 'Russie' },
+  { value: 'World', label: 'Monde' },
 ];
 
 // Standard vidéo (§3.5, consoles physiques) — DOMAIN Postgres video_standard_t.

@@ -21,9 +21,6 @@ const COVER_TYPE_SOURCES: Record<string, string[]> = {
 	BOX_3D: ["Box - 3D"],
 };
 
-// Ordre de priorité région (§2bis : PAL/Europe → USA → Japon), repli sur la première image disponible sinon.
-const REGION_PRIORITY = ["Europe", "North America", "Japan"];
-
 interface LbMediaItem {
 	url: string;
 	filename: string;
@@ -52,23 +49,43 @@ interface LbFile {
 	games: LbGame[];
 }
 
-// Retourne une image par région prioritaire disponible (Europe/USA/Japon, §2bis) au lieu d'une
-// seule — permet de suivre en collection plusieurs éditions régionales du même jeu séparément.
-// Repli sur la première image disponible seulement si aucune des 3 régions cibles n'existe.
-function pickCovers(game: LbGame, targetType: string): LbMediaItem[] {
+interface Edition {
+	region: string | null;
+	front: LbMediaItem | null;
+}
+
+// Une édition = une région distincte trouvée sur la jaquette FRONT (toutes régions LaunchBox
+// confondues — voir import-launchbox.ts pour le détail, même logique ici en variante hotlink).
+function frontEditions(game: LbGame): Edition[] {
+	const bySourceRegion = new Map<string, LbMediaItem>();
+	let anyItem: LbMediaItem | null = null;
+
+	for (const sourceKey of COVER_TYPE_SOURCES.FRONT) {
+		const items = game.media[sourceKey];
+		if (!items || items.length === 0) continue;
+		if (!anyItem) anyItem = items.find((i) => !i.region) ?? items[0];
+		for (const item of items) {
+			if (item.region && !bySourceRegion.has(item.region)) bySourceRegion.set(item.region, item);
+		}
+	}
+
+	if (bySourceRegion.size > 0) {
+		return [...bySourceRegion.entries()].map(([region, front]) => ({ region, front }));
+	}
+	return [{ region: null, front: anyItem }];
+}
+
+// Jaquette d'un autre type (BACK/SPINE/MEDIA/BOX_3D) pour l'édition/région précise donnée —
+// correspondance exacte sur la région, sinon rien plutôt que le mauvais visuel.
+function pickForRegion(game: LbGame, targetType: string, region: string | null): LbMediaItem | null {
 	for (const sourceKey of COVER_TYPE_SOURCES[targetType]) {
 		const items = game.media[sourceKey];
 		if (!items || items.length === 0) continue;
-
-		const picks: LbMediaItem[] = [];
-		for (const region of REGION_PRIORITY) {
-			const match = items.find((i) => i.region === region);
-			if (match) picks.push(match);
-		}
-		if (picks.length > 0) return picks;
-		return [items[0]];
+		if (region === null) return items.find((i) => !i.region) ?? items[0];
+		const match = items.find((i) => i.region === region);
+		if (match) return match;
 	}
-	return [];
+	return null;
 }
 
 function releaseYear(releaseDate: string | null): number | null {
@@ -145,14 +162,20 @@ async function main() {
 
 				await client.query(`DELETE FROM ref_cover WHERE id_game = $1`, [idGame]);
 
-				for (const targetType of Object.keys(COVER_TYPE_SOURCES)) {
-					for (const picked of pickCovers(game, targetType)) {
-						await client.query(
-							`INSERT INTO ref_cover (id_game, ll_cover_type, ll_region, ll_image_url)
-							 VALUES ($1, $2, $3, $4)`,
-							[idGame, targetType, picked.region ?? null, picked.url]
-						);
-						totalCovers++;
+				const insertCover = async (targetType: string, region: string | null, item: LbMediaItem) => {
+					await client.query(
+						`INSERT INTO ref_cover (id_game, ll_cover_type, ll_region, ll_image_url)
+						 VALUES ($1, $2, $3, $4)`,
+						[idGame, targetType, region, item.url]
+					);
+					totalCovers++;
+				};
+
+				for (const edition of frontEditions(game)) {
+					if (edition.front) await insertCover("FRONT", edition.region, edition.front);
+					for (const targetType of ["BACK", "SPINE", "MEDIA", "BOX_3D"]) {
+						const picked = pickForRegion(game, targetType, edition.region);
+						if (picked) await insertCover(targetType, edition.region, picked);
 					}
 				}
 			}

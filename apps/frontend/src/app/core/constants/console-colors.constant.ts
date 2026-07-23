@@ -19,6 +19,12 @@ const CONSOLE_COLORS: Record<string, string> = {
   'sega-master-system': '#1F3A5F',
   'nec-turbografx-16': '#B23A48',
   'nec-turbografx-cd': '#D4574A',
+  'nintendo-wii': '#5FA3D0',
+  'nintendo-wii-u': '#2E6DA4',
+  'nintendo-game-boy': '#8B9A46',
+  'sega-game-gear': '#4A6FE0',
+  'snk-neo-geo': '#2E2E2E',
+  'nec-supergrafx': '#A85A2E',
 };
 
 // Repli déterministe (même slug -> même couleur) pour une console non listée ci-dessus.

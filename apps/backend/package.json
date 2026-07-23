@@ -23,9 +23,12 @@
     "start": "bun run src/server.ts",
     "import:launchbox": "bun run scripts/import-launchbox.ts",
     "import:launchbox-remote": "bun run scripts/import-launchbox-remote.ts",
+    "import:moby-platforms": "bun run scripts/import-moby-platforms.ts",
+    "import:pricecharting-regions": "bun run scripts/import-pricecharting-regions.ts",
     "seed:fake-catalogue": "bun run scripts/seed-fake-catalogue.ts",
     "import:wishlist": "bun run scripts/import-wishlist-excel.ts",
     "suggest:wishlist": "bun run scripts/suggest-wishlist-matches.ts",
+    "suggest:moby-catalog": "bun run scripts/suggest-moby-catalog-matches.ts",
     "download:console-photos": "bun run scripts/download-console-photos.ts"
   },
   "devDependencies": {

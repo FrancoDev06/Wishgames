@@ -85,7 +85,16 @@ export default class GameQueries {
 			        ${IN_COLLECTION_EXPR} AS in_collection,
 			        ${IN_WISHLIST_EXPR} AS in_wishlist
 			 ${from}
-			 ORDER BY g.ll_title, CASE cov.ll_region WHEN 'Europe' THEN 1 WHEN 'North America' THEN 2 WHEN 'Japan' THEN 3 ELSE 4 END
+			 ORDER BY g.ll_title,
+			          CASE cov.ll_region
+			            WHEN 'Europe' THEN 1 WHEN 'France' THEN 1 WHEN 'Germany' THEN 1 WHEN 'Spain' THEN 1
+			            WHEN 'Italy' THEN 1 WHEN 'United Kingdom' THEN 1 WHEN 'The Netherlands' THEN 1
+			            WHEN 'Sweden' THEN 1 WHEN 'Norway' THEN 1 WHEN 'Finland' THEN 1 WHEN 'Greece' THEN 1
+			            WHEN 'North America' THEN 2 WHEN 'United States' THEN 2 WHEN 'Canada' THEN 2
+			            WHEN 'Japan' THEN 3
+			            ELSE 4
+			          END,
+			          cov.ll_region
 			 LIMIT $${listValues.length - 1} OFFSET $${listValues.length}`,
 			listValues
 		);

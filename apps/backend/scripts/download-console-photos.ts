@@ -60,10 +60,14 @@ const CONSOLE_PHOTOS: Record<string, ConsolePhoto> = {
 		license: "Domaine public",
 		source: "https://commons.wikimedia.org/wiki/File:Nintendo-Entertainment-System-NES-Console-FL.jpg",
 	},
+	// Version européenne (boîtier arrondi PAL) demandée par l'utilisateur — la version nord-américaine
+	// (boîtier anguleux SNS-001, photo Evan-Amos ci-dessus en commentaire) ne correspond pas à son
+	// exemplaire. Evan-Amos n'a pas photographié la version PAL (seulement US et Super Famicom JP,
+	// dont la forme est identique à la version EU mais le logo diffère) — auteur différent ici.
 	"super-nintendo-entertainment-system": {
-		url: "https://upload.wikimedia.org/wikipedia/commons/3/31/SNES-Mod1-Console-Set.jpg",
-		license: "Domaine public",
-		source: "https://commons.wikimedia.org/wiki/File:SNES-Mod1-Console-Set.jpg",
+		url: "https://upload.wikimedia.org/wikipedia/commons/1/18/Wikipedia_SNES_PAL.jpg",
+		license: "CC BY 3.0",
+		source: "https://commons.wikimedia.org/wiki/File:Wikipedia_SNES_PAL.jpg",
 	},
 	"nintendo-64": {
 		url: "https://upload.wikimedia.org/wikipedia/commons/8/88/Nintendo-64-Console-FL.jpg",
@@ -80,10 +84,12 @@ const CONSOLE_PHOTOS: Record<string, ConsolePhoto> = {
 		license: "Domaine public",
 		source: "https://commons.wikimedia.org/wiki/File:Nintendo-Famicom-Disk-System.jpg",
 	},
+	// Version Mega Drive PAL demandée par l'utilisateur (boîtier "MEGA DRIVE" européen, pas la
+	// version nord-américaine "GENESIS" affichée avant).
 	"sega-genesis": {
-		url: "https://upload.wikimedia.org/wikipedia/commons/f/f8/Sega-Genesis-3-Console-FL.jpg",
+		url: "https://upload.wikimedia.org/wikipedia/commons/1/17/Sega-Mega-Drive-EU-Mk1-wController-FL.jpg",
 		license: "Domaine public",
-		source: "https://commons.wikimedia.org/wiki/File:Sega-Genesis-3-Console-FL.jpg",
+		source: "https://commons.wikimedia.org/wiki/File:Sega-Mega-Drive-EU-Mk1-wController-FL.jpg",
 	},
 	"sega-saturn": {
 		url: "https://upload.wikimedia.org/wikipedia/commons/a/a8/Sega-Saturn-Console-Set-Mk1.jpg",
@@ -119,6 +125,38 @@ const CONSOLE_PHOTOS: Record<string, ConsolePhoto> = {
 		url: "https://upload.wikimedia.org/wikipedia/commons/6/6e/NEC-TurboGrafx-16-CD-FL.png",
 		license: "Domaine public",
 		source: "https://commons.wikimedia.org/wiki/File:NEC-TurboGrafx-16-CD-FL.png",
+	},
+	// Complément 2026-07-23 (§9) : les 6 consoles ajoutées via import-moby-platforms.ts n'avaient pas
+	// encore de photo curée. Même source (Evan-Amos / Vanamo Media) sauf mention contraire.
+	"nintendo-wii": {
+		url: "https://upload.wikimedia.org/wikipedia/commons/1/14/Wii-console.jpg",
+		license: "Domaine public",
+		source: "https://commons.wikimedia.org/wiki/File:Wii-console.jpg",
+	},
+	"nintendo-wii-u": {
+		url: "https://upload.wikimedia.org/wikipedia/commons/d/dd/Nintendo-Wii-U-Console-FL.jpg",
+		license: "Domaine public",
+		source: "https://commons.wikimedia.org/wiki/File:Nintendo-Wii-U-Console-FL.jpg",
+	},
+	"nintendo-game-boy": {
+		url: "https://upload.wikimedia.org/wikipedia/commons/f/f4/Game-Boy-FL.jpg",
+		license: "Domaine public",
+		source: "https://commons.wikimedia.org/wiki/File:Game-Boy-FL.jpg",
+	},
+	"sega-game-gear": {
+		url: "https://upload.wikimedia.org/wikipedia/commons/1/18/Game-Gear-Handheld.jpg",
+		license: "Domaine public",
+		source: "https://commons.wikimedia.org/wiki/File:Game-Gear-Handheld.jpg",
+	},
+	"snk-neo-geo": {
+		url: "https://upload.wikimedia.org/wikipedia/commons/8/8e/Neo-Geo-AES-Console-Set.png",
+		license: "CC BY-SA 3.0",
+		source: "https://commons.wikimedia.org/wiki/File:Neo-Geo-AES-Console-Set.png",
+	},
+	"nec-supergrafx": {
+		url: "https://upload.wikimedia.org/wikipedia/commons/3/38/NEC-PC-Engine-SuperGrafx-Console.jpg",
+		license: "CC BY-SA 3.0",
+		source: "https://commons.wikimedia.org/wiki/File:NEC-PC-Engine-SuperGrafx-Console.jpg",
 	},
 };
 

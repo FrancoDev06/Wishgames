@@ -18,9 +18,6 @@ const COVER_TYPE_SOURCES: Record<string, string[]> = {
 	BOX_3D: ["Box - 3D"],
 };
 
-// Ordre de priorité région (§2bis : PAL/Europe → USA → Japon), repli sur la première image disponible sinon.
-const REGION_PRIORITY = ["Europe", "North America", "Japan"];
-
 interface LbMediaItem {
 	url: string;
 	filename: string;
@@ -50,23 +47,53 @@ interface LbFile {
 	games: LbGame[];
 }
 
-// Retourne une image par région prioritaire disponible (Europe/USA/Japon, §2bis) au lieu d'une
-// seule — permet de suivre en collection plusieurs éditions régionales du même jeu séparément.
-// Repli sur la première image disponible seulement si aucune des 3 régions cibles n'existe.
-function pickCovers(game: LbGame, targetType: string): { item: LbMediaItem; sourceKey: string }[] {
+interface Edition {
+	region: string | null;
+	front: { item: LbMediaItem; sourceKey: string } | null;
+}
+
+// Une édition = une région distincte trouvée sur la jaquette FRONT (toutes régions LaunchBox
+// confondues, pas seulement Europe/USA/Japon : LaunchBox étiquette souvent le PAL par pays précis —
+// France/Germany/Spain/Italy/etc. — plutôt que par le libellé générique "Europe", donc s'en tenir à
+// 3 régions cibles perdait silencieusement ces éditions). "Box - Front" prime sur "- Reconstructed"
+// en cas de région dupliquée dans les deux sources. Si le jeu n'a aucune jaquette FRONT du tout, une
+// édition unique sans région est retournée pour ne pas perdre les autres types de jaquette (repli
+// identique au comportement précédent).
+function frontEditions(game: LbGame): Edition[] {
+	const bySourceRegion = new Map<string, { item: LbMediaItem; sourceKey: string }>();
+	let anyItem: { item: LbMediaItem; sourceKey: string } | null = null;
+
+	for (const sourceKey of COVER_TYPE_SOURCES.FRONT) {
+		const items = game.media[sourceKey];
+		if (!items || items.length === 0) continue;
+		if (!anyItem) anyItem = { item: items.find((i) => !i.region) ?? items[0], sourceKey };
+		for (const item of items) {
+			if (item.region && !bySourceRegion.has(item.region)) {
+				bySourceRegion.set(item.region, { item, sourceKey });
+			}
+		}
+	}
+
+	if (bySourceRegion.size > 0) {
+		return [...bySourceRegion.entries()].map(([region, front]) => ({ region, front }));
+	}
+	return [{ region: null, front: anyItem }];
+}
+
+// Jaquette d'un autre type (BACK/SPINE/MEDIA/BOX_3D — le rendu 3D de la boîte est aussi important
+// que le scan plat, cf. retour utilisateur) pour l'édition/région précise donnée : correspondance
+// exacte sur la région, sinon on ne force rien plutôt que d'attribuer le mauvais visuel à une
+// édition (ex. un rendu 3D USA sur une édition Europe). Pour l'édition "sans région" (repli, jeu
+// sans FRONT du tout), on garde l'ancien comportement : première image disponible.
+function pickForRegion(game: LbGame, targetType: string, region: string | null): { item: LbMediaItem; sourceKey: string } | null {
 	for (const sourceKey of COVER_TYPE_SOURCES[targetType]) {
 		const items = game.media[sourceKey];
 		if (!items || items.length === 0) continue;
-
-		const picks: { item: LbMediaItem; sourceKey: string }[] = [];
-		for (const region of REGION_PRIORITY) {
-			const match = items.find((i) => i.region === region);
-			if (match) picks.push({ item: match, sourceKey });
-		}
-		if (picks.length > 0) return picks;
-		return [{ item: items[0], sourceKey }];
+		if (region === null) return { item: items.find((i) => !i.region) ?? items[0], sourceKey };
+		const match = items.find((i) => i.region === region);
+		if (match) return { item: match, sourceKey };
 	}
-	return [];
+	return null;
 }
 
 function releaseYear(releaseDate: string | null): number | null {
@@ -144,28 +171,34 @@ async function main() {
 
 				await client.query(`DELETE FROM ref_cover WHERE id_game = $1`, [idGame]);
 
-				for (const targetType of Object.keys(COVER_TYPE_SOURCES)) {
-					for (const picked of pickCovers(game, targetType)) {
-						const srcPath = join(SCRAPER_ROOT, picked.item.local_path.replace(/\\/g, "/"));
-						if (!existsSync(srcPath)) {
-							missingCoverFiles++;
-							continue;
-						}
+				const insertCover = async (targetType: string, region: string | null, picked: { item: LbMediaItem; sourceKey: string }) => {
+					const srcPath = join(SCRAPER_ROOT, picked.item.local_path.replace(/\\/g, "/"));
+					if (!existsSync(srcPath)) {
+						missingCoverFiles++;
+						return;
+					}
 
-						const regionSlug = (picked.item.region ?? "unknown").toLowerCase().replace(/[^a-z0-9]+/g, "-");
-						const ext = extname(picked.item.filename) || extname(srcPath);
-						const destRelPath = `${data.platform_slug}/${game.id}/${targetType.toLowerCase()}-${regionSlug}${ext}`;
-						const destPath = join(PUBLIC_COVERS_DIR, destRelPath);
+					const regionSlug = (region ?? "unknown").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+					const ext = extname(picked.item.filename) || extname(srcPath);
+					const destRelPath = `${data.platform_slug}/${game.id}/${targetType.toLowerCase()}-${regionSlug}${ext}`;
+					const destPath = join(PUBLIC_COVERS_DIR, destRelPath);
 
-						mkdirSync(dirname(destPath), { recursive: true });
-						copyFileSync(srcPath, destPath);
+					mkdirSync(dirname(destPath), { recursive: true });
+					copyFileSync(srcPath, destPath);
 
-						await client.query(
-							`INSERT INTO ref_cover (id_game, ll_cover_type, ll_region, ll_image_url)
-							 VALUES ($1, $2, $3, $4)`,
-							[idGame, targetType, picked.item.region ?? null, `/covers/${destRelPath.replace(/\\/g, "/")}`]
-						);
-						totalCovers++;
+					await client.query(
+						`INSERT INTO ref_cover (id_game, ll_cover_type, ll_region, ll_image_url)
+						 VALUES ($1, $2, $3, $4)`,
+						[idGame, targetType, region, `/covers/${destRelPath.replace(/\\/g, "/")}`]
+					);
+					totalCovers++;
+				};
+
+				for (const edition of frontEditions(game)) {
+					if (edition.front) await insertCover("FRONT", edition.region, edition.front);
+					for (const targetType of ["BACK", "SPINE", "MEDIA", "BOX_3D"]) {
+						const picked = pickForRegion(game, targetType, edition.region);
+						if (picked) await insertCover(targetType, edition.region, picked);
 					}
 				}
 			}
