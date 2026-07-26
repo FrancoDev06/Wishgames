@@ -15,7 +15,7 @@ RUN npx ng build --configuration production
 FROM oven/bun:1 AS runtime
 WORKDIR /app/backend
 COPY apps/backend/package.json apps/backend/bun.lock ./
-RUN bun install --production
+RUN bun install --production --backend=copyfile
 COPY apps/backend .
 COPY --from=frontend-build /app/frontend/dist/fronted/browser /app/frontend/dist/fronted/browser
 
