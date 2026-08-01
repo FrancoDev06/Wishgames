@@ -61,6 +61,27 @@
   color: var(--color-text-muted);
 }
 
+.price-row__tags {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  max-width: 140px;
+  justify-content: flex-end;
+}
+
+// Complétude/état recherchés, affichés juste à côté du prix (retour utilisateur : voir "CIB" et
+// l'état sans devoir ouvrir le détail) — même style compact que ConditionMeter (state-row__tag).
+.price-edition__tag {
+  flex: none;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px var(--space-2);
+  border-radius: 4px;
+  color: #fff;
+  white-space: nowrap;
+}
+
 .price-row__price {
   flex: none;
   text-align: right;
@@ -71,4 +92,80 @@
   font-size: var(--text-sm);
   color: var(--color-text-muted);
   font-style: italic;
+}
+
+// Groupe = plusieurs entrées wishlist du même jeu, une par édition régionale suivie (§9) — permet
+// de comparer leurs prix en un coup d'œil au lieu de lignes disjointes sans lien visible entre elles.
+.price-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--color-bg-elevated);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-5);
+}
+
+.price-group__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.price-group__editions {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-2) 0 0;
+  border-top: var(--border-width) solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.price-edition {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.price-edition:hover {
+  background: var(--color-bg-sunken);
+}
+
+.price-edition--recommended {
+  background: var(--color-bg-sunken);
+  border: var(--border-width) solid var(--color-secondary);
+}
+
+.price-edition__region {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  min-width: 90px;
+}
+
+.price-edition__badge {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+}
+
+.price-edition__badge--best {
+  background: var(--color-secondary);
+  color: var(--color-primary-contrast);
+}
+
+.price-edition__badge--warning {
+  background: var(--color-bg);
+  color: var(--color-warning);
+  border: var(--border-width) solid var(--color-warning);
+}
+
+.price-edition__price {
+  margin-left: auto;
+  font-weight: 700;
 }

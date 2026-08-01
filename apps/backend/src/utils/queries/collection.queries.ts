@@ -22,6 +22,10 @@ export type CollectionUpdatePayload = Partial<Omit<CollectionCreatePayload, "id_
 
 // La jaquette affichée pour une ligne de collection correspond à sa propre région quand elle est
 // connue (col.ll_region) ; sinon on retombe sur la priorité Europe -> USA -> Japon habituelle (§2bis).
+// Le rendu 3D (BOX_3D, migration 0010) est préféré au scan plat (FRONT) une fois la région choisie
+// — même logique que GameQueries.COVER_JOIN pour le Catalogue. Avant ce correctif, Collection/
+// Wishlist ne regardaient jamais BOX_3D et retombaient toujours sur le scan plat même quand un
+// rendu 3D existait pour la région exacte.
 const SELECT_WITH_GAME = `
 	SELECT col.*, g.ll_title AS title, c.ll_slug AS console_slug, c.ll_name AS console_name,
 	       cov.ll_image_url AS cover_front_url
@@ -31,10 +35,11 @@ const SELECT_WITH_GAME = `
 	LEFT JOIN LATERAL (
 		SELECT ll_image_url
 		FROM ref_cover c2
-		WHERE c2.id_game = g.id AND c2.ll_cover_type = 'FRONT'
+		WHERE c2.id_game = g.id AND c2.ll_cover_type IN ('FRONT', 'BOX_3D')
 		ORDER BY
 			CASE WHEN c2.ll_region = col.ll_region THEN 0 ELSE 1 END,
-			CASE c2.ll_region WHEN 'Europe' THEN 1 WHEN 'North America' THEN 2 WHEN 'Japan' THEN 3 ELSE 4 END
+			CASE c2.ll_region WHEN 'Europe' THEN 1 WHEN 'North America' THEN 2 WHEN 'Japan' THEN 3 ELSE 4 END,
+			CASE WHEN c2.ll_cover_type = 'BOX_3D' THEN 0 ELSE 1 END
 		LIMIT 1
 	) cov ON true
 `;

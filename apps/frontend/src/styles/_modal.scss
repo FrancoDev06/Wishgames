@@ -17,7 +17,12 @@
 .modal {
   width: 100%;
   max-width: 560px;
+  // 100dvh (hauteur de viewport "dynamique") tient compte du clavier virtuel mobile, contrairement
+  // à 100vh qui reste fixe sur iOS Safari — sans ça la modale pouvait dépasser l'écran visible et
+  // couper le bouton "Ajouter" en bas (retour utilisateur, mobile). Écrase 100vh sur les
+  // navigateurs qui supportent dvh ; les autres gardent simplement 100vh.
   max-height: calc(100vh - var(--space-8));
+  max-height: calc(100dvh - var(--space-8));
   overflow-y: auto;
   background: var(--color-bg-elevated);
   border: var(--border-width) solid var(--color-border);
@@ -65,17 +70,25 @@
   gap: var(--space-4);
 }
 
+// Collée en bas de la modale (position: sticky sur son conteneur scrollable, .modal) : reste
+// atteignable même en scrollant un long formulaire, au lieu de sortir de l'écran visible sur
+// mobile (retour utilisateur — bouton "Ajouter" coupé/difficile à toucher).
 .modal__actions {
+  position: sticky;
+  bottom: 0;
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
   margin-top: var(--space-5);
+  padding-top: var(--space-3);
+  background: var(--color-bg-elevated);
 }
 
 .btn {
   font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: 600;
+  min-height: 44px;
   padding: var(--space-3) var(--space-5);
   border-radius: var(--radius-md);
   border: var(--border-width) solid transparent;
@@ -132,6 +145,7 @@
   .modal {
     padding: var(--space-5) var(--space-4);
     max-height: calc(100vh - var(--space-6));
+    max-height: calc(100dvh - var(--space-6));
   }
 
   .modal__row {

@@ -1,0 +1,1125 @@
+<title>WishGames — Pistes pour l'affichage complétude / état / région</title>
+
+<style>
+  :root {
+    --bg: #f5f4f1;
+    --bg-elevated: #ffffff;
+    --bg-sunken: #ebe9e5;
+    --border: #ddd9d2;
+    --text: #17161c;
+    --text-muted: #6b6a6f;
+    --text-faint: #96959a;
+    --primary: #7c5cd6;
+    --secondary: #0891a8;
+
+    --loose: #6b7280;
+    --loose-manual: #5c8a99;
+    --boxed: #4f8ea3;
+    --cib: #2f9c78;
+    --sealed: #c99420;
+    --nos: #cc6a2c;
+
+    --poor: #c33d40;
+    --fair: #cc6a2c;
+    --good: #c99420;
+    --very-good: #8fa84e;
+    --excellent: #5c8a4d;
+    --near-mint: #2f9c78;
+    --mint: #0891a8;
+
+    --europe: #3f6fd6;
+    --na: #c94b60;
+    --japan: #d68f2e;
+
+    --radius-md: 12px;
+    --radius-pill: 999px;
+    --font-body: -apple-system, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0f0f13;
+    --bg-elevated: #15151b;
+    --bg-sunken: #0c0c10;
+    --border: #26262c;
+    --text: #eceae4;
+    --text-muted: #8a8b8e;
+    --text-faint: #5f6066;
+    --primary: #a78bfa;
+    --secondary: #67e8f9;
+
+    --loose: #6b7280;
+    --loose-manual: #5c8a99;
+    --boxed: #4f8ea3;
+    --cib: #3fae8a;
+    --sealed: #d6a536;
+    --nos: #e0793a;
+
+    --poor: #d9484b;
+    --fair: #e0793a;
+    --good: #d6a536;
+    --very-good: #a3c15a;
+    --excellent: #6e9b57;
+    --near-mint: #3fae8a;
+    --mint: #67e8f9;
+
+    --europe: #5b8cff;
+    --na: #e0546a;
+    --japan: #f4a640;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f0f13;
+      --bg-elevated: #15151b;
+      --bg-sunken: #0c0c10;
+      --border: #26262c;
+      --text: #eceae4;
+      --text-muted: #8a8b8e;
+      --text-faint: #5f6066;
+      --primary: #a78bfa;
+      --secondary: #67e8f9;
+
+      --loose: #6b7280;
+      --loose-manual: #5c8a99;
+      --boxed: #4f8ea3;
+      --cib: #3fae8a;
+      --sealed: #d6a536;
+      --nos: #e0793a;
+
+      --poor: #d9484b;
+      --fair: #e0793a;
+      --good: #d6a536;
+      --very-good: #a3c15a;
+      --excellent: #6e9b57;
+      --near-mint: #3fae8a;
+      --mint: #67e8f9;
+
+      --europe: #5b8cff;
+      --na: #e0546a;
+      --japan: #f4a640;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    padding: 0 0 6rem;
+  }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+  }
+
+  .intro h1 {
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0 0 0.4rem;
+  }
+
+  .intro p {
+    color: var(--text-muted);
+    max-width: 62ch;
+    margin: 0 0 0.3rem;
+  }
+
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1.5rem 0 3rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav a {
+    display: inline-block;
+    padding: 0.4rem 0.85rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .nav a:hover, .nav a:focus-visible {
+    border-color: var(--primary);
+    color: var(--text);
+  }
+
+  section.concept {
+    margin-bottom: 3.5rem;
+    scroll-margin-top: 1.5rem;
+  }
+
+  .concept__eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--secondary);
+    margin: 0 0 0.35rem;
+  }
+
+  .concept__title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0 0 0.35rem;
+    text-wrap: balance;
+  }
+
+  .concept__desc {
+    color: var(--text-muted);
+    max-width: 60ch;
+    margin: 0 0 1.25rem;
+    font-size: 0.94rem;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .card__title {
+    font-weight: 700;
+    font-size: 0.98rem;
+    margin: 0;
+  }
+
+  .card__meta {
+    color: var(--text-faint);
+    font-size: 0.78rem;
+    margin: -0.4rem 0 0;
+  }
+
+  /* ---------- Concept A: baseline actuel ---------- */
+  .badges-a {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .pill-a {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-pill);
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  /* ---------- Concept B: puces contour + icône ---------- */
+  .badges-b {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+  .chip-b {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.76rem;
+    font-weight: 600;
+    padding: 0.28rem 0.65rem 0.28rem 0.5rem;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    border: 1.5px solid var(--chip-color, var(--border));
+    color: var(--chip-color, var(--text-muted));
+  }
+  .chip-b__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex: none;
+  }
+
+  /* ---------- Concept C: bande de codes compacts ---------- */
+  .strip-c {
+    display: flex;
+    align-items: stretch;
+    gap: 1px;
+    font-family: var(--font-mono);
+    border-radius: 6px;
+    overflow: hidden;
+    width: fit-content;
+    border: 1px solid var(--border);
+  }
+  .code-c {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: var(--bg-sunken);
+    color: var(--text);
+    border-left: 3px solid var(--code-color, var(--text-faint));
+    white-space: nowrap;
+  }
+
+  /* ---------- Concept D: jauge d'état + tag complétude ---------- */
+  .state-d {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .state-d__row {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .state-d__label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    width: 4.6rem;
+    flex: none;
+    white-space: nowrap;
+  }
+  .meter-d {
+    display: flex;
+    gap: 2px;
+    flex: 1;
+  }
+  .meter-d span {
+    height: 7px;
+    flex: 1;
+    border-radius: 2px;
+    background: var(--bg-sunken);
+  }
+  .meter-d span.on {
+    background: var(--meter-color, var(--secondary));
+  }
+  .tag-d {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.22rem 0.6rem;
+    border-radius: 5px;
+    color: #fff;
+    width: fit-content;
+  }
+  .region-d {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .region-d__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--region-color, var(--text-faint));
+  }
+
+  /* ---------- Concept E: ligne éditoriale ---------- */
+  .spec-e {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.84rem;
+    color: var(--text);
+  }
+  .spec-e__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .spec-e__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--dot-color, var(--text-faint));
+    flex: none;
+  }
+  .spec-e__sep {
+    color: var(--text-faint);
+    padding: 0 0.1rem;
+  }
+
+  /* ---------- Concept F: badge bicolore combiné ---------- */
+  .combo-f {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .split-f {
+    display: flex;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .split-f span {
+    padding: 0.3rem 0.65rem;
+  }
+  .region-f {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--region-color, var(--border));
+    color: var(--region-color, var(--text-muted));
+  }
+
+  /* ---------- Cover placeholder (concepts G/H/I) ---------- */
+  .cover-ph {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    border-radius: 8px;
+    background: linear-gradient(155deg, var(--bg-sunken), var(--border));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-faint);
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    overflow: hidden;
+  }
+
+  /* ---------- Concept G: cadre de jaquette (état) + étiquette d'angle (complétude) ---------- */
+  .cover-g {
+    border: 3px solid var(--frame-color, var(--border));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--frame-color, transparent) 35%, transparent);
+  }
+  .tag-corner-g {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--tag-color, var(--text-faint));
+    padding: 0.2rem 0.5rem;
+    border-bottom-right-radius: 8px;
+  }
+  .region-g {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+  }
+
+  /* ---------- Concept H: ruban d'angle (complétude) ---------- */
+  .cover-h { overflow: visible; }
+  .ribbon-h {
+    position: absolute;
+    top: 10px;
+    right: -30px;
+    width: 120px;
+    transform: rotate(40deg);
+    text-align: center;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--ribbon-color, var(--text-faint));
+    padding: 0.22rem 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  }
+  .state-h {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+  }
+  .state-h__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--dot-color, var(--text-faint));
+  }
+
+  /* ---------- Concept I: tampon / sceau (état) ---------- */
+  .stamp-i {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 50%;
+    border: 2.5px solid var(--stamp-color, var(--text-faint));
+    color: var(--stamp-color, var(--text-faint));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.58rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+    transform: rotate(-12deg);
+    background: color-mix(in srgb, var(--stamp-color, transparent) 10%, var(--bg-elevated) 90%);
+  }
+  .meta-i {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* ---------- Concept J: barre d'accent verticale (comme les couleurs console) ---------- */
+  .card--accent-j {
+    flex-direction: row;
+    align-items: stretch;
+    padding: 0;
+    overflow: hidden;
+    gap: 0;
+  }
+  .accent-j {
+    width: 5px;
+    flex: none;
+    background: var(--accent-color, var(--border));
+  }
+  .accent-j__body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex: 1;
+  }
+  .spec-j {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .spec-j strong {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  /* ---------- Concept K: soulignement (aucun fond) ---------- */
+  .badges-k {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+  }
+  .tab-k {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--tab-color, var(--text));
+    padding-bottom: 0.2rem;
+    border-bottom: 2.5px solid var(--tab-color, var(--border));
+  }
+
+  /* ---------- Concept L: notation étoiles (état) ---------- */
+  .stars-l {
+    display: flex;
+    gap: 0.1rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.05em;
+  }
+  .stars-l .on { color: var(--star-color, var(--secondary)); }
+  .stars-l .off { color: var(--border); }
+  .tag-l {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.22rem 0.6rem;
+    border-radius: 5px;
+    color: #fff;
+    width: fit-content;
+  }
+
+  /* ---------- Concept M : pastilles rectangulaires pleines (pays + état) ---------- */
+  .tags-m-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tag-region-m {
+    display: inline-block;
+    width: fit-content;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.22rem 0.6rem;
+    border-radius: 4px;
+    color: #fff;
+  }
+
+  .tag-inline-m {
+    flex: none;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.12rem 0.45rem;
+    border-radius: 4px;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  .warn-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--fair);
+    color: var(--fair);
+    background: color-mix(in srgb, var(--fair) 12%, transparent);
+  }
+
+  .footer-note {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    max-width: 60ch;
+  }
+
+  @media (max-width: 480px) {
+    .wrap { padding: 1.5rem 1rem; }
+  }
+</style>
+
+<div class="wrap">
+  <div class="intro">
+    <h1>Affichage complétude / état / région — 6 pistes</h1>
+    <p>Même jeu de données à chaque fois (3 cartes types : loose courant, CIB haut de gamme, import japonais compliqué), rendu avec 6 traitements différents. Les couleurs viennent exactement de tes constantes actuelles (<code>game-state.constants.ts</code>) — rien n'est inventé, seule la mise en forme change.</p>
+  </div>
+
+  <ul class="nav">
+    <li><a href="#concept-a">A · Actuel</a></li>
+    <li><a href="#concept-b">B · Puces contour</a></li>
+    <li><a href="#concept-c">C · Bande de codes</a></li>
+    <li><a href="#concept-d">D · Jauge d'état</a></li>
+    <li><a href="#concept-e">E · Ligne éditoriale</a></li>
+    <li><a href="#concept-f">F · Badge combiné</a></li>
+    <li><a href="#concept-g">G · Cadre de jaquette</a></li>
+    <li><a href="#concept-h">H · Ruban d'angle</a></li>
+    <li><a href="#concept-i">I · Tampon/sceau</a></li>
+    <li><a href="#concept-j">J · Barre d'accent</a></li>
+    <li><a href="#concept-k">K · Soulignement</a></li>
+    <li><a href="#concept-l">L · Étoiles</a></li>
+    <li><a href="#concept-m">M · Combinaison G+H+D</a></li>
+  </ul>
+
+  <section class="concept" id="concept-a">
+    <p class="concept__eyebrow">Piste A</p>
+    <h2 class="concept__title">Actuel — pastilles pleines</h2>
+    <p class="concept__desc">Ce qui existe aujourd'hui : une pastille pleine par attribut, couleur de fond différente à chaque fois. Sert de référence pour comparer.</p>
+    <div class="cards">
+      <article class="card">
+        <p class="card__title">Adventure Island</p>
+        <p class="card__meta">NES · USA</p>
+        <div class="badges-a">
+          <span class="pill-a" style="background: var(--loose)">Loose</span>
+          <span class="pill-a" style="background: var(--good)">Good</span>
+          <span class="pill-a" style="background: var(--na)">USA</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">The Legend of Zelda</p>
+        <p class="card__meta">NES · Japon</p>
+        <div class="badges-a">
+          <span class="pill-a" style="background: var(--cib)">CIB</span>
+          <span class="pill-a" style="background: var(--mint)">Mint</span>
+          <span class="pill-a" style="background: var(--japan)">Japon</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">Chrono Trigger</p>
+        <p class="card__meta">SNES · Europe</p>
+        <div class="badges-a">
+          <span class="pill-a" style="background: var(--sealed)">Sealed</span>
+          <span class="pill-a" style="background: var(--near-mint)">Near Mint</span>
+          <span class="pill-a" style="background: var(--europe)">Europe</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-b">
+    <p class="concept__eyebrow">Piste B</p>
+    <h2 class="concept__title">Puces à contour + point de couleur</h2>
+    <p class="concept__desc">Fond transparent, bordure et texte teintés au lieu d'un aplat plein — même info, beaucoup moins "confiseries" côte à côte. Le point rappelle discrètement le code couleur.</p>
+    <div class="cards">
+      <article class="card">
+        <p class="card__title">Adventure Island</p>
+        <p class="card__meta">NES · USA</p>
+        <div class="badges-b">
+          <span class="chip-b" style="--chip-color: var(--loose)"><i class="chip-b__dot"></i>Loose</span>
+          <span class="chip-b" style="--chip-color: var(--good)"><i class="chip-b__dot"></i>Good</span>
+          <span class="chip-b" style="--chip-color: var(--na)"><i class="chip-b__dot"></i>USA</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">The Legend of Zelda</p>
+        <p class="card__meta">NES · Japon</p>
+        <div class="badges-b">
+          <span class="chip-b" style="--chip-color: var(--cib)"><i class="chip-b__dot"></i>CIB</span>
+          <span class="chip-b" style="--chip-color: var(--mint)"><i class="chip-b__dot"></i>Mint</span>
+          <span class="chip-b" style="--chip-color: var(--japan)"><i class="chip-b__dot"></i>Japon</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">Chrono Trigger</p>
+        <p class="card__meta">SNES · Europe</p>
+        <div class="badges-b">
+          <span class="chip-b" style="--chip-color: var(--sealed)"><i class="chip-b__dot"></i>Sealed</span>
+          <span class="chip-b" style="--chip-color: var(--near-mint)"><i class="chip-b__dot"></i>Near Mint</span>
+          <span class="chip-b" style="--chip-color: var(--europe)"><i class="chip-b__dot"></i>Europe</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-c">
+    <p class="concept__eyebrow">Piste C</p>
+    <h2 class="concept__title">Bande de codes compacts</h2>
+    <p class="concept__desc">Abréviations en monospace collées les unes aux autres, liseré de couleur à gauche de chaque segment. Très dense — pensé pour une grille serrée avec beaucoup de cartes à l'écran. Un survol/tap peut afficher le libellé complet en infobulle.</p>
+    <div class="cards">
+      <article class="card">
+        <p class="card__title">Adventure Island</p>
+        <p class="card__meta">NES · USA</p>
+        <div class="strip-c">
+          <span class="code-c" style="--code-color: var(--loose)" title="Loose">LSE</span>
+          <span class="code-c" style="--code-color: var(--good)" title="Good">GD</span>
+          <span class="code-c" style="--code-color: var(--na)" title="USA">US</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">The Legend of Zelda</p>
+        <p class="card__meta">NES · Japon</p>
+        <div class="strip-c">
+          <span class="code-c" style="--code-color: var(--cib)" title="CIB">CIB</span>
+          <span class="code-c" style="--code-color: var(--mint)" title="Mint">MT</span>
+          <span class="code-c" style="--code-color: var(--japan)" title="Japon">JP</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">Chrono Trigger</p>
+        <p class="card__meta">SNES · Europe</p>
+        <div class="strip-c">
+          <span class="code-c" style="--code-color: var(--sealed)" title="Sealed">SLD</span>
+          <span class="code-c" style="--code-color: var(--near-mint)" title="Near Mint">NM</span>
+          <span class="code-c" style="--code-color: var(--europe)" title="Europe">EU</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-d">
+    <p class="concept__eyebrow">Piste D</p>
+    <h2 class="concept__title">Jauge d'état + tag complétude</h2>
+    <p class="concept__desc">L'état (Poor → Mint) devient une jauge à 7 segments : on voit "à quel point c'est bon" sans lire le mot. La complétude reste un petit tag texte (catégorie, pas un ordre). Bien pour la vue liste ou la modale de détail, un peu lourd pour une grille dense.</p>
+    <div class="cards">
+      <article class="card">
+        <p class="card__title">Adventure Island</p>
+        <p class="card__meta">NES · USA</p>
+        <div class="state-d">
+          <span class="tag-d" style="background: var(--loose)">Loose</span>
+          <div class="state-d__row">
+            <span class="state-d__label">État</span>
+            <div class="meter-d" style="--meter-color: var(--good)">
+              <span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <span class="region-d"><i class="region-d__dot" style="--region-color: var(--na)"></i>USA</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">The Legend of Zelda</p>
+        <p class="card__meta">NES · Japon</p>
+        <div class="state-d">
+          <span class="tag-d" style="background: var(--cib)">CIB</span>
+          <div class="state-d__row">
+            <span class="state-d__label">État</span>
+            <div class="meter-d" style="--meter-color: var(--mint)">
+              <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+            </div>
+          </div>
+          <span class="region-d"><i class="region-d__dot" style="--region-color: var(--japan)"></i>Japon</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">Chrono Trigger</p>
+        <p class="card__meta">SNES · Europe</p>
+        <div class="state-d">
+          <span class="tag-d" style="background: var(--sealed)">Sealed</span>
+          <div class="state-d__row">
+            <span class="state-d__label">État</span>
+            <div class="meter-d" style="--meter-color: var(--near-mint)">
+              <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span>
+            </div>
+          </div>
+          <span class="region-d"><i class="region-d__dot" style="--region-color: var(--europe)"></i>Europe</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-e">
+    <p class="concept__eyebrow">Piste E</p>
+    <h2 class="concept__title">Ligne éditoriale (texte + point)</h2>
+    <p class="concept__desc">Le plus sobre : une seule ligne de texte séparée par des points médians, chaque valeur précédée d'un point de couleur au lieu d'un fond plein. Se lit comme une fiche produit plutôt qu'une collection de badges. Le warning "difficile à jouer" reste un vrai badge pour rester visible.</p>
+    <div class="cards">
+      <article class="card">
+        <p class="card__title">Adventure Island</p>
+        <p class="card__meta">NES · USA</p>
+        <div class="spec-e">
+          <span class="spec-e__item"><i class="spec-e__dot" style="--dot-color: var(--loose)"></i>Loose</span>
+          <span class="spec-e__sep">·</span>
+          <span class="spec-e__item"><i class="spec-e__dot" style="--dot-color: var(--good)"></i>Good</span>
+          <span class="spec-e__sep">·</span>
+          <span class="spec-e__item"><i class="spec-e__dot" style="--dot-color: var(--na)"></i>USA</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">The Legend of Zelda</p>
+        <p class="card__meta">NES · Japon</p>
+        <div class="spec-e">
+          <span class="spec-e__item"><i class="spec-e__dot" style="--dot-color: var(--cib)"></i>CIB</span>
+          <span class="spec-e__sep">·</span>
+          <span class="spec-e__item"><i class="spec-e__dot" style="--dot-color: var(--mint)"></i>Mint</span>
+          <span class="spec-e__sep">·</span>
+          <span class="spec-e__item"><i class="spec-e__dot" style="--dot-color: var(--japan)"></i>Japon</span>
+        </div>
+        <span class="warn-tag">⚠ Import japonais</span>
+      </article>
+      <article class="card">
+        <p class="card__title">Chrono Trigger</p>
+        <p class="card__meta">SNES · Europe</p>
+        <div class="spec-e">
+          <span class="spec-e__item"><i class="spec-e__dot" style="--dot-color: var(--sealed)"></i>Sealed</span>
+          <span class="spec-e__sep">·</span>
+          <span class="spec-e__item"><i class="spec-e__dot" style="--dot-color: var(--near-mint)"></i>Near Mint</span>
+          <span class="spec-e__sep">·</span>
+          <span class="spec-e__item"><i class="spec-e__dot" style="--dot-color: var(--europe)"></i>Europe</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-f">
+    <p class="concept__eyebrow">Piste F</p>
+    <h2 class="concept__title">Badge combiné bicolore</h2>
+    <p class="concept__desc">Complétude + état fusionnés dans une seule pastille coupée en deux couleurs ("Loose | Good" en un seul badge plutôt que deux) — moins de pastilles à l'écran. La région reste séparée puisqu'elle n'a pas la même nature (catégorielle, pas un état de qualité).</p>
+    <div class="cards">
+      <article class="card">
+        <p class="card__title">Adventure Island</p>
+        <p class="card__meta">NES · USA</p>
+        <div class="combo-f">
+          <span class="split-f"><span style="background: var(--loose)">Loose</span><span style="background: var(--good)">Good</span></span>
+          <span class="region-f" style="--region-color: var(--na)">USA</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">The Legend of Zelda</p>
+        <p class="card__meta">NES · Japon</p>
+        <div class="combo-f">
+          <span class="split-f"><span style="background: var(--cib)">CIB</span><span style="background: var(--mint)">Mint</span></span>
+          <span class="region-f" style="--region-color: var(--japan)">Japon</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">Chrono Trigger</p>
+        <p class="card__meta">SNES · Europe</p>
+        <div class="combo-f">
+          <span class="split-f"><span style="background: var(--sealed)">Sealed</span><span style="background: var(--near-mint)">Near Mint</span></span>
+          <span class="region-f" style="--region-color: var(--europe)">Europe</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-g">
+    <p class="concept__eyebrow">Piste G</p>
+    <h2 class="concept__title">Cadre de jaquette (état) + étiquette d'angle (complétude)</h2>
+    <p class="concept__desc">Plus aucune pastille flottante : l'état devient la couleur du cadre autour de la jaquette elle-même (doré = Mint, gris = Poor), la complétude une petite étiquette collée au coin. La région reste en texte simple sous le titre.</p>
+    <div class="cards">
+      <article class="card">
+        <p class="card__title">Adventure Island</p>
+        <div class="cover-ph cover-g" style="--frame-color: var(--good)">
+          <span class="tag-corner-g" style="--tag-color: var(--loose)">Loose</span>
+          Jaquette
+        </div>
+        <p class="region-g">NES · USA</p>
+      </article>
+      <article class="card">
+        <p class="card__title">The Legend of Zelda</p>
+        <div class="cover-ph cover-g" style="--frame-color: var(--mint)">
+          <span class="tag-corner-g" style="--tag-color: var(--cib)">CIB</span>
+          Jaquette
+        </div>
+        <p class="region-g">NES · Japon</p>
+      </article>
+      <article class="card">
+        <p class="card__title">Chrono Trigger</p>
+        <div class="cover-ph cover-g" style="--frame-color: var(--near-mint)">
+          <span class="tag-corner-g" style="--tag-color: var(--sealed)">Sealed</span>
+          Jaquette
+        </div>
+        <p class="region-g">SNES · Europe</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-h">
+    <p class="concept__eyebrow">Piste H</p>
+    <h2 class="concept__title">Ruban d'angle (complétude)</h2>
+    <p class="concept__desc">La complétude traverse le coin de la jaquette en ruban diagonal, comme un autocollant "Sealed" ou "CIB" sur une vraie boîte. État et région redescendent en texte discret sous le titre.</p>
+    <div class="cards">
+      <article class="card">
+        <p class="card__title">Adventure Island</p>
+        <div class="cover-ph cover-h">
+          <span class="ribbon-h" style="--ribbon-color: var(--loose)">Loose</span>
+          Jaquette
+        </div>
+        <div class="state-h"><i class="state-h__dot" style="--dot-color: var(--good)"></i>Good · USA</div>
+      </article>
+      <article class="card">
+        <p class="card__title">The Legend of Zelda</p>
+        <div class="cover-ph cover-h">
+          <span class="ribbon-h" style="--ribbon-color: var(--cib)">CIB</span>
+          Jaquette
+        </div>
+        <div class="state-h"><i class="state-h__dot" style="--dot-color: var(--mint)"></i>Mint · Japon</div>
+      </article>
+      <article class="card">
+        <p class="card__title">Chrono Trigger</p>
+        <div class="cover-ph cover-h">
+          <span class="ribbon-h" style="--ribbon-color: var(--sealed)">Sealed</span>
+          Jaquette
+        </div>
+        <div class="state-h"><i class="state-h__dot" style="--dot-color: var(--near-mint)"></i>Near Mint · Europe</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-i">
+    <p class="concept__eyebrow">Piste I</p>
+    <h2 class="concept__title">Tampon / sceau (état)</h2>
+    <p class="concept__desc">L'état devient un tampon circulaire légèrement penché posé sur le coin de la jaquette — clin d'œil "certifié" façon grading de collection physique. Complétude et région restent en texte sobre.</p>
+    <div class="cards">
+      <article class="card">
+        <p class="card__title">Adventure Island</p>
+        <div class="cover-ph">
+          Jaquette
+          <span class="stamp-i" style="--stamp-color: var(--good)">Good</span>
+        </div>
+        <div class="meta-i">Loose · USA</div>
+      </article>
+      <article class="card">
+        <p class="card__title">The Legend of Zelda</p>
+        <div class="cover-ph">
+          Jaquette
+          <span class="stamp-i" style="--stamp-color: var(--mint)">Mint</span>
+        </div>
+        <div class="meta-i">CIB · Japon</div>
+      </article>
+      <article class="card">
+        <p class="card__title">Chrono Trigger</p>
+        <div class="cover-ph">
+          Jaquette
+          <span class="stamp-i" style="--stamp-color: var(--near-mint)">Near<br />Mint</span>
+        </div>
+        <div class="meta-i">Sealed · Europe</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-j">
+    <p class="concept__eyebrow">Piste J</p>
+    <h2 class="concept__title">Barre d'accent verticale</h2>
+    <p class="concept__desc">Même principe que les couleurs de console déjà utilisées ailleurs dans l'app : une bande verticale sur le bord gauche de la carte, ici calée sur l'état. Plus aucune pastille — juste du texte simple à droite.</p>
+    <div class="cards">
+      <article class="card card--accent-j">
+        <div class="accent-j" style="--accent-color: var(--good)"></div>
+        <div class="accent-j__body">
+          <p class="card__title">Adventure Island</p>
+          <p class="card__meta">NES · USA</p>
+          <p class="spec-j"><strong>Loose</strong> · Good</p>
+        </div>
+      </article>
+      <article class="card card--accent-j">
+        <div class="accent-j" style="--accent-color: var(--mint)"></div>
+        <div class="accent-j__body">
+          <p class="card__title">The Legend of Zelda</p>
+          <p class="card__meta">NES · Japon</p>
+          <p class="spec-j"><strong>CIB</strong> · Mint</p>
+        </div>
+      </article>
+      <article class="card card--accent-j">
+        <div class="accent-j" style="--accent-color: var(--near-mint)"></div>
+        <div class="accent-j__body">
+          <p class="card__title">Chrono Trigger</p>
+          <p class="card__meta">SNES · Europe</p>
+          <p class="spec-j"><strong>Sealed</strong> · Near Mint</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-k">
+    <p class="concept__eyebrow">Piste K</p>
+    <h2 class="concept__title">Soulignement (aucun fond)</h2>
+    <p class="concept__desc">Le plus minimal de tous : texte coloré avec juste un trait souligné de la même couleur, aucun aplat nulle part. Se fond presque dans la carte — à réserver si tu veux vraiment calmer le jeu visuellement.</p>
+    <div class="cards">
+      <article class="card">
+        <p class="card__title">Adventure Island</p>
+        <p class="card__meta">NES · USA</p>
+        <div class="badges-k">
+          <span class="tab-k" style="--tab-color: var(--loose)">Loose</span>
+          <span class="tab-k" style="--tab-color: var(--good)">Good</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">The Legend of Zelda</p>
+        <p class="card__meta">NES · Japon</p>
+        <div class="badges-k">
+          <span class="tab-k" style="--tab-color: var(--cib)">CIB</span>
+          <span class="tab-k" style="--tab-color: var(--mint)">Mint</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">Chrono Trigger</p>
+        <p class="card__meta">SNES · Europe</p>
+        <div class="badges-k">
+          <span class="tab-k" style="--tab-color: var(--sealed)">Sealed</span>
+          <span class="tab-k" style="--tab-color: var(--near-mint)">Near Mint</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-l">
+    <p class="concept__eyebrow">Piste L</p>
+    <h2 class="concept__title">Notation étoiles (état)</h2>
+    <p class="concept__desc">L'état en rangée d'étoiles façon note produit — instantanément lisible sans connaître l'échelle Poor→Mint. La complétude reste un petit tag ; la région en texte simple.</p>
+    <div class="cards">
+      <article class="card">
+        <p class="card__title">Adventure Island</p>
+        <p class="card__meta">NES · USA</p>
+        <span class="tag-l" style="background: var(--loose)">Loose</span>
+        <div class="stars-l" style="--star-color: var(--good)">
+          <span class="on">★</span><span class="on">★</span><span class="on">★</span><span class="off">★</span><span class="off">★</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">The Legend of Zelda</p>
+        <p class="card__meta">NES · Japon</p>
+        <span class="tag-l" style="background: var(--cib)">CIB</span>
+        <div class="stars-l" style="--star-color: var(--mint)">
+          <span class="on">★</span><span class="on">★</span><span class="on">★</span><span class="on">★</span><span class="on">★</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">Chrono Trigger</p>
+        <p class="card__meta">SNES · Europe</p>
+        <span class="tag-l" style="background: var(--sealed)">Sealed</span>
+        <div class="stars-l" style="--star-color: var(--near-mint)">
+          <span class="on">★</span><span class="on">★</span><span class="on">★</span><span class="on">★</span><span class="off">★</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-m">
+    <p class="concept__eyebrow">Combinaison demandée</p>
+    <h2 class="concept__title">M · Cadre + ruban de G/H + pastille pays + jauges jeu/jaquette/notice</h2>
+    <p class="concept__desc">Même contenu qu'avant, mais la pastille rejoint la fin de sa ligne de jauge au lieu d'occuper une ligne à elle seule — trois lignes compactes (Jeu/Jaquette/Notice) plutôt que six.</p>
+    <div class="cards">
+      <article class="card">
+        <p class="card__title">Adventure Island</p>
+        <div class="cover-ph cover-g cover-h" style="--frame-color: var(--loose)">
+          <span class="ribbon-h" style="--ribbon-color: var(--loose)">Loose</span>
+          Jaquette
+        </div>
+        <span class="tag-region-m" style="background: var(--na)">USA</span>
+        <div class="state-d__row">
+          <span class="state-d__label">Jeu</span>
+          <div class="meter-d" style="--meter-color: var(--good)">
+            <span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span><span></span><span></span>
+          </div>
+          <span class="tag-inline-m" style="background: var(--good)">Good</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">The Legend of Zelda</p>
+        <div class="cover-ph cover-g cover-h" style="--frame-color: var(--cib)">
+          <span class="ribbon-h" style="--ribbon-color: var(--cib)">CIB</span>
+          Jaquette
+        </div>
+        <span class="tag-region-m" style="background: var(--japan)">Japon</span>
+        <div class="state-d__row">
+          <span class="state-d__label">Jeu</span>
+          <div class="meter-d" style="--meter-color: var(--mint)">
+            <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+          </div>
+          <span class="tag-inline-m" style="background: var(--mint)">Mint</span>
+        </div>
+        <div class="state-d__row">
+          <span class="state-d__label">Jaquette</span>
+          <div class="meter-d" style="--meter-color: var(--excellent)">
+            <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span>
+          </div>
+          <span class="tag-inline-m" style="background: var(--excellent)">Excellent</span>
+        </div>
+        <div class="state-d__row">
+          <span class="state-d__label">Notice</span>
+          <div class="meter-d" style="--meter-color: var(--very-good)">
+            <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span>
+          </div>
+          <span class="tag-inline-m" style="background: var(--very-good)">Very Good</span>
+        </div>
+      </article>
+      <article class="card">
+        <p class="card__title">Chrono Trigger</p>
+        <div class="cover-ph cover-g cover-h" style="--frame-color: var(--sealed)">
+          <span class="ribbon-h" style="--ribbon-color: var(--sealed)">Sealed</span>
+          Jaquette
+        </div>
+        <span class="tag-region-m" style="background: var(--europe)">Europe</span>
+        <div class="state-d__row">
+          <span class="state-d__label">Jeu</span>
+          <div class="meter-d" style="--meter-color: var(--near-mint)">
+            <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span>
+          </div>
+          <span class="tag-inline-m" style="background: var(--near-mint)">Near Mint</span>
+        </div>
+        <div class="state-d__row">
+          <span class="state-d__label">Jaquette</span>
+          <div class="meter-d" style="--meter-color: var(--near-mint)">
+            <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span>
+          </div>
+          <span class="tag-inline-m" style="background: var(--near-mint)">Near Mint</span>
+        </div>
+        <div class="state-d__row">
+          <span class="state-d__label">Notice</span>
+          <div class="meter-d" style="--meter-color: var(--mint)">
+            <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+          </div>
+          <span class="tag-inline-m" style="background: var(--mint)">Mint</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <p class="footer-note">Dis-moi laquelle te parle (ou un mix, ex. "G pour les cartes, E pour la modale de détail") et je l'implémente dans les vraies pages Collection/Wishlist/Catalogue.</p>
+</div>

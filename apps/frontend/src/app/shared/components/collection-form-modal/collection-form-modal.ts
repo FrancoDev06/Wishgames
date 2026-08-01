@@ -60,8 +60,10 @@ export class CollectionFormModal implements OnInit {
   @Input() subtitle = '';
   @Input() confirmLabel = 'Confirmer';
   @Input() submitting = false;
-  // Région imposée (ajout depuis une carte Catalogue précise, une par édition régionale, §2bis) —
-  // le select est alors verrouillé sur cette valeur plutôt que de laisser choisir.
+  // Région pré-sélectionnée (ajout depuis une carte Catalogue précise, §2bis) — simple valeur par
+  // défaut, modifiable : le Catalogue n'expose parfois qu'une jaquette "Europe" générique alors que
+  // l'exemplaire réellement possédé est une édition plus précise (France, Allemagne...), retour
+  // utilisateur — le select reste donc actif même quand cet input est renseigné.
   @Input() lockedRegion: string | null = null;
   // Pré-remplissage en mode édition (modification d'une ligne de collection existante) — la région
   // n'est volontairement pas modifiable en édition (identifie la ligne, changerait de fiche §9).

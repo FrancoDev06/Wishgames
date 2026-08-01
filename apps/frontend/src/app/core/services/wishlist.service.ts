@@ -14,6 +14,7 @@ export interface WishlistCreatePayload {
   ll_desired_condition?: string | null;
   nb_priority?: number | null;
   ts_last_checked?: string | null;
+  flag_hard_to_play?: boolean;
 }
 
 export interface BuyPayload {

@@ -260,6 +260,7 @@
     confirmLabel="Ajouter à la wishlist"
     [submitting]="wishlistSubmitting()"
     [lockedRegion]="target.region"
+    (offersReady)="onWishlistOffersReady($event)"
     (confirmed)="submitAddToWishlist($event)"
     (cancelled)="closeAddToWishlist()"
   />

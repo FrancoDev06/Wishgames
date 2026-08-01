@@ -70,23 +70,34 @@
             <div class="browse-grid">
               @for (item of group.items; track item.id) {
                 <article class="card">
-                  @if (coverUrl(item); as url) {
-                    <img class="card__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
-                  } @else {
-                    <div class="card__cover card__cover--placeholder">{{ group.consoleName }}</div>
-                  }
+                  <div class="card__cover-frame" [style.--frame-color]="completenessColor(item.ll_completeness)">
+                    <span class="card__ribbon" [style.background]="completenessColor(item.ll_completeness)">{{ completenessLabel(item.ll_completeness) }}</span>
+                    @if (coverUrl(item); as url) {
+                      <img class="card__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
+                    } @else {
+                      <div class="card__cover card__cover--placeholder">{{ group.consoleName }}</div>
+                    }
+                  </div>
 
                   <div class="card__body">
                     <h3 class="card__title">{{ item.title }}</h3>
 
-                    <div class="badges">
+                    <div class="card__tags">
                       @if (item.ll_region) {
-                        <span class="badge" [style.background]="regionColor(item.ll_region)">{{ regionLabel(item.ll_region) }}</span>
+                        <span class="tag-region" [style.background]="regionColor(item.ll_region)">{{ regionLabel(item.ll_region) }}</span>
                       }
-                      <span class="badge" [style.background]="completenessColor(item.ll_completeness)">{{ completenessLabel(item.ll_completeness) }}</span>
-                      <span class="badge" [style.background]="conditionColor(item.ll_condition_overall)">{{ conditionLabel(item.ll_condition_overall) }}</span>
                       @if (item.nb_quantity > 1) {
                         <span class="badge badge--quantity">×{{ item.nb_quantity }}</span>
+                      }
+                    </div>
+
+                    <div class="state-rows">
+                      <app-condition-meter label="Jeu" [value]="item.ll_condition_media ?? item.ll_condition_overall" />
+                      @if (showBoxCondition(item.ll_completeness)) {
+                        <app-condition-meter label="Jaquette" [value]="item.ll_condition_box" />
+                      }
+                      @if (showManualCondition(item.ll_completeness)) {
+                        <app-condition-meter label="Notice" [value]="item.ll_condition_manual" />
                       }
                     </div>
 
@@ -106,24 +117,35 @@
             <div class="browse-list">
               @for (item of group.items; track item.id) {
                 <article class="row">
-                  @if (coverUrl(item); as url) {
-                    <img class="row__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
-                  } @else {
-                    <div class="row__cover row__cover--placeholder">{{ group.consoleName }}</div>
-                  }
+                  <div class="row__cover-frame" [style.--frame-color]="completenessColor(item.ll_completeness)">
+                    @if (coverUrl(item); as url) {
+                      <img class="row__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
+                    } @else {
+                      <div class="row__cover row__cover--placeholder">{{ group.consoleName }}</div>
+                    }
+                  </div>
 
                   <div class="row__body">
                     <h3 class="row__title">{{ item.title }}</h3>
 
                     <div class="row__meta">
-                      <div class="badges">
+                      <div class="card__tags">
                         @if (item.ll_region) {
-                          <span class="badge" [style.background]="regionColor(item.ll_region)">{{ regionLabel(item.ll_region) }}</span>
+                          <span class="tag-region" [style.background]="regionColor(item.ll_region)">{{ regionLabel(item.ll_region) }}</span>
                         }
                         <span class="badge" [style.background]="completenessColor(item.ll_completeness)">{{ completenessLabel(item.ll_completeness) }}</span>
-                        <span class="badge" [style.background]="conditionColor(item.ll_condition_overall)">{{ conditionLabel(item.ll_condition_overall) }}</span>
                         @if (item.nb_quantity > 1) {
                           <span class="badge badge--quantity">×{{ item.nb_quantity }}</span>
+                        }
+                      </div>
+
+                      <div class="state-rows">
+                        <app-condition-meter label="Jeu" [value]="item.ll_condition_media ?? item.ll_condition_overall" />
+                        @if (showBoxCondition(item.ll_completeness)) {
+                          <app-condition-meter label="Jaquette" [value]="item.ll_condition_box" />
+                        }
+                        @if (showManualCondition(item.ll_completeness)) {
+                          <app-condition-meter label="Notice" [value]="item.ll_condition_manual" />
                         }
                       </div>
 

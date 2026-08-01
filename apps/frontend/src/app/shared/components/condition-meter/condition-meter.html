@@ -1,0 +1,11 @@
+@if (value) {
+  <div class="state-row">
+    <span class="state-row__label">{{ label }}</span>
+    <div class="state-row__meter" [style.--meter-color]="color()">
+      @for (segment of segments; track $index) {
+        <span [class.on]="$index < level()"></span>
+      }
+    </div>
+    <span class="state-row__tag" [style.background]="color()">{{ valueLabel() }}</span>
+  </div>
+}

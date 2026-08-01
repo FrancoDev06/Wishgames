@@ -75,6 +75,16 @@ export function conditionLabel(value: string): string {
   return CONDITION_OPTIONS.find((option) => option.value === value)?.label ?? value;
 }
 
+// Nombre de segments remplis dans la jauge d'état (Poor=1 → Mint=7, cf. CONDITION_OPTIONS) —
+// utilisé par ConditionMeter pour représenter l'état visuellement plutôt qu'en toutes lettres.
+export const CONDITION_LEVELS_TOTAL = CONDITION_OPTIONS.length;
+
+export function conditionLevel(value: string | null): number {
+  if (!value) return 0;
+  const index = CONDITION_OPTIONS.findIndex((option) => option.value === value);
+  return index === -1 ? 0 : index + 1;
+}
+
 export function regionLabel(value: string | null): string {
   if (!value) return 'Région non précisée';
   return REGION_OPTIONS.find((option) => option.value === value)?.label ?? value;
@@ -97,15 +107,30 @@ export function regionShortLabel(value: string): string {
 // catégorie (ex. complétude toujours cyan), peu importe la valeur — impossible de repérer un
 // jeu loose vs complet en un coup d'œil. Chaque échelle est ordonnée du moins au plus
 // désirable ; les régions sont catégorielles (pas d'ordre), une couleur distincte chacune.
-
+//
+// Complétude et état sont désormais affichés ensemble sur la même carte (cadre/ruban + jauges,
+// §condition-meter) : chaque échelle a sa propre famille de teintes pour rester bien distinguables
+// au premier coup d'œil, sans se fier uniquement au texte. Complétude = indigo -> magenta (grise
+// pour Loose, qui n'a justement aucun composant à colorer) ; état = rouge -> cyan (inchangé, déjà
+// bien séparé). Aucune des deux ne recoupe les couleurs de région (bleu/rose-rouge/orangé) ni les
+// couleurs de console (bleus/rouges/verts/bruns, cf. console-colors.constant.ts) — ces dernières ne
+// partagent jamais la même carte que complétude/état (uniquement les cartes "console physique").
 const COMPLETENESS_COLORS: Record<string, string> = {
   LOOSE: '#6b7280',
-  LOOSE_MANUAL: '#5c8a99',
-  BOXED: '#4f8ea3',
-  CIB: '#3fae8a',
-  SEALED: '#d6a536',
-  NOS: '#e0793a',
+  LOOSE_MANUAL: '#6457c9',
+  BOXED: '#8a3fd6',
+  CIB: '#b23fce',
+  SEALED: '#cf3fb0',
+  NOS: '#d94391',
 };
+
+// Rang de complétude (Loose=0 → NOS=5, cf. COMPLETENESS_OPTIONS) — utilisé pour trier par état
+// "le plus complet d'abord" (ex. vue Prix de la Wishlist, retour utilisateur : un exemplaire complet
+// est plus intéressant qu'un loose même à prix proche, le tri ne doit pas se baser que sur le prix).
+export function completenessLevel(value: string | null): number {
+  if (!value) return -1;
+  return COMPLETENESS_OPTIONS.findIndex((option) => option.value === value);
+}
 
 export function completenessColor(value: string): string {
   return COMPLETENESS_COLORS[value] ?? '#6b7280';
@@ -125,10 +150,38 @@ export function conditionColor(value: string): string {
   return CONDITION_COLORS[value] ?? '#8a8b8e';
 }
 
+// Une couleur par pays/région (§9, retour utilisateur : pouvoir préciser France/Allemagne/Pays-Bas
+// etc. plutôt qu'un seul "Europe" générique n'a d'intérêt que si chaque valeur reste identifiable
+// au premier coup d'œil — avant cet ajout, tout ce qui n'était pas Europe/USA/Japon retombait sur
+// le même gris de repli). Regroupées par grande zone (PAL europe = bleus/teals, Amériques =
+// rouges/roses, Asie = ambres/oranges, reste du monde = teintes isolées) pour rester cohérent visuellement
+// tout en étant deux à deux distinctes.
 const REGION_COLORS: Record<string, string> = {
   Europe: '#5b8cff',
+  France: '#4c6ef5',
+  Germany: '#7048b8',
+  Spain: '#f76707',
+  Italy: '#2f9e44',
+  'United Kingdom': '#1971c2',
+  'The Netherlands': '#e8590c',
+  Sweden: '#fab005',
+  Norway: '#9c2f3b',
+  Finland: '#1098ad',
+  Greece: '#1864ab',
   'North America': '#e0546a',
+  'United States': '#4263eb',
+  Canada: '#862e9c',
   Japan: '#f4a640',
+  Korea: '#d9480f',
+  China: '#c92a2a',
+  'Hong Kong': '#e64980',
+  Asia: '#f08c00',
+  Brazil: '#2b8a3e',
+  'South America': '#37b24d',
+  Australia: '#0ca678',
+  Oceania: '#0c8599',
+  Russia: '#495057',
+  World: '#868e96',
 };
 
 export function regionColor(value: string | null): string {

@@ -11,6 +11,10 @@ export interface WishlistCreatePayload {
 	ll_desired_condition?: string | null;
 	ll_region?: string | null;
 	nb_priority?: number | null;
+	// Coché manuellement quand cette édition régionale est difficile à jouer sans en connaître la
+	// langue (ex. Japon, migration 0012) — sert la vue Prix regroupée par jeu (comparer plusieurs
+	// régions du même titre sans recommander une édition importable mais illisible).
+	flag_hard_to_play?: boolean;
 }
 
 // ll_status n'est jamais settable à la création (nouvel item = toujours SEARCHING via le défaut
@@ -32,6 +36,13 @@ export interface WishlistBuyPayload {
 	ll_notes?: string | null;
 }
 
+// La jaquette affichée correspond à sa propre région quand elle est connue (wl.ll_region) ; sinon
+// on retombe sur la priorité Europe -> USA -> Japon habituelle (§2bis) — même logique que
+// CollectionQueries.SELECT_WITH_GAME. Avant ce correctif, une entrée wishlist ciblant le Japon
+// (ex. 1942 sur NES) affichait quand même la jaquette USA/Europe dès que le jeu avait aussi une
+// jaquette pour ces régions, la requête ignorant totalement wl.ll_region.
+// Le rendu 3D (BOX_3D, migration 0010) est préféré au scan plat (FRONT) une fois la région choisie
+// — même logique que GameQueries.COVER_JOIN pour le Catalogue.
 const SELECT_WITH_GAME = `
 	SELECT wl.*, g.ll_title AS title, c.ll_slug AS console_slug, c.ll_name AS console_name,
 	       cov.ll_image_url AS cover_front_url,
@@ -43,8 +54,11 @@ const SELECT_WITH_GAME = `
 	LEFT JOIN LATERAL (
 		SELECT ll_image_url
 		FROM ref_cover c2
-		WHERE c2.id_game = g.id AND c2.ll_cover_type = 'FRONT'
-		ORDER BY CASE c2.ll_region WHEN 'Europe' THEN 1 WHEN 'North America' THEN 2 WHEN 'Japan' THEN 3 ELSE 4 END
+		WHERE c2.id_game = g.id AND c2.ll_cover_type IN ('FRONT', 'BOX_3D')
+		ORDER BY
+			CASE WHEN c2.ll_region = wl.ll_region THEN 0 ELSE 1 END,
+			CASE c2.ll_region WHEN 'Europe' THEN 1 WHEN 'North America' THEN 2 WHEN 'Japan' THEN 3 ELSE 4 END,
+			CASE WHEN c2.ll_cover_type = 'BOX_3D' THEN 0 ELSE 1 END
 		LIMIT 1
 	) cov ON true
 `;
@@ -77,8 +91,8 @@ export default class WishlistQueries {
 	static async create(payload: WishlistCreatePayload): Promise<WishlistItem> {
 		const result = await DatabaseUtil.query<WishlistItem>(
 			`INSERT INTO ref_wishlist
-			 (id_game, ts_last_checked, ll_desired_completeness, ll_desired_condition, ll_region, nb_priority)
-			 VALUES ($1, $2, $3, $4, $5, $6)
+			 (id_game, ts_last_checked, ll_desired_completeness, ll_desired_condition, ll_region, nb_priority, flag_hard_to_play)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7)
 			 RETURNING *`,
 			[
 				payload.id_game,
@@ -87,6 +101,7 @@ export default class WishlistQueries {
 				payload.ll_desired_condition ?? null,
 				payload.ll_region ?? null,
 				payload.nb_priority ?? null,
+				payload.flag_hard_to_play ?? false,
 			]
 		);
 

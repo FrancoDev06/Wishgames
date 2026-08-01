@@ -11,31 +11,102 @@
     <p class="browse__status">Aucun jeu dans la wishlist pour l'instant.</p>
   } @else {
     <div class="price-list">
-      @for (item of sortedItems(); track item.id) {
-        <article class="price-row" (click)="onRowClick(item)">
-          @if (coverUrl(item); as url) {
-            <img class="price-row__cover" [src]="url" [alt]="'Jaquette de ' + item.title" loading="lazy" />
-          } @else {
-            <div class="price-row__cover price-row__cover--placeholder">{{ item.console_name }}</div>
-          }
-
-          <div class="price-row__body">
-            <p class="price-row__title">{{ item.title }}</p>
-            <p class="price-row__console">{{ item.console_name }}</p>
-          </div>
-
-          <div class="price-row__price">
-            @if (item.min_offer_price != null) {
-              <span class="price">{{ item.min_offer_price }} €</span>
+      @for (group of groupedSorted(); track group.id_game) {
+        @if (group.items.length === 1) {
+          <article class="price-row" (click)="onRowClick(group.recommended)">
+            @if (group.coverUrl; as url) {
+              <img class="price-row__cover" [src]="url" [alt]="'Jaquette de ' + group.title" loading="lazy" />
             } @else {
-              <span class="price-row__no-offer">Aucune offre</span>
+              <div class="price-row__cover price-row__cover--placeholder">{{ group.console_name }}</div>
             }
-          </div>
 
-          @if (item.nb_offers) {
-            <div class="offers-hint">{{ item.nb_offers }} offre{{ item.nb_offers > 1 ? 's' : '' }}</div>
-          }
-        </article>
+            <div class="price-row__body">
+              <p class="price-row__title">{{ group.title }}</p>
+              <p class="price-row__console">{{ group.console_name }}</p>
+            </div>
+
+            <div class="price-row__tags">
+              @if (group.recommended.ll_desired_completeness) {
+                <span class="price-edition__tag" [style.background]="completenessColor(group.recommended.ll_desired_completeness)">
+                  {{ completenessLabel(group.recommended.ll_desired_completeness) }}
+                </span>
+              }
+              @if (group.recommended.ll_desired_condition) {
+                <span class="price-edition__tag" [style.background]="conditionColor(group.recommended.ll_desired_condition)">
+                  {{ conditionLabel(group.recommended.ll_desired_condition) }}
+                </span>
+              }
+            </div>
+
+            <div class="price-row__price">
+              @if (group.recommended.min_offer_price != null) {
+                <span class="price">{{ group.recommended.min_offer_price }} €</span>
+              } @else {
+                <span class="price-row__no-offer">Aucune offre</span>
+              }
+            </div>
+
+            @if (group.recommended.nb_offers) {
+              <div class="offers-hint">{{ group.recommended.nb_offers }} offre{{ group.recommended.nb_offers > 1 ? 's' : '' }}</div>
+            }
+          </article>
+        } @else {
+          <article class="price-group">
+            <div class="price-group__header">
+              @if (group.coverUrl; as url) {
+                <img class="price-row__cover" [src]="url" [alt]="'Jaquette de ' + group.title" loading="lazy" />
+              } @else {
+                <div class="price-row__cover price-row__cover--placeholder">{{ group.console_name }}</div>
+              }
+
+              <div class="price-row__body">
+                <p class="price-row__title">{{ group.title }}</p>
+                <p class="price-row__console">{{ group.console_name }} · {{ group.items.length }} éditions suivies</p>
+              </div>
+            </div>
+
+            <ul class="price-group__editions">
+              @for (item of group.items; track item.id) {
+                <li
+                  class="price-edition"
+                  [class.price-edition--recommended]="item.id === group.recommended.id"
+                  (click)="onRowClick(item)"
+                >
+                  <span class="price-edition__region">{{ item.ll_region ? regionShortLabel(item.ll_region) : 'Région non précisée' }}</span>
+
+                  @if (item.ll_desired_completeness) {
+                    <span class="price-edition__tag" [style.background]="completenessColor(item.ll_desired_completeness)">
+                      {{ completenessLabel(item.ll_desired_completeness) }}
+                    </span>
+                  }
+                  @if (item.ll_desired_condition) {
+                    <span class="price-edition__tag" [style.background]="conditionColor(item.ll_desired_condition)">
+                      {{ conditionLabel(item.ll_desired_condition) }}
+                    </span>
+                  }
+
+                  @if (item.flag_hard_to_play) {
+                    <span class="price-edition__badge price-edition__badge--warning" title="Difficile à jouer sans en connaître la langue">
+                      ⚠ Import
+                    </span>
+                  }
+
+                  @if (item.id === group.recommended.id) {
+                    <span class="price-edition__badge price-edition__badge--best">✓ Meilleur choix</span>
+                  }
+
+                  <span class="price-edition__price">
+                    @if (item.min_offer_price != null) {
+                      {{ item.min_offer_price }} €
+                    } @else {
+                      <span class="price-row__no-offer">Aucune offre</span>
+                    }
+                  </span>
+                </li>
+              }
+            </ul>
+          </article>
+        }
       }
     </div>
   }

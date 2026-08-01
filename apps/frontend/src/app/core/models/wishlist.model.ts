@@ -8,6 +8,7 @@ export interface WishlistItem {
   ll_desired_condition: string | null;
   ll_region: string | null;
   nb_priority: number | null;
+  flag_hard_to_play: boolean;
   ll_status: WishlistStatus;
   ts_create: string;
   ts_update: string;

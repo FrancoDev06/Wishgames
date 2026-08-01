@@ -17,6 +17,8 @@ import {
   regionLabel,
   regionColor,
   videoStandardLabel,
+  showBoxCondition,
+  showManualCondition,
 } from '../../core/constants/game-state.constants';
 import { consoleColor } from '../../core/constants/console-colors.constant';
 import { toDateInputValue } from '../../core/utils/date.util';
@@ -25,6 +27,7 @@ import { consolePhotoUrl } from '../../core/utils/console-photo.util';
 import { CollectionFormModal, CollectionFormValue } from '../../shared/components/collection-form-modal/collection-form-modal';
 import { ConsoleFormModal, ConsoleFormValue } from '../../shared/components/console-form-modal/console-form-modal';
 import { ConfirmModal } from '../../shared/components/confirm-modal/confirm-modal';
+import { ConditionMeter } from '../../shared/components/condition-meter/condition-meter';
 
 export type Tab = 'jeux' | 'consoles';
 export type ViewMode = 'grid' | 'list';
@@ -48,7 +51,7 @@ const SORT_COMPARATORS: Record<SortOption, (a: CollectionItem, b: CollectionItem
 // d'une page dédiée, cf. maquette "Éditorial aurora chromée").
 @Component({
   selector: 'app-collection',
-  imports: [DecimalPipe, CollectionFormModal, ConsoleFormModal, ConfirmModal],
+  imports: [DecimalPipe, CollectionFormModal, ConsoleFormModal, ConfirmModal, ConditionMeter],
   templateUrl: './collection.html',
   styleUrl: './collection.scss',
 })
@@ -122,6 +125,8 @@ export class Collection implements OnInit {
   protected readonly regionColor = regionColor;
   protected readonly videoStandardLabel = videoStandardLabel;
   protected readonly formatDate = toDateInputValue;
+  protected readonly showBoxCondition = showBoxCondition;
+  protected readonly showManualCondition = showManualCondition;
 
   protected consolePhotoUrl(slug: string): string {
     return consolePhotoUrl(slug, this.coverOrigin);

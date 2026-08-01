@@ -23,6 +23,7 @@ import { OfferItem, OfferFormValue } from '../../shared/components/offers-panel/
 import { ConfirmModal } from '../../shared/components/confirm-modal/confirm-modal';
 import { WishlistKanban, KanbanCardData } from '../../shared/components/wishlist-kanban/wishlist-kanban';
 import { WishlistPriceView } from '../../shared/components/wishlist-price-view/wishlist-price-view';
+import { ConditionMeter } from '../../shared/components/condition-meter/condition-meter';
 import { resolveCoverUrl } from '../../core/utils/cover-url.util';
 import { consolePhotoUrl } from '../../core/utils/console-photo.util';
 import {
@@ -71,6 +72,7 @@ const SORT_COMPARATORS: Record<SortOption, (a: WishlistItem, b: WishlistItem) =>
     ConfirmModal,
     WishlistKanban,
     WishlistPriceView,
+    ConditionMeter,
   ],
   templateUrl: './wishlist.html',
   styleUrl: './wishlist.scss',
@@ -303,6 +305,7 @@ export class Wishlist implements OnInit {
       ll_desired_condition: item.ll_desired_condition,
       nb_priority: item.nb_priority,
       ts_last_checked: item.ts_last_checked,
+      flag_hard_to_play: item.flag_hard_to_play,
     };
   }
 

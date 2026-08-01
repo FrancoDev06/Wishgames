@@ -8,7 +8,7 @@
     <form (ngSubmit)="submit()">
       <label class="modal__field">
         Région de l'édition
-        <select name="region" [(ngModel)]="form.ll_region" [disabled]="!!initialValue || !!lockedRegion">
+        <select name="region" [(ngModel)]="form.ll_region" [disabled]="!!initialValue">
           <option value="">Non précisée</option>
           @for (opt of regionOptions; track opt.value) {
             <option [value]="opt.value">{{ opt.label }}</option>
@@ -54,6 +54,54 @@
           <input type="date" name="last-checked" [(ngModel)]="form.ts_last_checked" />
         </label>
       </div>
+
+      <label class="modal__checkbox">
+        <input type="checkbox" name="hard-to-play" [(ngModel)]="form.flag_hard_to_play" />
+        Difficile à jouer sans en connaître la langue (ex. import japonais)
+      </label>
+
+      @if (!initialValue) {
+        <div class="modal__offers">
+          <h4 class="modal__offers-title">Offre déjà repérée (optionnel)</h4>
+
+          @if (pendingOffers.length) {
+            <ul class="modal__offer-list">
+              @for (offer of pendingOffers; track $index) {
+                <li class="modal__offer-chip">
+                  <span>
+                    @if (offer.nb_price !== null) {
+                      {{ offer.nb_price }} €
+                    }
+                    @if (offer.ll_source_label) {
+                      · {{ offer.ll_source_label }}
+                    }
+                  </span>
+                  <button type="button" class="icon-btn icon-btn--danger" (click)="removePendingOffer($index)">Retirer</button>
+                </li>
+              }
+            </ul>
+          }
+
+          <div class="modal__row">
+            <label class="modal__field">
+              Prix (€)
+              <input type="number" name="offer-price" min="0" step="0.01" [(ngModel)]="offerDraft.nb_price" />
+            </label>
+            <label class="modal__field">
+              Source
+              <input type="text" name="offer-source" placeholder="ex. Leboncoin" [(ngModel)]="offerDraft.ll_source_label" />
+            </label>
+          </div>
+          <label class="modal__field">
+            Lien
+            <input type="text" name="offer-url" placeholder="https://…" [(ngModel)]="offerDraft.ll_source_url" />
+          </label>
+
+          <button type="button" class="btn btn--ghost" [disabled]="!canAddOfferDraft()" (click)="addOfferDraft()">
+            + Ajouter cette offre
+          </button>
+        </div>
+      }
 
       <div class="modal__actions">
         <button type="button" class="btn btn--ghost" (click)="cancel()">Annuler</button>
