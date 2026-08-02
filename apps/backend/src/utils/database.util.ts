@@ -24,6 +24,8 @@ export default class DatabaseUtil {
 		});
 
 		const client = await pool.connect();
+		const identity = await client.query('SELECT current_database() AS db, inet_server_addr() AS addr, (SELECT count(*) FROM information_schema.columns WHERE table_name = $1) AS wishlist_cols', ['ref_wishlist']);
+		console.log(`[DB DIAGNOSTIC] host=${process.env.DB_HOST} db=${identity.rows[0]?.db} addr=${identity.rows[0]?.addr} ref_wishlist_column_count=${identity.rows[0]?.wishlist_cols}`);
 		await client.query('SELECT 1');
 		client.release();
 
