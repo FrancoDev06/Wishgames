@@ -1,0 +1,333 @@
+[
+  {
+    "nb_source_id": 34268,
+    "title": "1941: Counter Attack",
+    "aka_titles": [],
+    "description": "<p>The prequel to <a href=\"https://www.mobygames.com/game/7949/1942/\">1942</a>, like the other games in the <a href=\"https://www.mobygames.com/group/5373/194x-series/\">194x series</a>, is a top down shooter set in WWII.</p>\n<p>One or two players control a <a href=\"https://www.mobygames.com/search/?q=Aircraft:+P-38+Lightning\">P-38</a> (for player 1) or a <a href=\"https://www.mobygames.com/group/7992/aircraft-dh98-mosquito/\">Mosquito</a> (for player 2), shooting enemy airplanes and ships. As in the previous games, one button shoots the airplane's weapon (which is upgradeable by collecting power ups left by enemies) and the other makes the airplane loop, destroying everything on screen (or causing extra damage to bosses, fought at the end of each level). The regular ammo is infinite, while the upgraded weapons have limited ammo. When the weapon button is held down, a bar at the bottom of the screen is charged and a special shot can be released, which varies in effect from weapon to weapon.</p>\n<p>The airplane has a life bar which starts with three points. Each hit taken or loop used will consume one life point. The player will earn new life points at the end of levels or by collecting proper power ups. Other power ups available are auxiliary side and ghost airplanes. Three continues can be used, and one point is added to the score when one of them is used (a feature first introduced by this game and then copied by other shoot-em-ups).</p>",
+    "release_year": 1991,
+    "genres": [
+      "Action"
+    ],
+    "gameplay": [
+      "Shooter"
+    ],
+    "perspective": [
+      "Top-down"
+    ],
+    "visual": [],
+    "setting": [
+      "Historical events",
+      "World War II"
+    ],
+    "rating": 7.2,
+    "rating_votes": 20,
+    "developers": [
+      "Capcom Co., Ltd."
+    ],
+    "publishers": [
+      "Hudson Soft Company, Ltd."
+    ],
+    "source_url": "https://www.mobygames.com/game/34268/1941-counter-attack/",
+    "sources": [
+      "MobyGames"
+    ],
+    "covers": []
+  },
+  {
+    "nb_source_id": 56514,
+    "title": "Aldynes: The Mission Code for Rage Crisis",
+    "aka_titles": [],
+    "description": "<p>The year is 2020, and global depression has descended upon the societies of the Earth. When humans least expect it, aliens from a mechanical planetoid attack seemingly without any reason. The League of Nations collaborates with NASA to produce a powerful space fighter under project name Aldynes. When a pilot known as Fox-A is killed, his girlfriend Hiroko heads to the air base where works on Project Aldynes took place. As the aliens launch their attack, Hiroko hijacks one of the fighters and enters the battle.</p>\n<p><em>Aldynes</em> is a horizontally-scrolling sci-fi shoot-em-up. Player-controlled spaceship can acquire power-ups that either change its default vulcan gun to lasers that shoot either straight ahead or in different directions, or enhance the shot of an already equipped weapon. A special power-up adds a small ship that fights alongside the player-controlled one; collecting more power-ups of the same kind adds more ships. These ships can be ordered to stay behind and repeat the shooting patterns of the player-controlled craft, or shoot at enemies following their own AI. </p>\n<p>The player-controlled fighter does not have hit points and loses a life every time it is hit. There are seven stages altogether, each ending with a massive boss battle.</p>",
+    "release_year": 1991,
+    "genres": [
+      "Action"
+    ],
+    "gameplay": [
+      "Arcade",
+      "Shooter"
+    ],
+    "perspective": [
+      "Side view"
+    ],
+    "visual": [
+      "2D scrolling"
+    ],
+    "setting": [
+      "Sci-fi / futuristic"
+    ],
+    "rating": 7.3,
+    "rating_votes": 6,
+    "developers": [
+      "Produce Co., Ltd."
+    ],
+    "publishers": [
+      "Hudson Soft Company, Ltd."
+    ],
+    "source_url": "https://www.mobygames.com/game/56514/aldynes-the-mission-code-for-rage-crisis/",
+    "sources": [
+      "MobyGames"
+    ],
+    "covers": [
+      {
+        "type": "FRONT",
+        "region": "Japan",
+        "url": "https://cdn.mobygames.com/covers/2861457-aldynes-the-mission-code-for-rage-crisis-supergrafx-front-cover.jpg",
+        "source": "MobyGames"
+      },
+      {
+        "type": "BACK",
+        "region": "Japan",
+        "url": "https://cdn.mobygames.com/covers/2861676-aldynes-the-mission-code-for-rage-crisis-supergrafx-back-cover.jpg",
+        "source": "MobyGames"
+      },
+      {
+        "type": "MEDIA",
+        "region": "Japan",
+        "url": "https://cdn.mobygames.com/covers/11209864-aldynes-the-mission-code-for-rage-crisis-supergrafx-media.jpg",
+        "source": "MobyGames"
+      }
+    ]
+  },
+  {
+    "nb_source_id": 54194,
+    "title": "Battle Ace",
+    "aka_titles": [],
+    "description": "<p><em>Battle Ace</em> is an action-oriented flight game in a first-person perspective. The player mans a space ship, including a radar which shows enemies, and the goal is to reach the end of each level where an end boss waits. As usually, the main occupation is to blast a lot of aliens which approach the player. The available weapons are bombs and a machine gun, both unlimited. Getting hit is a bad idea because it results in death. The player has three lives which can be raised by scoring 20.000 points.</p>",
+    "release_year": 1989,
+    "genres": [
+      "Action"
+    ],
+    "gameplay": [
+      "Shooter"
+    ],
+    "perspective": [
+      "1st-person"
+    ],
+    "visual": [],
+    "setting": [
+      "Sci-fi / futuristic"
+    ],
+    "rating": null,
+    "rating_votes": 3,
+    "developers": [
+      "Hudson Soft Company, Ltd."
+    ],
+    "publishers": [
+      "Hudson Soft Company, Ltd."
+    ],
+    "source_url": "https://www.mobygames.com/game/54194/battle-ace/",
+    "sources": [
+      "MobyGames"
+    ],
+    "covers": [
+      {
+        "type": "FRONT",
+        "region": "Japan",
+        "url": "https://cdn.mobygames.com/covers/11209080-battle-ace-supergrafx-front-cover.jpg",
+        "source": "MobyGames"
+      },
+      {
+        "type": "BACK",
+        "region": "Japan",
+        "url": "https://cdn.mobygames.com/covers/11209083-battle-ace-supergrafx-back-cover.jpg",
+        "source": "MobyGames"
+      },
+      {
+        "type": "SPINE",
+        "region": "Japan",
+        "url": "https://cdn.mobygames.com/covers/11209074-battle-ace-supergrafx-spinesides.jpg",
+        "source": "MobyGames"
+      },
+      {
+        "type": "MEDIA",
+        "region": "Japan",
+        "url": "https://cdn.mobygames.com/covers/15573832-battle-ace-supergrafx-media.jpg",
+        "source": "MobyGames"
+      }
+    ]
+  },
+  {
+    "nb_source_id": 22038,
+    "title": "Darius",
+    "aka_titles": [
+      "Arcade Archives: Darius",
+      "Darius Plus",
+      "Darius Wide",
+      "Darius+",
+      "Sagaia",
+      "Super Darius"
+    ],
+    "description": "<p><em>Darius</em> was Taito's effort to compete in the arcades against the likes of <a href=\"https://www.mobygames.com/search/?q=R-Type\">R-Type</a> and <a href=\"https://www.mobygames.com/search/?q=Gradius\">Gradius</a>. Technically impressive, it featured three screens depicting the largest playfield seen in a game so far (the same system was employed for <a href=\"https://www.mobygames.com/search/?q=The+Ninja+Warriors\">Ninja Warriors</a>), with the player sitting atop a big set of loudspeakers. Visually and audibly, it was a league above Irem's and Konami's offerings.</p>\n<p>When Taito (and others) ported the game to home machines, they were forced to shrink the playfield to fit in one single screen, and re-dubbed it <em>Darius Plus</em>.</p>\n<p>The plot of <em>Darius</em> involves the two heroes Proco Jr. and Tiat Young fighting the menaces posed by galactic fish and other sea animals again their homeworld.</p>\n<p>What sets <em>Darius</em> apart from other shoot'em-ups of the time is its way of letting the player choose his path with a certain amount of freedom. At the end of each area (level), you are able to choose between one of two worlds which the area branches into. This renders a higher replay value, since there are many paths to reach the end of the game by.\nApart from this, the gameplay is on the simplistic side, both due to unimaginative attack waves and little interaction with the surroundings, but mainly due to the very basic powerup system, which is nowhere near the complexity of the aforementioned <em>R-Type's</em> and <em>Gradius'</em>.</p>",
+    "release_year": 1990,
+    "genres": [
+      "Action"
+    ],
+    "gameplay": [
+      "Arcade",
+      "Shooter"
+    ],
+    "perspective": [
+      "Side view"
+    ],
+    "visual": [
+      "2D scrolling"
+    ],
+    "setting": [
+      "Sci-fi / futuristic"
+    ],
+    "rating": 7.1,
+    "rating_votes": 26,
+    "developers": [
+      "Taito Corporation"
+    ],
+    "publishers": [
+      "NEC Avenue, Ltd."
+    ],
+    "source_url": "https://www.mobygames.com/game/22038/darius/",
+    "sources": [
+      "MobyGames"
+    ],
+    "covers": []
+  },
+  {
+    "nb_source_id": 25059,
+    "title": "Darius Alpha",
+    "aka_titles": [
+      "Darius α"
+    ],
+    "description": "<p>One of the rarest games for the PC Engine, <em>Darius Alpha</em> was only offered to those who bought both the CD and HuCard versions of <a href=\"https://www.mobygames.com/game/22038/darius/\">Darius Plus</a> (Which doesn't make much sense, considering how similar the two versions are). People who just couldn't get enough of Darius could now play another variation on the same theme. Darius Alpha is built on the same codebase as Darius Plus, but has been remodeled into a so-called \"boss-fight\" game, e.g. a game where you only fight the bosses of a game or game series. You start out with an unequipped ship and must take down the boss of the first level, King Fossil. Upon defeating King Fossil, you are granted some slight upgrades and proceed directly to the boss of the next level. And so on.</p>",
+    "release_year": 1990,
+    "genres": [
+      "Action"
+    ],
+    "gameplay": [
+      "Arcade",
+      "Shooter"
+    ],
+    "perspective": [
+      "Side view"
+    ],
+    "visual": [
+      "2D scrolling"
+    ],
+    "setting": [
+      "Sci-fi / futuristic"
+    ],
+    "rating": null,
+    "rating_votes": 3,
+    "developers": [
+      "Taito Corporation"
+    ],
+    "publishers": [
+      "NEC Avenue, Ltd."
+    ],
+    "source_url": "https://www.mobygames.com/game/25059/darius-alpha/",
+    "sources": [
+      "MobyGames"
+    ],
+    "covers": []
+  },
+  {
+    "nb_source_id": 6681,
+    "title": "Ghouls 'N Ghosts",
+    "aka_titles": [
+      "Daimakaimura",
+      "Ghouls 'N' Ghosts",
+      "Ghouls'n Ghosts MOBILE"
+    ],
+    "description": "<p>Three years have passed since Arthur defeated the Demon King Astaroth and rescued his beloved Princess Prin-Prin (see <a href=\"https://www.mobygames.com/game/582/ghosts-n-goblins/\">Ghosts 'N Goblins</a>). A new villain, the Great Demon King Lucifer (Loki in some versions) has become the new leader of Ghoul Realm. While returning from a journey, Arthur sees the Princess' castle and her village under attack by Lucifer's forces. While rushing towards her beloved knight, the Princess is struck by one of Lucifer's laser beams.</p>\n<p>Now, Arthur must venture back to the Lucifer's palace and destroy the demon in order to rescue the Princess' soul and bring her back to life! And it won't matter whether he fights in his shining armor or in his underwear alone...the bravest Knight in the land isn't going to be stopped by some monsters! Although the game starts with graveyard and marsh territory familiar from <a href=\"https://www.mobygames.com/game/582/ghosts-n-goblins/\">the first game</a>, later levels are set in a tower, a mass of skeletons, and a castle.</p>\n<p>Players progress from left to right (from bottom to top in level 3), and have to hack down the aforementioned monsters with a sword. The journey includes ledges, ladders, lava pits and slippery slopes. Different weapons can be collected, by finding suits of armor inside chests. Each of the five stages has its own setting and a final boss.</p>\n<p>In comparison to the first installment, gameplay was tweaked and some additions were made. Arthur can now fire vertically and is able to collect weaponry from fallen enemies. The landscape is littered with a number of treasure chests that erupt out of scenery, some of which are hidden and has to be found by way of a well-timed jump in a certain place. The treasure chest can be opened with projectiles resulting in one of three occurrences: the reward of a new weapon, some shiny new golden armour or a hostile wizard who turns the player into the old man or a duck. The golden armour gives Arthur a chargeable \"super\" attack which varied depending on the currently possessed weapon. These attacks range from a huge lightning bolt that cut a swathe both vertically and horizontally across the screen, to a spell that creates a mirror-like clone of Arthur, effectively doubling his attack power.</p>",
+    "release_year": 1990,
+    "genres": [
+      "Action"
+    ],
+    "gameplay": [
+      "Platform"
+    ],
+    "perspective": [
+      "Side view"
+    ],
+    "visual": [
+      "2D scrolling",
+      "Anime / Manga"
+    ],
+    "setting": [
+      "Fantasy",
+      "Medieval"
+    ],
+    "rating": 7.5,
+    "rating_votes": 145,
+    "developers": [
+      "Capcom Co., Ltd."
+    ],
+    "publishers": [
+      "NEC Avenue, Ltd."
+    ],
+    "source_url": "https://www.mobygames.com/game/6681/ghouls-n-ghosts/",
+    "sources": [
+      "MobyGames"
+    ],
+    "covers": []
+  },
+  {
+    "nb_source_id": 54232,
+    "title": "Madō King Granzort",
+    "aka_titles": [],
+    "description": "<p><em>Madō King Granzort</em> is based on the anime of the same name. The story takes place in science-fiction scenario in which a few kids get special powers to save the world from the evil Jadou Clan. To be more exact, they can summon three powerful creatures: The Madou kings of earth, water and wind. The player takes the role of those kings to defeat the Jadou Clan.</p>\n<p>The player needs to find the way through the levels while solving basic platforming challenges and a lot of fighting, either with a sword or by shooting. The player can switch between the Madou kings which have different abilities. It is important to look after the energy bar and the time limit: both result in the loss of a life when running out.</p>",
+    "release_year": 1990,
+    "genres": [
+      "Action"
+    ],
+    "gameplay": [
+      "Arcade",
+      "Platform",
+      "Shooter"
+    ],
+    "perspective": [
+      "Side view"
+    ],
+    "visual": [
+      "2D scrolling"
+    ],
+    "setting": [
+      "Sci-fi / futuristic"
+    ],
+    "rating": 6.7,
+    "rating_votes": 1,
+    "developers": [
+      "Mutech"
+    ],
+    "publishers": [
+      "Hudson Soft Company, Ltd."
+    ],
+    "source_url": "https://www.mobygames.com/game/54232/mado-king-granzort/",
+    "sources": [
+      "MobyGames"
+    ],
+    "covers": [
+      {
+        "type": "FRONT",
+        "region": "Japan",
+        "url": "https://cdn.mobygames.com/covers/6794342-mado-king-granzort-supergrafx-front-cover.jpg",
+        "source": "MobyGames"
+      },
+      {
+        "type": "BACK",
+        "region": "Japan",
+        "url": "https://cdn.mobygames.com/covers/6794176-mado-king-granzort-supergrafx-back-cover.jpg",
+        "source": "MobyGames"
+      },
+      {
+        "type": "SPINE",
+        "region": "Japan",
+        "url": "https://cdn.mobygames.com/covers/10818964-mado-king-granzort-supergrafx-spinesides.jpg",
+        "source": "MobyGames"
+      },
+      {
+        "type": "MEDIA",
+        "region": "Japan",
+        "url": "https://cdn.mobygames.com/covers/8750853-mado-king-granzort-supergrafx-media.jpg",
+        "source": "MobyGames"
+      }
+    ]
+  }
+]
