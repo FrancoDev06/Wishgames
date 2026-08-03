@@ -81,7 +81,7 @@
                 @if (isConsoleWishlisted(console)) {
                   <span class="status-badge status-badge--wishlist">En wishlist</span>
                 } @else if (!isConsoleOwned(console)) {
-                  <button type="button" class="add-btn add-btn--wishlist" (click)="openAddConsoleToWishlist(console)">+ Wishlist</button>
+                  <button type="button" class="add-btn add-btn--wishlist" (click)="addConsoleToWishlist(console)">+ Wishlist</button>
                 }
               </div>
             </div>
@@ -186,7 +186,7 @@
               @if (game.in_wishlist) {
                 <span class="status-badge status-badge--wishlist">En wishlist</span>
               } @else if (!game.in_collection) {
-                <button type="button" class="add-btn add-btn--wishlist" (click)="openAddToWishlist(game)">+ Wishlist</button>
+                <button type="button" class="add-btn add-btn--wishlist" (click)="addToWishlist(game)">+ Wishlist</button>
               }
             </div>
           </div>
@@ -223,7 +223,7 @@
                 @if (game.in_wishlist) {
                   <span class="status-badge status-badge--wishlist">En wishlist</span>
                 } @else if (!game.in_collection) {
-                  <button type="button" class="add-btn add-btn--wishlist" (click)="openAddToWishlist(game)">+ Wishlist</button>
+                  <button type="button" class="add-btn add-btn--wishlist" (click)="addToWishlist(game)">+ Wishlist</button>
                 }
               </div>
             </div>
@@ -253,19 +253,6 @@
   />
 }
 
-@if (wishlistTarget(); as target) {
-  <app-wishlist-form-modal
-    [heading]="'Ajouter « ' + target.ll_title + ' » à la wishlist'"
-    [subtitle]="target.console_name + (regionLabel(target) ? ' · ' + regionLabel(target) : '')"
-    confirmLabel="Ajouter à la wishlist"
-    [submitting]="wishlistSubmitting()"
-    [lockedRegion]="target.region"
-    (offersReady)="onWishlistOffersReady($event)"
-    (confirmed)="submitAddToWishlist($event)"
-    (cancelled)="closeAddToWishlist()"
-  />
-}
-
 @if (detailTarget(); as target) {
   <app-game-detail-modal
     [game]="target"
@@ -286,12 +273,3 @@
   />
 }
 
-@if (wishlistConsoleTarget(); as target) {
-  <app-console-wishlist-form-modal
-    [heading]="'Rechercher « ' + target.ll_name + ' »'"
-    confirmLabel="Ajouter à la wishlist"
-    [submitting]="wishlistConsoleSubmitting()"
-    (confirmed)="submitAddConsoleToWishlist($event)"
-    (cancelled)="closeAddConsoleToWishlist()"
-  />
-}

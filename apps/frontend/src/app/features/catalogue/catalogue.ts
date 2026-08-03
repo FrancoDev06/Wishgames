@@ -1,11 +1,10 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Subject, catchError, debounceTime, distinctUntilChanged, forkJoin, map, of } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environments';
 import { GameService, GameStatusFilter } from '../../core/services/game.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { WishlistService } from '../../core/services/wishlist.service';
-import { WishlistOfferService } from '../../core/services/wishlist-offer.service';
 import { CollectionService } from '../../core/services/collection.service';
 import { ConsoleCollectionService } from '../../core/services/console-collection.service';
 import { ConsoleWishlistService } from '../../core/services/console-wishlist.service';
@@ -13,14 +12,8 @@ import { DashboardService } from '../../core/services/dashboard.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { GameListItem, ConsoleOption } from '../../core/models/game.model';
 import { CollectionFormModal, CollectionFormValue } from '../../shared/components/collection-form-modal/collection-form-modal';
-import { WishlistFormModal, WishlistFormValue } from '../../shared/components/wishlist-form-modal/wishlist-form-modal';
-import { OfferFormValue } from '../../shared/components/offers-panel/offers-panel';
 import { GameDetailModal } from '../../shared/components/game-detail-modal/game-detail-modal';
 import { ConsoleFormModal, ConsoleFormValue } from '../../shared/components/console-form-modal/console-form-modal';
-import {
-  ConsoleWishlistFormModal,
-  ConsoleWishlistFormValue,
-} from '../../shared/components/console-wishlist-form-modal/console-wishlist-form-modal';
 import { consoleColor } from '../../core/constants/console-colors.constant';
 import { resolveCoverUrl } from '../../core/utils/cover-url.util';
 import { consolePhotoUrl } from '../../core/utils/console-photo.util';
@@ -37,7 +30,7 @@ const PAGE_SIZE = 60;
 
 @Component({
   selector: 'app-catalogue',
-  imports: [CollectionFormModal, WishlistFormModal, GameDetailModal, ConsoleFormModal, ConsoleWishlistFormModal],
+  imports: [CollectionFormModal, GameDetailModal, ConsoleFormModal],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.scss',
 })
@@ -45,7 +38,6 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   private readonly gameService = inject(GameService);
   private readonly platformService = inject(PlatformService);
   private readonly wishlistService = inject(WishlistService);
-  private readonly wishlistOfferService = inject(WishlistOfferService);
   private readonly collectionService = inject(CollectionService);
   private readonly consoleCollectionService = inject(ConsoleCollectionService);
   private readonly consoleWishlistService = inject(ConsoleWishlistService);
@@ -87,12 +79,6 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
 
   protected readonly addTarget = signal<GameListItem | null>(null);
   protected readonly addSubmitting = signal(false);
-
-  protected readonly wishlistTarget = signal<GameListItem | null>(null);
-  protected readonly wishlistSubmitting = signal(false);
-  // Offres saisies dans la modale d'ajout wishlist (émises juste avant la confirmation, cf.
-  // WishlistFormModal) : capturées ici pour être créées une fois l'entrée wishlist elle-même créée.
-  private pendingWishlistOffers: OfferFormValue[] = [];
 
   protected readonly detailTarget = signal<GameListItem | null>(null);
 
@@ -137,9 +123,6 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
 
   protected readonly addConsoleTarget = signal<ConsoleOption | null>(null);
   protected readonly addConsoleSubmitting = signal(false);
-
-  protected readonly wishlistConsoleTarget = signal<ConsoleOption | null>(null);
-  protected readonly wishlistConsoleSubmitting = signal(false);
 
   protected isConsoleOwned(console: ConsoleOption): boolean {
     return this.ownedConsoleIds().has(console.id);
@@ -188,29 +171,19 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  protected openAddConsoleToWishlist(console: ConsoleOption): void {
-    this.wishlistConsoleTarget.set(console);
-  }
-
-  protected closeAddConsoleToWishlist(): void {
-    this.wishlistConsoleTarget.set(null);
-  }
-
-  protected submitAddConsoleToWishlist(value: ConsoleWishlistFormValue): void {
-    const console = this.wishlistConsoleTarget();
-    if (!console) return;
-
-    this.wishlistConsoleSubmitting.set(true);
-    this.consoleWishlistService.create({ id_console: console.id, ...value }).subscribe({
+  // Ajout instantané (retour utilisateur : la wishlist ne demande aucune info obligatoire — seul
+  // id_console est requis, le standard vidéo désiré/dernière vérification sont des critères de
+  // recherche qu'on préfère renseigner plus tard en éditant l'entrée, plutôt que de perdre du
+  // temps à chaque ajout avec une modale).
+  protected addConsoleToWishlist(console: ConsoleOption): void {
+    const today = new Date().toISOString().slice(0, 10);
+    this.consoleWishlistService.create({ id_console: console.id, ll_desired_video_standard: null, ts_last_checked: today }).subscribe({
       next: () => {
         this.wishlistedConsoleIds.update((set) => new Set(set).add(console.id));
         this.notificationService.success(`« ${console.ll_name} » ajoutée à la wishlist.`);
-        this.wishlistConsoleSubmitting.set(false);
-        this.closeAddConsoleToWishlist();
       },
       error: (err: HttpErrorResponse) => {
         this.notificationService.error(`Échec de l'ajout à la wishlist. (${httpErrorDetail(err)})`);
-        this.wishlistConsoleSubmitting.set(false);
       },
     });
   }
@@ -359,72 +332,27 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
     const game = this.detailTarget();
     if (!game) return;
     this.closeDetail();
-    this.openAddToWishlist(game);
+    this.addToWishlist(game);
   }
 
-  protected openAddToWishlist(game: GameListItem): void {
-    this.wishlistTarget.set(game);
-  }
-
-  protected closeAddToWishlist(): void {
-    this.wishlistTarget.set(null);
-  }
-
-  protected onWishlistOffersReady(offers: OfferFormValue[]): void {
-    this.pendingWishlistOffers = offers;
-  }
-
-  protected submitAddToWishlist(value: WishlistFormValue): void {
-    const game = this.wishlistTarget();
-    if (!game) return;
-
-    const offers = this.pendingWishlistOffers;
-    this.pendingWishlistOffers = [];
-
-    this.wishlistSubmitting.set(true);
-    this.wishlistService.create({ id_game: game.id, ...value }).subscribe({
-      next: (response) => {
+  // Ajout instantané (retour utilisateur : cliquer devait suffire, la wishlist ne demande aucune
+  // info obligatoire — seul id_game est requis, tout le reste (région désirée, complétude, état,
+  // priorité, offres) est un critère de recherche qu'on préfère renseigner plus tard en éditant
+  // l'entrée depuis l'écran Wishlist, plutôt que de perdre du temps avec une modale à chaque ajout).
+  // ts_last_checked est mis à la date du jour par défaut pour ne pas avoir à la ressaisir non plus.
+  protected addToWishlist(game: GameListItem): void {
+    const today = new Date().toISOString().slice(0, 10);
+    this.wishlistService.create({ id_game: game.id, ll_region: game.region, ts_last_checked: today }).subscribe({
+      next: () => {
         // Une entrée wishlist cible une édition régionale précise : ne marquer "en wishlist"
         // que la carte correspondant à cette région (une ligne par édition régionale, §2bis).
         this.games.update((list) =>
           list.map((g) => (g.id === game.id && g.region === game.region ? { ...g, in_wishlist: true } : g)),
         );
-
-        const finish = (): void => {
-          this.notificationService.success(`« ${game.ll_title} » ajouté à la wishlist.`);
-          this.wishlistSubmitting.set(false);
-          this.closeAddToWishlist();
-        };
-
-        if (offers.length === 0) {
-          finish();
-          return;
-        }
-
-        // On attend la résolution de toutes les offres avant de fermer la modale, pour pouvoir
-        // signaler un échec partiel plutôt que de fermer pendant que des créations sont en vol.
-        forkJoin(
-          offers.map((offer) =>
-            this.wishlistOfferService.create(response.data.id, offer).pipe(
-              map(() => true),
-              catchError(() => of(false)),
-            ),
-          ),
-        ).subscribe((results) => {
-          const failedCount = results.filter((ok) => !ok).length;
-          if (failedCount > 0) {
-            this.notificationService.error(
-              failedCount === 1
-                ? "Une offre n'a pas pu être ajoutée à la wishlist."
-                : `${failedCount} offres n'ont pas pu être ajoutées à la wishlist.`,
-            );
-          }
-          finish();
-        });
+        this.notificationService.success(`« ${game.ll_title} » ajouté à la wishlist.`);
       },
       error: (err: HttpErrorResponse) => {
         this.notificationService.error(`Échec de l'ajout à la wishlist. (${httpErrorDetail(err)})`);
-        this.wishlistSubmitting.set(false);
       },
     });
   }
