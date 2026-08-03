@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environments';
 import { WishlistService } from '../../core/services/wishlist.service';
@@ -26,6 +27,9 @@ import { WishlistPriceView } from '../../shared/components/wishlist-price-view/w
 import { ConditionMeter } from '../../shared/components/condition-meter/condition-meter';
 import { resolveCoverUrl } from '../../core/utils/cover-url.util';
 import { consolePhotoUrl } from '../../core/utils/console-photo.util';
+import { hidePhoto } from '../../core/utils/photo-visibility.util';
+import { ConsoleGroup, groupByConsoleName } from '../../core/utils/group-by-console.util';
+import { httpErrorDetail } from '../../core/utils/http-error.util';
 import {
   completenessLabel,
   completenessColor,
@@ -44,11 +48,6 @@ export type ViewMode = 'grid' | 'list';
 export type DisplayMode = 'cards' | 'kanban' | 'prices';
 export type ConsoleDisplayMode = 'cards' | 'kanban';
 export type SortOption = 'priority' | 'date-desc' | 'date-asc' | 'title';
-
-export interface ConsoleGroup {
-  consoleName: string;
-  items: WishlistItem[];
-}
 
 const SORT_COMPARATORS: Record<SortOption, (a: WishlistItem, b: WishlistItem) => number> = {
   priority: (a, b) => (b.nb_priority ?? -1) - (a.nb_priority ?? -1) || b.ts_create.localeCompare(a.ts_create),
@@ -125,17 +124,7 @@ export class Wishlist implements OnInit {
   });
 
   // Organisation par console (arborescence console -> jeux, §3.1) : un titre de section par console.
-  protected readonly groups = computed<ConsoleGroup[]>(() => {
-    const byConsole = new Map<string, WishlistItem[]>();
-    for (const item of this.filteredSorted()) {
-      const group = byConsole.get(item.console_name) ?? [];
-      group.push(item);
-      byConsole.set(item.console_name, group);
-    }
-    return [...byConsole.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([consoleName, groupItems]) => ({ consoleName, items: groupItems }));
-  });
+  protected readonly groups = computed<ConsoleGroup<WishlistItem>[]>(() => groupByConsoleName(this.filteredSorted()));
 
   // Vue Chasse (kanban) : mappe filteredSorted (recherche/tri restent actifs) vers la forme
   // générique attendue par WishlistKanban (agnostique jeux/consoles).
@@ -188,15 +177,10 @@ export class Wishlist implements OnInit {
   protected readonly consoleColor = consoleColor;
   protected readonly videoStandardLabel = videoStandardLabel;
   protected readonly formatDate = toDateInputValue;
+  protected readonly hidePhoto = hidePhoto;
 
   protected consolePhotoUrl(slug: string): string {
     return consolePhotoUrl(slug, this.coverOrigin);
-  }
-
-  // Pas de garantie que la photo existe (consolePhotoUrl construit toujours une URL) : si elle
-  // 404, on la masque pour laisser voir le fond coloré derrière plutôt que l'icône d'image cassée.
-  protected hidePhoto(event: Event): void {
-    (event.target as HTMLImageElement).style.visibility = 'hidden';
   }
 
   ngOnInit(): void {
@@ -212,8 +196,10 @@ export class Wishlist implements OnInit {
         this.consoleItems.set(consoleWishlist.data);
         this.loading.set(false);
       },
-      error: () => {
-        this.error.set("Impossible de charger la wishlist. Vérifie que l'API tourne (bun run start).");
+      error: (err: HttpErrorResponse) => {
+        this.error.set(
+          `Impossible de charger la wishlist. Vérifie que l'API tourne (bun run start). (${httpErrorDetail(err)})`,
+        );
         this.loading.set(false);
       },
     });
@@ -291,8 +277,8 @@ export class Wishlist implements OnInit {
         this.buySubmitting.set(false);
         this.closeBuy();
       },
-      error: () => {
-        this.notificationService.error("Échec de l'achat. Vérifie les champs et réessaie.");
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de l'achat. Vérifie les champs et réessaie. (${httpErrorDetail(err)})`);
         this.buySubmitting.set(false);
       },
     });
@@ -329,8 +315,8 @@ export class Wishlist implements OnInit {
         this.editSubmitting.set(false);
         this.closeEdit();
       },
-      error: () => {
-        this.notificationService.error('Échec de la mise à jour.');
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de la mise à jour. (${httpErrorDetail(err)})`);
         this.editSubmitting.set(false);
       },
     });
@@ -356,8 +342,8 @@ export class Wishlist implements OnInit {
         this.deleteSubmitting.set(false);
         this.closeDelete();
       },
-      error: () => {
-        this.notificationService.error('Échec de la suppression.');
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de la suppression. (${httpErrorDetail(err)})`);
         this.deleteSubmitting.set(false);
       },
     });
@@ -368,7 +354,7 @@ export class Wishlist implements OnInit {
     this.offers.set([]);
     this.wishlistOfferService.list(item.id).subscribe({
       next: (response) => this.offers.set(response.data),
-      error: () => this.notificationService.error('Impossible de charger les offres.'),
+      error: (err: HttpErrorResponse) => this.notificationService.error(`Impossible de charger les offres. (${httpErrorDetail(err)})`),
     });
   }
 
@@ -405,9 +391,9 @@ export class Wishlist implements OnInit {
 
     this.items.update((list) => list.map((i) => (i.id === event.id ? { ...i, ll_status: event.ll_status } : i)));
     this.wishlistService.update(event.id, { ll_status: event.ll_status }).subscribe({
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.items.update((list) => list.map((i) => (i.id === event.id ? { ...i, ll_status: previous } : i)));
-        this.notificationService.error('Échec de la mise à jour du statut.');
+        this.notificationService.error(`Échec de la mise à jour du statut. (${httpErrorDetail(err)})`);
       },
     });
   }
@@ -443,8 +429,8 @@ export class Wishlist implements OnInit {
         this.updateOffersCount(item.id, 1);
         this.offersSubmitting.set(false);
       },
-      error: () => {
-        this.notificationService.error("Échec de l'ajout de l'offre.");
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de l'ajout de l'offre. (${httpErrorDetail(err)})`);
         this.offersSubmitting.set(false);
       },
     });
@@ -461,7 +447,8 @@ export class Wishlist implements OnInit {
       next: (response) => {
         this.offers.update((list) => list.map((o) => (o.id === event.id ? response.data : o)));
       },
-      error: () => this.notificationService.error("Échec de la mise à jour de l'offre."),
+      error: (err: HttpErrorResponse) =>
+        this.notificationService.error(`Échec de la mise à jour de l'offre. (${httpErrorDetail(err)})`),
     });
   }
 
@@ -472,7 +459,8 @@ export class Wishlist implements OnInit {
         this.offers.update((list) => list.filter((o) => o.id !== id));
         if (item) this.updateOffersCount(item.id, -1);
       },
-      error: () => this.notificationService.error("Échec de la suppression de l'offre."),
+      error: (err: HttpErrorResponse) =>
+        this.notificationService.error(`Échec de la suppression de l'offre. (${httpErrorDetail(err)})`),
     });
   }
 
@@ -500,8 +488,8 @@ export class Wishlist implements OnInit {
         this.addConsoleSubmitting.set(false);
         this.closeAddConsole();
       },
-      error: () => {
-        this.notificationService.error("Échec de l'ajout à la wishlist.");
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de l'ajout à la wishlist. (${httpErrorDetail(err)})`);
         this.addConsoleSubmitting.set(false);
       },
     });
@@ -527,8 +515,8 @@ export class Wishlist implements OnInit {
         this.buyConsoleSubmitting.set(false);
         this.closeBuyConsole();
       },
-      error: () => {
-        this.notificationService.error("Échec de l'achat.");
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de l'achat. (${httpErrorDetail(err)})`);
         this.buyConsoleSubmitting.set(false);
       },
     });
@@ -561,8 +549,8 @@ export class Wishlist implements OnInit {
         this.editConsoleSubmitting.set(false);
         this.closeEditConsole();
       },
-      error: () => {
-        this.notificationService.error('Échec de la mise à jour.');
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de la mise à jour. (${httpErrorDetail(err)})`);
         this.editConsoleSubmitting.set(false);
       },
     });
@@ -588,8 +576,8 @@ export class Wishlist implements OnInit {
         this.deleteConsoleSubmitting.set(false);
         this.closeDeleteConsole();
       },
-      error: () => {
-        this.notificationService.error('Échec de la suppression.');
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de la suppression. (${httpErrorDetail(err)})`);
         this.deleteConsoleSubmitting.set(false);
       },
     });
@@ -600,7 +588,7 @@ export class Wishlist implements OnInit {
     this.consoleOffers.set([]);
     this.consoleWishlistOfferService.list(item.id).subscribe({
       next: (response) => this.consoleOffers.set(response.data),
-      error: () => this.notificationService.error('Impossible de charger les offres.'),
+      error: (err: HttpErrorResponse) => this.notificationService.error(`Impossible de charger les offres. (${httpErrorDetail(err)})`),
     });
   }
 
@@ -628,9 +616,9 @@ export class Wishlist implements OnInit {
 
     this.consoleItems.update((list) => list.map((i) => (i.id === event.id ? { ...i, ll_status: event.ll_status } : i)));
     this.consoleWishlistService.update(event.id, { ll_status: event.ll_status }).subscribe({
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.consoleItems.update((list) => list.map((i) => (i.id === event.id ? { ...i, ll_status: previous } : i)));
-        this.notificationService.error('Échec de la mise à jour du statut.');
+        this.notificationService.error(`Échec de la mise à jour du statut. (${httpErrorDetail(err)})`);
       },
     });
   }
@@ -664,8 +652,8 @@ export class Wishlist implements OnInit {
         this.updateConsoleOffersCount(item.id, 1);
         this.consoleOffersSubmitting.set(false);
       },
-      error: () => {
-        this.notificationService.error("Échec de l'ajout de l'offre.");
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de l'ajout de l'offre. (${httpErrorDetail(err)})`);
         this.consoleOffersSubmitting.set(false);
       },
     });
@@ -680,7 +668,8 @@ export class Wishlist implements OnInit {
       next: (response) => {
         this.consoleOffers.update((list) => list.map((o) => (o.id === event.id ? response.data : o)));
       },
-      error: () => this.notificationService.error("Échec de la mise à jour de l'offre."),
+      error: (err: HttpErrorResponse) =>
+        this.notificationService.error(`Échec de la mise à jour de l'offre. (${httpErrorDetail(err)})`),
     });
   }
 
@@ -691,7 +680,8 @@ export class Wishlist implements OnInit {
         this.consoleOffers.update((list) => list.filter((o) => o.id !== id));
         if (item) this.updateConsoleOffersCount(item.id, -1);
       },
-      error: () => this.notificationService.error("Échec de la suppression de l'offre."),
+      error: (err: HttpErrorResponse) =>
+        this.notificationService.error(`Échec de la suppression de l'offre. (${httpErrorDetail(err)})`),
     });
   }
 }

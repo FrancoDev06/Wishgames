@@ -1,4 +1,5 @@
 import DatabaseUtil from "@utils/database.util";
+import QueryBuilderUtil from "@utils/query-builder.util";
 import { ConsoleWishlistOffer } from "@models/console-wishlist-offer.model";
 
 export interface ConsoleWishlistOfferPayload {
@@ -9,6 +10,15 @@ export interface ConsoleWishlistOfferPayload {
 	ll_completeness?: string | null;
 	ll_condition_overall?: string | null;
 }
+
+const UPDATABLE_FIELDS: (keyof ConsoleWishlistOfferPayload)[] = [
+	"nb_price",
+	"ll_source_label",
+	"ll_source_url",
+	"ll_notes",
+	"ll_completeness",
+	"ll_condition_overall",
+];
 
 // Offres multiples pour une console recherchée (§3.5), symétrique à WishlistOfferQueries côté jeux.
 export default class ConsoleWishlistOfferQueries {
@@ -44,14 +54,11 @@ export default class ConsoleWishlistOfferQueries {
 	}
 
 	static async update(id: string, payload: ConsoleWishlistOfferPayload): Promise<ConsoleWishlistOffer | null> {
-		const fields = Object.keys(payload) as (keyof ConsoleWishlistOfferPayload)[];
-		if (fields.length === 0) return this.getById(id);
-
-		const setClauses = fields.map((field, i) => `${field} = $${i + 2}`);
-		const values = fields.map((field) => payload[field]);
+		const { clause, values } = QueryBuilderUtil.buildSetClause(payload, UPDATABLE_FIELDS);
+		if (!clause) return this.getById(id);
 
 		const result = await DatabaseUtil.query<ConsoleWishlistOffer>(
-			`UPDATE ref_console_wishlist_offer SET ${setClauses.join(", ")} WHERE id = $1 RETURNING *`,
+			`UPDATE ref_console_wishlist_offer SET ${clause} WHERE id = $1 RETURNING *`,
 			[id, ...values]
 		);
 		return result.rows[0] ?? null;

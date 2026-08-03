@@ -1,4 +1,5 @@
 import DatabaseUtil from "@utils/database.util";
+import QueryBuilderUtil from "@utils/query-builder.util";
 import { CollectionItem, CollectionItemWithGame } from "@models/collection.model";
 import ActivityLogQueries from "@queries/activity-log.queries";
 
@@ -19,6 +20,20 @@ export interface CollectionCreatePayload {
 }
 
 export type CollectionUpdatePayload = Partial<Omit<CollectionCreatePayload, "id_game">>;
+
+const UPDATABLE_FIELDS: (keyof CollectionUpdatePayload)[] = [
+	"ll_region",
+	"nb_quantity",
+	"ll_completeness",
+	"ll_condition_overall",
+	"ll_condition_box",
+	"ll_condition_manual",
+	"ll_condition_media",
+	"ts_acquired",
+	"nb_price_paid",
+	"ll_purchase_location",
+	"ll_notes",
+];
 
 // La jaquette affichée pour une ligne de collection correspond à sa propre région quand elle est
 // connue (col.ll_region) ; sinon on retombe sur la priorité Europe -> USA -> Japon habituelle (§2bis).
@@ -108,14 +123,11 @@ export default class CollectionQueries {
 	}
 
 	static async update(id: string, payload: CollectionUpdatePayload): Promise<CollectionItem | null> {
-		const fields = Object.keys(payload) as (keyof CollectionUpdatePayload)[];
-		if (fields.length === 0) return this.getRaw(id);
-
-		const setClauses = fields.map((field, i) => `${field} = $${i + 2}`);
-		const values = fields.map((field) => payload[field]);
+		const { clause, values } = QueryBuilderUtil.buildSetClause(payload, UPDATABLE_FIELDS);
+		if (!clause) return this.getRaw(id);
 
 		const result = await DatabaseUtil.query<CollectionItem>(
-			`UPDATE ref_collection SET ${setClauses.join(", ")} WHERE id = $1 RETURNING *`,
+			`UPDATE ref_collection SET ${clause} WHERE id = $1 RETURNING *`,
 			[id, ...values]
 		);
 

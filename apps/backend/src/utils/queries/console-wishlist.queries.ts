@@ -1,4 +1,5 @@
 import DatabaseUtil from "@utils/database.util";
+import QueryBuilderUtil from "@utils/query-builder.util";
 import { ConsoleWishlistItem, ConsoleWishlistItemWithConsole } from "@models/console-wishlist.model";
 import { ConsoleCollectionItem } from "@models/console-collection.model";
 import { ConsoleCollectionCreatePayload } from "@queries/console-collection.queries";
@@ -14,6 +15,8 @@ export interface ConsoleWishlistCreatePayload {
 // ll_status n'est jamais settable à la création (défaut DB SEARCHING, cf. migration 0009) — voir
 // wishlist.queries.ts pour le même choix côté jeux.
 export type ConsoleWishlistUpdatePayload = Partial<Omit<ConsoleWishlistCreatePayload, "id_console">> & { ll_status?: WishlistStatus };
+
+const UPDATABLE_FIELDS: (keyof ConsoleWishlistUpdatePayload)[] = ["ll_desired_video_standard", "ts_last_checked", "ll_status"];
 
 export type ConsoleWishlistBuyPayload = Omit<ConsoleCollectionCreatePayload, "id_console">;
 
@@ -64,14 +67,11 @@ export default class ConsoleWishlistQueries {
 	}
 
 	static async update(id: string, payload: ConsoleWishlistUpdatePayload): Promise<ConsoleWishlistItem | null> {
-		const fields = Object.keys(payload) as (keyof ConsoleWishlistUpdatePayload)[];
-		if (fields.length === 0) return this.getRaw(id);
-
-		const setClauses = fields.map((field, i) => `${field} = $${i + 2}`);
-		const values = fields.map((field) => payload[field]);
+		const { clause, values } = QueryBuilderUtil.buildSetClause(payload, UPDATABLE_FIELDS);
+		if (!clause) return this.getRaw(id);
 
 		const result = await DatabaseUtil.query<ConsoleWishlistItem>(
-			`UPDATE ref_console_wishlist SET ${setClauses.join(", ")} WHERE id = $1 RETURNING *`,
+			`UPDATE ref_console_wishlist SET ${clause} WHERE id = $1 RETURNING *`,
 			[id, ...values]
 		);
 

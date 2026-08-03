@@ -59,12 +59,16 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 async function main() {
+	if (!process.env.SUPABASE_DB_HOST || !process.env.SUPABASE_DB_USER || !process.env.SUPABASE_DB_PASSWORD) {
+		throw new Error("SUPABASE_DB_HOST / SUPABASE_DB_USER / SUPABASE_DB_PASSWORD manquants — voir .env.example");
+	}
+
 	const client = new Client({
-		host: "aws-0-eu-west-3.pooler.supabase.com",
-		port: 5432,
-		database: "postgres",
-		user: "postgres.***REDACTED-SUPABASE-PROJECT-REF***",
-		password: "***REDACTED-SUPABASE-PASSWORD***",
+		host: process.env.SUPABASE_DB_HOST,
+		port: Number(process.env.SUPABASE_DB_PORT ?? 5432),
+		database: process.env.SUPABASE_DB_NAME ?? "postgres",
+		user: process.env.SUPABASE_DB_USER,
+		password: process.env.SUPABASE_DB_PASSWORD,
 		ssl: { rejectUnauthorized: false },
 	});
 	await client.connect();

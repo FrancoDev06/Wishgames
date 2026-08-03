@@ -79,6 +79,7 @@ const init = async () => {
 		} catch (error: any) {
 			console.error(error);
 			LogUtil.conserror("   ↳", step.messages.fail);
+			failed = true;
 		}
 	}
 

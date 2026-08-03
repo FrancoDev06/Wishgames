@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environments';
 import { DashboardService } from '../../core/services/dashboard.service';
@@ -9,6 +10,7 @@ import { ConsoleOption } from '../../core/models/game.model';
 import { resolveCoverUrl } from '../../core/utils/cover-url.util';
 import { timeAgo, dayBucket, DAY_BUCKET_LABEL, DayBucket } from '../../core/utils/date.util';
 import { animateCount } from '../../core/utils/animate-count.util';
+import { httpErrorDetail } from '../../core/utils/http-error.util';
 import { consoleColor, consoleGradient } from '../../core/constants/console-colors.constant';
 import { ACTIVITY_ACTION_ICON, ACTIVITY_KIND_OPTIONS } from '../../core/constants/activity-icons.constant';
 import { DonutChart, DonutSlice } from '../../shared/components/donut-chart/donut-chart';
@@ -152,8 +154,10 @@ export class Dashboard implements OnInit {
         this.loading.set(false);
         this.startCountUp(response.data);
       },
-      error: () => {
-        this.error.set("Impossible de charger le dashboard. Vérifie que l'API tourne (bun run start).");
+      error: (err: HttpErrorResponse) => {
+        this.error.set(
+          `Impossible de charger le dashboard. Vérifie que l'API tourne (bun run start). (${httpErrorDetail(err)})`,
+        );
         this.loading.set(false);
       },
     });

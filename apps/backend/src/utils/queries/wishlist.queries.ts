@@ -1,4 +1,5 @@
 import DatabaseUtil from "@utils/database.util";
+import QueryBuilderUtil from "@utils/query-builder.util";
 import { WishlistItem, WishlistItemWithGame } from "@models/wishlist.model";
 import { CollectionItem } from "@models/collection.model";
 import { WishlistStatus } from "@models/common.model";
@@ -20,6 +21,16 @@ export interface WishlistCreatePayload {
 // ll_status n'est jamais settable à la création (nouvel item = toujours SEARCHING via le défaut
 // DB, cf. migration 0009) — seul update() peut le faire évoluer (vue Chasse / kanban).
 export type WishlistUpdatePayload = Partial<Omit<WishlistCreatePayload, "id_game">> & { ll_status?: WishlistStatus };
+
+const UPDATABLE_FIELDS: (keyof WishlistUpdatePayload)[] = [
+	"ts_last_checked",
+	"ll_desired_completeness",
+	"ll_desired_condition",
+	"ll_region",
+	"nb_priority",
+	"flag_hard_to_play",
+	"ll_status",
+];
 
 export interface WishlistBuyPayload {
 	// Région de l'édition effectivement achetée (§2bis) — optionnelle.
@@ -121,14 +132,11 @@ export default class WishlistQueries {
 	}
 
 	static async update(id: string, payload: WishlistUpdatePayload): Promise<WishlistItem | null> {
-		const fields = Object.keys(payload) as (keyof WishlistUpdatePayload)[];
-		if (fields.length === 0) return this.getRaw(id);
-
-		const setClauses = fields.map((field, i) => `${field} = $${i + 2}`);
-		const values = fields.map((field) => payload[field]);
+		const { clause, values } = QueryBuilderUtil.buildSetClause(payload, UPDATABLE_FIELDS);
+		if (!clause) return this.getRaw(id);
 
 		const result = await DatabaseUtil.query<WishlistItem>(
-			`UPDATE ref_wishlist SET ${setClauses.join(", ")} WHERE id = $1 RETURNING *`,
+			`UPDATE ref_wishlist SET ${clause} WHERE id = $1 RETURNING *`,
 			[id, ...values]
 		);
 

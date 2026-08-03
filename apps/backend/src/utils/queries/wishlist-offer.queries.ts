@@ -1,4 +1,5 @@
 import DatabaseUtil from "@utils/database.util";
+import QueryBuilderUtil from "@utils/query-builder.util";
 import { WishlistOffer } from "@models/wishlist-offer.model";
 
 export interface WishlistOfferPayload {
@@ -11,6 +12,17 @@ export interface WishlistOfferPayload {
 	ll_condition_box?: string | null;
 	ll_condition_manual?: string | null;
 }
+
+const UPDATABLE_FIELDS: (keyof WishlistOfferPayload)[] = [
+	"nb_price",
+	"ll_source_label",
+	"ll_source_url",
+	"ll_notes",
+	"ll_completeness",
+	"ll_condition_media",
+	"ll_condition_box",
+	"ll_condition_manual",
+];
 
 export default class WishlistOfferQueries {
 	static async list(idWishlist: string): Promise<WishlistOffer[]> {
@@ -47,14 +59,11 @@ export default class WishlistOfferQueries {
 	}
 
 	static async update(id: string, payload: WishlistOfferPayload): Promise<WishlistOffer | null> {
-		const fields = Object.keys(payload) as (keyof WishlistOfferPayload)[];
-		if (fields.length === 0) return this.getById(id);
-
-		const setClauses = fields.map((field, i) => `${field} = $${i + 2}`);
-		const values = fields.map((field) => payload[field]);
+		const { clause, values } = QueryBuilderUtil.buildSetClause(payload, UPDATABLE_FIELDS);
+		if (!clause) return this.getById(id);
 
 		const result = await DatabaseUtil.query<WishlistOffer>(
-			`UPDATE ref_wishlist_offer SET ${setClauses.join(", ")} WHERE id = $1 RETURNING *`,
+			`UPDATE ref_wishlist_offer SET ${clause} WHERE id = $1 RETURNING *`,
 			[id, ...values]
 		);
 		return result.rows[0] ?? null;

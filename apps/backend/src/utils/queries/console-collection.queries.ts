@@ -1,4 +1,5 @@
 import DatabaseUtil from "@utils/database.util";
+import QueryBuilderUtil from "@utils/query-builder.util";
 import { ConsoleCollectionItem, ConsoleCollectionItemWithConsole } from "@models/console-collection.model";
 import ActivityLogQueries from "@queries/activity-log.queries";
 
@@ -17,6 +18,19 @@ export interface ConsoleCollectionCreatePayload {
 }
 
 export type ConsoleCollectionUpdatePayload = Partial<Omit<ConsoleCollectionCreatePayload, "id_console">>;
+
+const UPDATABLE_FIELDS: (keyof ConsoleCollectionUpdatePayload)[] = [
+	"nb_quantity",
+	"ll_completeness",
+	"ll_condition_overall",
+	"ll_video_standard",
+	"flag_with_cables",
+	"flag_with_controller",
+	"ts_acquired",
+	"nb_price_paid",
+	"ll_purchase_location",
+	"ll_notes",
+];
 
 const SELECT_WITH_CONSOLE = `
 	SELECT cc.*, c.ll_slug AS console_slug, c.ll_name AS console_name
@@ -79,14 +93,11 @@ export default class ConsoleCollectionQueries {
 	}
 
 	static async update(id: string, payload: ConsoleCollectionUpdatePayload): Promise<ConsoleCollectionItem | null> {
-		const fields = Object.keys(payload) as (keyof ConsoleCollectionUpdatePayload)[];
-		if (fields.length === 0) return this.getRaw(id);
-
-		const setClauses = fields.map((field, i) => `${field} = $${i + 2}`);
-		const values = fields.map((field) => payload[field]);
+		const { clause, values } = QueryBuilderUtil.buildSetClause(payload, UPDATABLE_FIELDS);
+		if (!clause) return this.getRaw(id);
 
 		const result = await DatabaseUtil.query<ConsoleCollectionItem>(
-			`UPDATE ref_console_collection SET ${setClauses.join(", ")} WHERE id = $1 RETURNING *`,
+			`UPDATE ref_console_collection SET ${clause} WHERE id = $1 RETURNING *`,
 			[id, ...values]
 		);
 

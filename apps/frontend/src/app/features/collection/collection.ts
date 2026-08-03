@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environments';
 import { CollectionService } from '../../core/services/collection.service';
@@ -24,6 +25,9 @@ import { consoleColor } from '../../core/constants/console-colors.constant';
 import { toDateInputValue } from '../../core/utils/date.util';
 import { resolveCoverUrl } from '../../core/utils/cover-url.util';
 import { consolePhotoUrl } from '../../core/utils/console-photo.util';
+import { hidePhoto } from '../../core/utils/photo-visibility.util';
+import { ConsoleGroup, groupByConsoleName } from '../../core/utils/group-by-console.util';
+import { httpErrorDetail } from '../../core/utils/http-error.util';
 import { CollectionFormModal, CollectionFormValue } from '../../shared/components/collection-form-modal/collection-form-modal';
 import { ConsoleFormModal, ConsoleFormValue } from '../../shared/components/console-form-modal/console-form-modal';
 import { ConfirmModal } from '../../shared/components/confirm-modal/confirm-modal';
@@ -32,11 +36,6 @@ import { ConditionMeter } from '../../shared/components/condition-meter/conditio
 export type Tab = 'jeux' | 'consoles';
 export type ViewMode = 'grid' | 'list';
 export type SortOption = 'title' | 'price-desc' | 'price-asc' | 'date-desc' | 'date-asc';
-
-export interface ConsoleGroup {
-  consoleName: string;
-  items: CollectionItem[];
-}
 
 const SORT_COMPARATORS: Record<SortOption, (a: CollectionItem, b: CollectionItem) => number> = {
   title: (a, b) => a.title.localeCompare(b.title),
@@ -89,17 +88,7 @@ export class Collection implements OnInit {
   });
 
   // Organisation par console (§3.1), même principe que la Wishlist.
-  protected readonly groups = computed<ConsoleGroup[]>(() => {
-    const byConsole = new Map<string, CollectionItem[]>();
-    for (const item of this.filteredSorted()) {
-      const group = byConsole.get(item.console_name) ?? [];
-      group.push(item);
-      byConsole.set(item.console_name, group);
-    }
-    return [...byConsole.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([consoleName, groupItems]) => ({ consoleName, items: groupItems }));
-  });
+  protected readonly groups = computed<ConsoleGroup<CollectionItem>[]>(() => groupByConsoleName(this.filteredSorted()));
 
   // ---------- Consoles ----------
   protected readonly allConsoles = signal<ConsoleOption[]>([]);
@@ -127,15 +116,10 @@ export class Collection implements OnInit {
   protected readonly formatDate = toDateInputValue;
   protected readonly showBoxCondition = showBoxCondition;
   protected readonly showManualCondition = showManualCondition;
+  protected readonly hidePhoto = hidePhoto;
 
   protected consolePhotoUrl(slug: string): string {
     return consolePhotoUrl(slug, this.coverOrigin);
-  }
-
-  // Pas de garantie que la photo existe (consolePhotoUrl construit toujours une URL) : si elle
-  // 404, on la masque pour laisser voir le fond coloré derrière plutôt que l'icône d'image cassée.
-  protected hidePhoto(event: Event): void {
-    (event.target as HTMLImageElement).style.visibility = 'hidden';
   }
 
   ngOnInit(): void {
@@ -150,8 +134,10 @@ export class Collection implements OnInit {
         this.consoleItems.set(consoleCollection.data);
         this.loading.set(false);
       },
-      error: () => {
-        this.error.set("Impossible de charger la collection. Vérifie que l'API tourne (bun run start).");
+      error: (err: HttpErrorResponse) => {
+        this.error.set(
+          `Impossible de charger la collection. Vérifie que l'API tourne (bun run start). (${httpErrorDetail(err)})`,
+        );
         this.loading.set(false);
       },
     });
@@ -224,8 +210,8 @@ export class Collection implements OnInit {
         this.editSubmitting.set(false);
         this.closeEdit();
       },
-      error: () => {
-        this.notificationService.error('Échec de la mise à jour.');
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de la mise à jour. (${httpErrorDetail(err)})`);
         this.editSubmitting.set(false);
       },
     });
@@ -251,8 +237,8 @@ export class Collection implements OnInit {
         this.deleteSubmitting.set(false);
         this.closeDelete();
       },
-      error: () => {
-        this.notificationService.error('Échec de la suppression.');
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de la suppression. (${httpErrorDetail(err)})`);
         this.deleteSubmitting.set(false);
       },
     });
@@ -282,8 +268,8 @@ export class Collection implements OnInit {
         this.addConsoleSubmitting.set(false);
         this.closeAddConsole();
       },
-      error: () => {
-        this.notificationService.error("Échec de l'ajout de la console.");
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de l'ajout de la console. (${httpErrorDetail(err)})`);
         this.addConsoleSubmitting.set(false);
       },
     });
@@ -324,8 +310,8 @@ export class Collection implements OnInit {
         this.editConsoleSubmitting.set(false);
         this.closeEditConsole();
       },
-      error: () => {
-        this.notificationService.error('Échec de la mise à jour.');
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de la mise à jour. (${httpErrorDetail(err)})`);
         this.editConsoleSubmitting.set(false);
       },
     });
@@ -351,8 +337,8 @@ export class Collection implements OnInit {
         this.deleteConsoleSubmitting.set(false);
         this.closeDeleteConsole();
       },
-      error: () => {
-        this.notificationService.error('Échec de la suppression.');
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de la suppression. (${httpErrorDetail(err)})`);
         this.deleteConsoleSubmitting.set(false);
       },
     });

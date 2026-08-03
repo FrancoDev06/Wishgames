@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
-import { Subject, debounceTime, distinctUntilChanged, forkJoin } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Subject, catchError, debounceTime, distinctUntilChanged, forkJoin, map, of } from 'rxjs';
 import { environment } from '../../../environments/environments';
 import { GameService, GameStatusFilter } from '../../core/services/game.service';
 import { PlatformService } from '../../core/services/platform.service';
@@ -23,6 +24,8 @@ import {
 import { consoleColor } from '../../core/constants/console-colors.constant';
 import { resolveCoverUrl } from '../../core/utils/cover-url.util';
 import { consolePhotoUrl } from '../../core/utils/console-photo.util';
+import { hidePhoto } from '../../core/utils/photo-visibility.util';
+import { httpErrorDetail } from '../../core/utils/http-error.util';
 import { regionShortLabel } from '../../core/constants/game-state.constants';
 
 export type Tab = 'jeux' | 'consoles';
@@ -94,15 +97,10 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   protected readonly detailTarget = signal<GameListItem | null>(null);
 
   protected readonly consoleColor = consoleColor;
+  protected readonly hidePhoto = hidePhoto;
 
   protected consolePhotoUrl(slug: string): string {
     return consolePhotoUrl(slug, this.coverOrigin);
-  }
-
-  // Pas de garantie que la photo existe (consolePhotoUrl construit toujours une URL) : si elle
-  // 404, on la masque pour laisser voir le fond coloré derrière plutôt que l'icône d'image cassée.
-  protected hidePhoto(event: Event): void {
-    (event.target as HTMLImageElement).style.visibility = 'hidden';
   }
 
   // Nombre de jeux possédés par console (DashboardService.by_console) — sert à afficher, sur les
@@ -183,8 +181,8 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
         this.addConsoleSubmitting.set(false);
         this.closeAddConsoleToCollection();
       },
-      error: () => {
-        this.notificationService.error("Échec de l'ajout de la console.");
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de l'ajout de la console. (${httpErrorDetail(err)})`);
         this.addConsoleSubmitting.set(false);
       },
     });
@@ -210,8 +208,8 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
         this.wishlistConsoleSubmitting.set(false);
         this.closeAddConsoleToWishlist();
       },
-      error: () => {
-        this.notificationService.error("Échec de l'ajout à la wishlist.");
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de l'ajout à la wishlist. (${httpErrorDetail(err)})`);
         this.wishlistConsoleSubmitting.set(false);
       },
     });
@@ -290,8 +288,10 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
           this.loading.set(false);
           this.loadingMore.set(false);
         },
-        error: () => {
-          this.error.set("Impossible de charger le catalogue. Vérifie que l'API tourne (bun run start).");
+        error: (err: HttpErrorResponse) => {
+          this.error.set(
+            `Impossible de charger le catalogue. Vérifie que l'API tourne (bun run start). (${httpErrorDetail(err)})`,
+          );
           this.loading.set(false);
           this.loadingMore.set(false);
         },
@@ -389,17 +389,41 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
         this.games.update((list) =>
           list.map((g) => (g.id === game.id && g.region === game.region ? { ...g, in_wishlist: true } : g)),
         );
-        for (const offer of offers) {
-          this.wishlistOfferService.create(response.data.id, offer).subscribe({
-            error: () => this.notificationService.error("Échec de l'ajout d'une offre à la wishlist."),
-          });
+
+        const finish = (): void => {
+          this.notificationService.success(`« ${game.ll_title} » ajouté à la wishlist.`);
+          this.wishlistSubmitting.set(false);
+          this.closeAddToWishlist();
+        };
+
+        if (offers.length === 0) {
+          finish();
+          return;
         }
-        this.notificationService.success(`« ${game.ll_title} » ajouté à la wishlist.`);
-        this.wishlistSubmitting.set(false);
-        this.closeAddToWishlist();
+
+        // On attend la résolution de toutes les offres avant de fermer la modale, pour pouvoir
+        // signaler un échec partiel plutôt que de fermer pendant que des créations sont en vol.
+        forkJoin(
+          offers.map((offer) =>
+            this.wishlistOfferService.create(response.data.id, offer).pipe(
+              map(() => true),
+              catchError(() => of(false)),
+            ),
+          ),
+        ).subscribe((results) => {
+          const failedCount = results.filter((ok) => !ok).length;
+          if (failedCount > 0) {
+            this.notificationService.error(
+              failedCount === 1
+                ? "Une offre n'a pas pu être ajoutée à la wishlist."
+                : `${failedCount} offres n'ont pas pu être ajoutées à la wishlist.`,
+            );
+          }
+          finish();
+        });
       },
-      error: () => {
-        this.notificationService.error("Échec de l'ajout à la wishlist.");
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de l'ajout à la wishlist. (${httpErrorDetail(err)})`);
         this.wishlistSubmitting.set(false);
       },
     });
@@ -429,8 +453,8 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
         this.addSubmitting.set(false);
         this.closeAddToCollection();
       },
-      error: () => {
-        this.notificationService.error("Échec de l'ajout à la collection.");
+      error: (err: HttpErrorResponse) => {
+        this.notificationService.error(`Échec de l'ajout à la collection. (${httpErrorDetail(err)})`);
         this.addSubmitting.set(false);
       },
     });

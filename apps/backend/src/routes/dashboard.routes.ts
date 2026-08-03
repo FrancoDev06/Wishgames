@@ -28,8 +28,8 @@ router.register("GET", "/", async ({ res }): Promise<void> => {
 // historique des toasts succès/erreur, sans rapport avec les mutations collection/wishlist).
 router.register("GET", "/activity", async ({ req, res }): Promise<void> => {
 	const kind = typeof req.query.kind === "string" ? (req.query.kind as ActivityKind) : undefined;
-	const limit = Number(req.query.limit ?? 15);
-	const offset = Number(req.query.offset ?? 0);
+	const limit = Math.min(Math.max(Number(req.query.limit) || 15, 1), 200);
+	const offset = Math.max(Number(req.query.offset) || 0, 0);
 
 	const { rows, total } = await ActivityLogQueries.list({ kind, limit, offset });
 	return ResponsesUtil.handleResult(res, { info: "execok", data: { rows, total } });
