@@ -151,4 +151,19 @@
   .modal__row {
     grid-template-columns: 1fr;
   }
+
+  // Les modales de détail (wishlist/collection) alignent jusqu'à 4 boutons sur une ligne
+  // (Supprimer + Fermer/Modifier/Acheter) : ça dépasse la largeur de l'écran sur mobile et
+  // rend "Fermer" impossible à atteindre (retour utilisateur). On les laisse passer à la ligne.
+  .modal__actions,
+  .modal__actions--spread {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+
+  .modal__actions--spread .modal__actions {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+    justify-content: flex-end;
+  }
 }
