@@ -55,6 +55,16 @@
         </label>
       </div>
 
+      <label class="modal__field">
+        Mots-clés recherche Vinted (optionnel)
+        <input
+          type="text"
+          name="search-keywords"
+          placeholder="ex. mega man x, super nintendo — vide = titre du jeu"
+          [(ngModel)]="form.ll_search_keywords"
+        />
+      </label>
+
       <label class="modal__checkbox">
         <input type="checkbox" name="hard-to-play" [(ngModel)]="form.flag_hard_to_play" />
         Difficile à jouer sans en connaître la langue (ex. import japonais)

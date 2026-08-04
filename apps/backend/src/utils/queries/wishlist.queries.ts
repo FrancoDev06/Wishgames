@@ -16,6 +16,8 @@ export interface WishlistCreatePayload {
 	// langue (ex. Japon, migration 0012) — sert la vue Prix regroupée par jeu (comparer plusieurs
 	// régions du même titre sans recommander une édition importable mais illisible).
 	flag_hard_to_play?: boolean;
+	// Mots-clés de recherche Vinted (bot d'alerte externe, migration 0013).
+	ll_search_keywords?: string | null;
 }
 
 // ll_status n'est jamais settable à la création (nouvel item = toujours SEARCHING via le défaut
@@ -30,6 +32,7 @@ const UPDATABLE_FIELDS: (keyof WishlistUpdatePayload)[] = [
 	"nb_priority",
 	"flag_hard_to_play",
 	"ll_status",
+	"ll_search_keywords",
 ];
 
 export interface WishlistBuyPayload {
@@ -102,8 +105,8 @@ export default class WishlistQueries {
 	static async create(payload: WishlistCreatePayload): Promise<WishlistItem> {
 		const result = await DatabaseUtil.query<WishlistItem>(
 			`INSERT INTO ref_wishlist
-			 (id_game, ts_last_checked, ll_desired_completeness, ll_desired_condition, ll_region, nb_priority, flag_hard_to_play)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7)
+			 (id_game, ts_last_checked, ll_desired_completeness, ll_desired_condition, ll_region, nb_priority, flag_hard_to_play, ll_search_keywords)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 			 RETURNING *`,
 			[
 				payload.id_game,
@@ -113,6 +116,7 @@ export default class WishlistQueries {
 				payload.ll_region ?? null,
 				payload.nb_priority ?? null,
 				payload.flag_hard_to_play ?? false,
+				payload.ll_search_keywords ?? null,
 			]
 		);
 

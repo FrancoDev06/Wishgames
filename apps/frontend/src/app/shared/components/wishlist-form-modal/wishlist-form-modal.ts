@@ -11,6 +11,7 @@ export interface WishlistFormValue {
   nb_priority: number | null;
   ts_last_checked: string | null;
   flag_hard_to_play: boolean;
+  ll_search_keywords: string | null;
 }
 
 interface FormState {
@@ -20,6 +21,7 @@ interface FormState {
   nb_priority: string;
   ts_last_checked: string;
   flag_hard_to_play: boolean;
+  ll_search_keywords: string;
 }
 
 // Date du jour au format attendu par <input type="date"> — pré-remplit "Dernière vérification"
@@ -36,6 +38,7 @@ function emptyForm(): FormState {
     nb_priority: '',
     ts_last_checked: todayInputValue(),
     flag_hard_to_play: false,
+    ll_search_keywords: '',
   };
 }
 
@@ -107,6 +110,7 @@ export class WishlistFormModal implements OnInit {
       nb_priority: v.nb_priority ? String(v.nb_priority) : '',
       ts_last_checked: toDateInputValue(v.ts_last_checked),
       flag_hard_to_play: v.flag_hard_to_play,
+      ll_search_keywords: v.ll_search_keywords ?? '',
     };
   }
 
@@ -149,6 +153,7 @@ export class WishlistFormModal implements OnInit {
       nb_priority: this.form.nb_priority ? Number(this.form.nb_priority) : null,
       ts_last_checked: this.form.ts_last_checked || null,
       flag_hard_to_play: this.form.flag_hard_to_play,
+      ll_search_keywords: this.form.ll_search_keywords.trim() || null,
     });
   }
 

@@ -9,6 +9,9 @@ export interface WishlistItem {
 	ll_region: string | null;
 	nb_priority: number | null;
 	flag_hard_to_play: boolean;
+	// Mots-clés de recherche Vinted (séparés par des virgules), saisis manuellement — cf. migration
+	// 0013. Lus par le bot d'alerte externe bot_alerte_vinted pour les jeux priorité 4/5.
+	ll_search_keywords: string | null;
 	ll_status: WishlistStatus;
 	ts_create: string;
 	ts_update: string;

@@ -41,6 +41,12 @@
           <dd>{{ formatDate(item.ts_last_checked) }}</dd>
         </div>
       }
+      @if (item.ll_search_keywords) {
+        <div class="detail-row">
+          <dt>Mots-clés recherche Vinted</dt>
+          <dd>{{ item.ll_search_keywords }}</dd>
+        </div>
+      }
     </dl>
 
     <app-offers-panel

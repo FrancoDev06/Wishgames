@@ -292,6 +292,7 @@ export class Wishlist implements OnInit {
       nb_priority: item.nb_priority,
       ts_last_checked: item.ts_last_checked,
       flag_hard_to_play: item.flag_hard_to_play,
+      ll_search_keywords: item.ll_search_keywords,
     };
   }
 
