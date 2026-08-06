@@ -1,6 +1,6 @@
 <div class="modal-backdrop" (click)="close()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <h3 class="modal__title">{{ item.console_name }}</h3>
+  <div class="modal" appModalA11y="console-wishlist-detail-modal-title" (modalClosed)="close()" (click)="$event.stopPropagation()">
+    <h3 class="modal__title" id="console-wishlist-detail-modal-title">{{ item.console_name }}</h3>
     <p class="modal__subtitle">Console recherchée</p>
 
     <dl class="detail-rows">

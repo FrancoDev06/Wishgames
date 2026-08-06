@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { GameListItem } from '../../../core/models/game.model';
 import { regionShortLabel } from '../../../core/constants/game-state.constants';
+import { ModalA11yDirective } from '../../directives/modal-a11y.directive';
 
 // Vue détaillée d'une édition régionale précise du catalogue (une ligne = une région, §2bis),
 // ouverte au clic sur la carte (retour utilisateur : on ne savait pas dans quelle région un jeu
@@ -9,7 +10,7 @@ import { regionShortLabel } from '../../../core/constants/game-state.constants';
 // la carte (+ Collection / + Wishlist).
 @Component({
   selector: 'app-game-detail-modal',
-  imports: [],
+  imports: [ModalA11yDirective],
   templateUrl: './game-detail-modal.html',
   styleUrl: './game-detail-modal.scss',
 })

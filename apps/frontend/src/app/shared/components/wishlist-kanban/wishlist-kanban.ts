@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { WISHLIST_STATUS_COLUMNS, WishlistStatus, WishlistStatusColumn } from '../../../core/constants/wishlist-status.constants';
 
@@ -23,6 +23,7 @@ export interface KanbanCardData {
   imports: [DragDropModule],
   templateUrl: './wishlist-kanban.html',
   styleUrl: './wishlist-kanban.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WishlistKanban implements OnChanges {
   @Input() cards: KanbanCardData[] = [];
@@ -74,5 +75,32 @@ export class WishlistKanban implements OnChanges {
 
   protected onCardClick(card: KanbanCardData): void {
     this.cardClicked.emit(card.id);
+  }
+
+  // Entrée ouvre le détail (comme un clic) ; Espace reste géré par CDK Drag & Drop lui-même (prise
+  // en main clavier native) une fois la carte focusable — ne pas l'intercepter ici.
+  protected onCardKeydown(event: KeyboardEvent, card: KanbanCardData): void {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    this.onCardClick(card);
+  }
+
+  // Repli clavier/souris sans drag pour changer le statut d'une carte (select natif, toujours
+  // accessible même si le drag CDK n'est pas utilisé) — même logique métier que onDrop.
+  protected changeStatus(card: KanbanCardData, target: WishlistStatus): void {
+    if (target === card.ll_status) return;
+
+    if (target === 'BOUGHT') {
+      this.buyRequested.emit(card.id);
+      return;
+    }
+
+    const from = this.columns[card.ll_status];
+    const idx = from.indexOf(card);
+    if (idx === -1) return;
+
+    from.splice(idx, 1);
+    this.columns[target].push(card);
+    this.statusChanged.emit({ id: card.id, ll_status: target });
   }
 }

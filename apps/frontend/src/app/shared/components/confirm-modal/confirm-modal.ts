@@ -1,9 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ModalA11yDirective } from '../../directives/modal-a11y.directive';
 
 // Modale de confirmation générique (§6 : "confirmation simple avant suppression définitive")
 // — remplace le confirm() natif du navigateur, incohérent avec le reste de l'UI stylée de l'app.
 @Component({
   selector: 'app-confirm-modal',
+  imports: [ModalA11yDirective],
   templateUrl: './confirm-modal.html',
   styleUrl: './confirm-modal.scss',
 })

@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, debounceTime, distinctUntilChanged, forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environments';
@@ -37,6 +38,7 @@ const ALPHABET_INDEX = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
   imports: [CollectionFormModal, GameDetailModal, ConsoleFormModal],
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   private readonly gameService = inject(GameService);
@@ -48,6 +50,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   private readonly dashboardService = inject(DashboardService);
   private readonly notificationService = inject(NotificationService);
   private readonly coverOrigin = environment.apiOrigin;
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly tab = signal<Tab>('jeux');
 
@@ -217,7 +220,9 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
       error: () => undefined, // pas bloquant : les tuiles retombent sur le total au catalogue seul
     });
 
-    this.searchInput$.pipe(debounceTime(300), distinctUntilChanged()).subscribe(() => this.fetchPage(true));
+    this.searchInput$
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.fetchPage(true));
 
     this.fetchPage(true);
   }

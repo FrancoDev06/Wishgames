@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { COMPLETENESS_OPTIONS, CONDITION_OPTIONS, VIDEO_STANDARD_OPTIONS } from '../../../core/constants/game-state.constants';
 import { toDateInputValue } from '../../../core/utils/date.util';
+import { ModalA11yDirective } from '../../directives/modal-a11y.directive';
 
 export interface ConsoleFormValue {
   ll_completeness: string;
@@ -48,7 +49,7 @@ function emptyForm(): FormState {
 // à la collection de consoles et pour le bouton "Acheter" depuis la wishlist de consoles.
 @Component({
   selector: 'app-console-form-modal',
-  imports: [FormsModule],
+  imports: [FormsModule, ModalA11yDirective],
   templateUrl: './console-form-modal.html',
   styleUrl: './console-form-modal.scss',
 })

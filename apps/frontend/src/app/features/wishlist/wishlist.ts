@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { environment } from '../../../environments/environments';
@@ -75,6 +75,7 @@ const SORT_COMPARATORS: Record<SortOption, (a: WishlistItem, b: WishlistItem) =>
   ],
   templateUrl: './wishlist.html',
   styleUrl: './wishlist.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Wishlist implements OnInit {
   private readonly wishlistService = inject(WishlistService);

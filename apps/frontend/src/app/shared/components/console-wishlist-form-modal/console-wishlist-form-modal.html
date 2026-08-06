@@ -1,6 +1,6 @@
 <div class="modal-backdrop" (click)="cancel()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <h3 class="modal__title">{{ heading }}</h3>
+  <div class="modal" appModalA11y="console-wishlist-form-modal-title" (modalClosed)="cancel()" (click)="$event.stopPropagation()">
+    <h3 class="modal__title" id="console-wishlist-form-modal-title">{{ heading }}</h3>
 
     <form (ngSubmit)="submit()">
       <label class="modal__field">

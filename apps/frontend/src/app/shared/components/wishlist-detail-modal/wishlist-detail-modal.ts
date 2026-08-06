@@ -3,12 +3,13 @@ import { OffersPanel, OfferItem, OfferFormValue } from '../offers-panel/offers-p
 import { WishlistItem } from '../../../core/models/wishlist.model';
 import { completenessLabel, conditionLabel, regionLabel } from '../../../core/constants/game-state.constants';
 import { toDateInputValue } from '../../../core/utils/date.util';
+import { ModalA11yDirective } from '../../directives/modal-a11y.directive';
 
 // Vue détaillée d'un jeu recherché (§3.2), ouverte au clic sur la carte plutôt que d'empiler les
 // boutons directement dessus (retour utilisateur) : infos + offres + actions, tout en un seul endroit.
 @Component({
   selector: 'app-wishlist-detail-modal',
-  imports: [OffersPanel],
+  imports: [OffersPanel, ModalA11yDirective],
   templateUrl: './wishlist-detail-modal.html',
   styleUrl: './wishlist-detail-modal.scss',
 })

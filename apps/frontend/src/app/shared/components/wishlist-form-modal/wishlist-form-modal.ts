@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { COMPLETENESS_OPTIONS, CONDITION_OPTIONS, REGION_OPTIONS } from '../../../core/constants/game-state.constants';
 import { toDateInputValue } from '../../../core/utils/date.util';
 import { OfferFormValue } from '../offers-panel/offers-panel';
+import { ModalA11yDirective } from '../../directives/modal-a11y.directive';
 
 export interface WishlistFormValue {
   ll_region: string | null;
@@ -75,7 +76,7 @@ function toOfferFormValue(draft: OfferDraftState): OfferFormValue {
 // ce sont des critères de recherche et pas des exigences strictes).
 @Component({
   selector: 'app-wishlist-form-modal',
-  imports: [FormsModule],
+  imports: [FormsModule, ModalA11yDirective],
   templateUrl: './wishlist-form-modal.html',
   styleUrl: './wishlist-form-modal.scss',
 })

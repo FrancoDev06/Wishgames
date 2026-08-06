@@ -1,5 +1,5 @@
 <div class="modal-backdrop" (click)="close()">
-  <div class="modal" (click)="$event.stopPropagation()">
+  <div class="modal" appModalA11y="game-detail-modal-title" (modalClosed)="close()" (click)="$event.stopPropagation()">
     <div class="detail-header">
       @if (coverUrl; as url) {
         <img class="detail-header__cover" [src]="url" [alt]="'Jaquette de ' + game.ll_title" />
@@ -7,7 +7,7 @@
         <div class="detail-header__cover detail-header__cover--placeholder">{{ game.console_name }}</div>
       }
       <div>
-        <h3 class="modal__title">{{ game.ll_title }}</h3>
+        <h3 class="modal__title" id="game-detail-modal-title">{{ game.ll_title }}</h3>
         <p class="modal__subtitle">{{ game.console_name }}{{ regionLabel() ? ' · Édition ' + regionLabel() : '' }}</p>
         @if (game.ll_aka_titles.length) {
           <p class="detail-aka">Aussi connu sous : {{ game.ll_aka_titles.join(', ') }}</p>

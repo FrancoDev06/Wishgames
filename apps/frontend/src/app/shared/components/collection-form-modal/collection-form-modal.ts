@@ -7,6 +7,7 @@ import {
   showManualCondition,
 } from '../../../core/constants/game-state.constants';
 import { toDateInputValue } from '../../../core/utils/date.util';
+import { ModalA11yDirective } from '../../directives/modal-a11y.directive';
 
 export interface CollectionFormValue {
   ll_region: string | null;
@@ -51,7 +52,7 @@ function emptyForm(): FormState {
 // Acheter de la Wishlist (transfert) et par l'ajout direct depuis le Catalogue.
 @Component({
   selector: 'app-collection-form-modal',
-  imports: [FormsModule],
+  imports: [FormsModule, ModalA11yDirective],
   templateUrl: './collection-form-modal.html',
   styleUrl: './collection-form-modal.scss',
 })

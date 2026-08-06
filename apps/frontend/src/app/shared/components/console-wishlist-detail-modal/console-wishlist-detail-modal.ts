@@ -3,12 +3,13 @@ import { OffersPanel, OfferItem, OfferFormValue } from '../offers-panel/offers-p
 import { ConsoleWishlistItem } from '../../../core/models/console-wishlist.model';
 import { videoStandardLabel } from '../../../core/constants/game-state.constants';
 import { toDateInputValue } from '../../../core/utils/date.util';
+import { ModalA11yDirective } from '../../directives/modal-a11y.directive';
 
 // Vue détaillée d'une console recherchée (§3.5), ouverte au clic sur la carte plutôt que d'empiler
 // les boutons directement dessus (retour utilisateur) : infos + offres + actions, tout en un seul endroit.
 @Component({
   selector: 'app-console-wishlist-detail-modal',
-  imports: [OffersPanel],
+  imports: [OffersPanel, ModalA11yDirective],
   templateUrl: './console-wishlist-detail-modal.html',
   styleUrl: './console-wishlist-detail-modal.scss',
 })

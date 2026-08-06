@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VIDEO_STANDARD_OPTIONS } from '../../../core/constants/game-state.constants';
 import { toDateInputValue } from '../../../core/utils/date.util';
+import { ModalA11yDirective } from '../../directives/modal-a11y.directive';
 
 export interface ConsoleWishlistFormValue {
   ll_desired_video_standard: string | null;
@@ -21,7 +22,7 @@ function emptyForm(): FormState {
 // dernière vérification, tous deux optionnels (critères de recherche, pas d'exigence stricte).
 @Component({
   selector: 'app-console-wishlist-form-modal',
-  imports: [FormsModule],
+  imports: [FormsModule, ModalA11yDirective],
   templateUrl: './console-wishlist-form-modal.html',
   styleUrl: './console-wishlist-form-modal.scss',
 })

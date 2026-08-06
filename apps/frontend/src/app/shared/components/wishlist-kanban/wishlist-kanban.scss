@@ -118,6 +118,29 @@
   color: var(--color-accent);
 }
 
+// Repli non-drag pour changer de statut (clavier/souris) — cf. wishlist-kanban.ts changeStatus().
+.kanban-card__status select {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  background: var(--color-bg-sunken);
+  color: var(--color-text);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px var(--space-2);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .cdk-drag-preview {
   box-sizing: border-box;
   border-radius: var(--radius-md);

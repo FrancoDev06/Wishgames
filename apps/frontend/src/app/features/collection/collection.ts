@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
@@ -53,6 +53,7 @@ const SORT_COMPARATORS: Record<SortOption, (a: CollectionItem, b: CollectionItem
   imports: [DecimalPipe, CollectionFormModal, ConsoleFormModal, ConfirmModal, ConditionMeter],
   templateUrl: './collection.html',
   styleUrl: './collection.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Collection implements OnInit {
   private readonly collectionService = inject(CollectionService);

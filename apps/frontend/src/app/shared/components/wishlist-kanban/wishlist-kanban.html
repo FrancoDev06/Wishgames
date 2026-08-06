@@ -15,7 +15,16 @@
         (cdkDropListDropped)="onDrop($event, col.value)"
       >
         @for (card of columns[col.value]; track card.id) {
-          <div class="kanban-card" cdkDrag [cdkDragData]="card" (click)="onCardClick(card)">
+          <div
+            class="kanban-card"
+            cdkDrag
+            [cdkDragData]="card"
+            tabindex="0"
+            role="button"
+            [attr.aria-label]="'Voir ' + card.title"
+            (click)="onCardClick(card)"
+            (keydown)="onCardKeydown($event, card)"
+          >
             @if (card.coverUrl) {
               <img class="kanban-card__cover" [src]="card.coverUrl" [alt]="'Jaquette de ' + card.title" loading="lazy" />
             }
@@ -27,6 +36,14 @@
               @if (card.nb_priority) {
                 <span class="kanban-card__priority">Priorité {{ card.nb_priority }}/5</span>
               }
+              <label class="kanban-card__status" (click)="$event.stopPropagation()">
+                <span class="sr-only">Changer le statut de {{ card.title }}</span>
+                <select (keydown)="$event.stopPropagation()" (change)="changeStatus(card, $any($event.target).value)">
+                  @for (col of columnDefs; track col.value) {
+                    <option [value]="col.value" [selected]="col.value === card.ll_status">{{ col.label }}</option>
+                  }
+                </select>
+              </label>
             </div>
             <div class="kanban-card__placeholder" *cdkDragPlaceholder></div>
           </div>

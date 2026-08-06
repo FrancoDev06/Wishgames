@@ -1,11 +1,11 @@
 <div class="modal-backdrop" (click)="close()">
-  <div class="modal" (click)="$event.stopPropagation()">
+  <div class="modal" appModalA11y="wishlist-detail-modal-title" (modalClosed)="close()" (click)="$event.stopPropagation()">
     <div class="detail-header">
       @if (coverUrl; as url) {
         <img class="detail-header__cover" [src]="url" [alt]="'Jaquette de ' + item.title" />
       }
       <div>
-        <h3 class="modal__title">{{ item.title }}</h3>
+        <h3 class="modal__title" id="wishlist-detail-modal-title">{{ item.title }}</h3>
         <p class="modal__subtitle">{{ item.console_name }}</p>
       </div>
     </div>
