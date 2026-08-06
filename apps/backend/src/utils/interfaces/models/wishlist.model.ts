@@ -12,6 +12,8 @@ export interface WishlistItem {
 	// Mots-clés de recherche Vinted (séparés par des virgules), saisis manuellement — cf. migration
 	// 0013. Lus par le bot d'alerte externe bot_alerte_vinted pour les jeux priorité 4/5.
 	ll_search_keywords: string | null;
+	// Bascule manuelle "actif dans la recherche" (migration 0014), indépendante de nb_priority.
+	flag_search_active: boolean;
 	ll_status: WishlistStatus;
 	ts_create: string;
 	ts_update: string;

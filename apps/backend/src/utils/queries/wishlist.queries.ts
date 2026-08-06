@@ -18,6 +18,8 @@ export interface WishlistCreatePayload {
 	flag_hard_to_play?: boolean;
 	// Mots-clés de recherche Vinted (bot d'alerte externe, migration 0013).
 	ll_search_keywords?: string | null;
+	// Actif dans la recherche (migration 0014), indépendant de nb_priority.
+	flag_search_active?: boolean;
 }
 
 // ll_status n'est jamais settable à la création (nouvel item = toujours SEARCHING via le défaut
@@ -33,6 +35,7 @@ const UPDATABLE_FIELDS: (keyof WishlistUpdatePayload)[] = [
 	"flag_hard_to_play",
 	"ll_status",
 	"ll_search_keywords",
+	"flag_search_active",
 ];
 
 export interface WishlistBuyPayload {

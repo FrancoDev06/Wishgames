@@ -10,6 +10,7 @@ export interface WishlistItem {
   nb_priority: number | null;
   flag_hard_to_play: boolean;
   ll_search_keywords: string | null;
+  flag_search_active: boolean;
   ll_status: WishlistStatus;
   ts_create: string;
   ts_update: string;

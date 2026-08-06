@@ -15,6 +15,8 @@ export interface WishlistCreatePayload {
   nb_priority?: number | null;
   ts_last_checked?: string | null;
   flag_hard_to_play?: boolean;
+  ll_search_keywords?: string | null;
+  flag_search_active?: boolean;
 }
 
 export interface BuyPayload {

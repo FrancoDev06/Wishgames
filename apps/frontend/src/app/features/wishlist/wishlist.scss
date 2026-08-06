@@ -1,54 +1,6 @@
 // Layout partagé (en-tête, bascule vue, groupes console, grille/liste, carte de base) : voir src/styles/_browse.scss
 // Modale d'achat : voir shared/components/collection-form-modal.
-// Ici : uniquement ce qui est spécifique à la Wishlist (priorité, régions, bouton Acheter).
-
-.card .priority {
-  margin-top: auto;
-  padding-top: var(--space-2);
-}
-
-// ---------- Priorité ----------
-// Volontairement séparée des régions : couleur sémantique indépendante du thème actif.
-.priority {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.priority__bars {
-  display: flex;
-  gap: 2px;
-}
-
-.priority__bars i {
-  display: block;
-  width: 8px;
-  height: 12px;
-  border-radius: 2px;
-  background: var(--color-border);
-}
-
-.priority[data-level='1'] .priority__bars i.on {
-  background: var(--priority-1);
-}
-.priority[data-level='2'] .priority__bars i.on {
-  background: var(--priority-2);
-}
-.priority[data-level='3'] .priority__bars i.on {
-  background: var(--priority-3);
-}
-.priority[data-level='4'] .priority__bars i.on {
-  background: var(--priority-4);
-}
-.priority[data-level='5'] .priority__bars i.on {
-  background: var(--priority-5);
-}
-
-.priority__label {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  white-space: nowrap;
-}
+// Ici : uniquement ce qui est spécifique à la Wishlist (régions, recherche, bouton Acheter).
 
 // ---------- Régions ----------
 // Sur une seule ligne (retour utilisateur), séparées par un point médian.
@@ -63,4 +15,69 @@
   font-size: var(--text-xs);
   font-weight: 600;
   color: var(--color-accent);
+}
+
+// ---------- Mot-clé de recherche + bascule "actif" (directement sur la carte, remplace l'ancien
+// affichage priorité 5/5, retour utilisateur) ----------
+.card .search-controls {
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.search-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.search-keywords-input {
+  box-sizing: border-box;
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: var(--border-width) solid var(--color-border-strong);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.search-active-btn {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid var(--color-border-strong);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: var(--transition-base);
+  white-space: nowrap;
+}
+
+.search-active-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.search-active-btn--on {
+  background: var(--gradient-accent);
+  border-color: transparent;
+  color: var(--color-primary-contrast);
+}
+
+// ---------- Repli/dépli d'un groupe console (clic sur le titre, retour utilisateur) ----------
+.console-group__title--clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.console-group__chevron {
+  display: inline-block;
+  transition: var(--transition-base);
+}
+
+.console-group__chevron--collapsed {
+  transform: rotate(-90deg);
 }

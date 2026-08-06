@@ -85,8 +85,6 @@ export class Wishlist implements OnInit {
   private readonly notificationService = inject(NotificationService);
   private readonly coverOrigin = environment.apiOrigin;
 
-  protected readonly priorityLevels = [1, 2, 3, 4, 5];
-
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly tab = signal<Tab>('jeux');
@@ -125,6 +123,23 @@ export class Wishlist implements OnInit {
 
   // Organisation par console (arborescence console -> jeux, §3.1) : un titre de section par console.
   protected readonly groups = computed<ConsoleGroup<WishlistItem>[]>(() => groupByConsoleName(this.filteredSorted()));
+
+  // Repli/dépli par console (clic sur le titre de section, retour utilisateur) : toutes dépliées
+  // par défaut, on ne mémorise que celles explicitement repliées.
+  private readonly collapsedConsoles = signal<Set<string>>(new Set());
+
+  protected isConsoleCollapsed(consoleName: string): boolean {
+    return this.collapsedConsoles().has(consoleName);
+  }
+
+  protected toggleConsoleGroup(consoleName: string): void {
+    this.collapsedConsoles.update((set) => {
+      const next = new Set(set);
+      if (next.has(consoleName)) next.delete(consoleName);
+      else next.add(consoleName);
+      return next;
+    });
+  }
 
   // Vue Chasse (kanban) : mappe filteredSorted (recherche/tri restent actifs) vers la forme
   // générique attendue par WishlistKanban (agnostique jeux/consoles).
@@ -227,6 +242,36 @@ export class Wishlist implements OnInit {
 
   protected onSortChange(value: string): void {
     this.sortBy.set(value as SortOption);
+  }
+
+  // Bascule "actif dans la recherche" directement sur la carte (retour utilisateur : remplace
+  // l'affichage priorité 5/5, notion désormais indépendante de nb_priority — cf. migration 0014).
+  // Mise à jour optimiste + rollback en cas d'échec, même pattern que onKanbanStatusChanged.
+  protected toggleSearchActive(item: WishlistItem): void {
+    const next = !item.flag_search_active;
+    this.items.update((list) => list.map((i) => (i.id === item.id ? { ...i, flag_search_active: next } : i)));
+    this.wishlistService.update(item.id, { flag_search_active: next }).subscribe({
+      error: (err: HttpErrorResponse) => {
+        this.items.update((list) => list.map((i) => (i.id === item.id ? { ...i, flag_search_active: !next } : i)));
+        this.notificationService.error(`Échec de la mise à jour. (${httpErrorDetail(err)})`);
+      },
+    });
+  }
+
+  // Édition directe des mots-clés Vinted sur la carte (retour utilisateur : évite d'ouvrir la
+  // modale juste pour ça) — enregistré au blur/Entrée, cf. wishlist.html.
+  protected updateSearchKeywords(item: WishlistItem, rawValue: string): void {
+    const value = rawValue.trim() || null;
+    if (value === item.ll_search_keywords) return;
+
+    const previous = item.ll_search_keywords;
+    this.items.update((list) => list.map((i) => (i.id === item.id ? { ...i, ll_search_keywords: value } : i)));
+    this.wishlistService.update(item.id, { ll_search_keywords: value }).subscribe({
+      error: (err: HttpErrorResponse) => {
+        this.items.update((list) => list.map((i) => (i.id === item.id ? { ...i, ll_search_keywords: previous } : i)));
+        this.notificationService.error(`Échec de la mise à jour des mots-clés. (${httpErrorDetail(err)})`);
+      },
+    });
   }
 
   protected coverUrl(item: WishlistItem): string | null {

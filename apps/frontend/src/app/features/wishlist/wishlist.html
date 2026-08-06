@@ -93,11 +93,16 @@
 
       @for (group of groups(); track group.consoleName) {
         <section class="console-group">
-          <h3 class="console-group__title">
+          <h3
+            class="console-group__title console-group__title--clickable"
+            (click)="toggleConsoleGroup(group.consoleName)"
+          >
+            <span class="console-group__chevron" [class.console-group__chevron--collapsed]="isConsoleCollapsed(group.consoleName)" aria-hidden="true">▾</span>
             {{ group.consoleName }}
             <span class="console-group__count">{{ group.items.length }}</span>
           </h3>
 
+          @if (!isConsoleCollapsed(group.consoleName)) {
           @if (viewMode() === 'grid') {
             <div class="browse-grid">
               @for (item of group.items; track item.id) {
@@ -128,16 +133,24 @@
                       </div>
                     }
 
-                    @if (item.nb_priority) {
-                      <div class="priority" [attr.data-level]="item.nb_priority">
-                        <span class="priority__bars">
-                          @for (level of priorityLevels; track level) {
-                            <i [class.on]="level <= item.nb_priority!"></i>
-                          }
-                        </span>
-                        <span class="priority__label">Priorité {{ item.nb_priority }}/5</span>
-                      </div>
-                    }
+                    <div class="search-controls" (click)="$event.stopPropagation()">
+                      <input
+                        type="text"
+                        class="search-keywords-input"
+                        placeholder="Mots-clés Vinted…"
+                        [value]="item.ll_search_keywords ?? ''"
+                        (blur)="updateSearchKeywords(item, $any($event.target).value)"
+                        (keydown.enter)="$any($event.target).blur()"
+                      />
+                      <button
+                        type="button"
+                        class="search-active-btn"
+                        [class.search-active-btn--on]="item.flag_search_active"
+                        (click)="toggleSearchActive(item)"
+                      >
+                        {{ item.flag_search_active ? '● Recherche active' : 'Activer la recherche' }}
+                      </button>
+                    </div>
 
                     @if (item.nb_offers) {
                       <div class="offers-hint">{{ item.nb_offers }} offre{{ item.nb_offers > 1 ? 's' : '' }}</div>
@@ -179,16 +192,24 @@
                         </div>
                       }
 
-                      @if (item.nb_priority) {
-                        <div class="priority" [attr.data-level]="item.nb_priority">
-                          <span class="priority__bars">
-                            @for (level of priorityLevels; track level) {
-                              <i [class.on]="level <= item.nb_priority!"></i>
-                            }
-                          </span>
-                          <span class="priority__label">Priorité {{ item.nb_priority }}/5</span>
-                        </div>
-                      }
+                      <div class="search-controls" (click)="$event.stopPropagation()">
+                        <input
+                          type="text"
+                          class="search-keywords-input"
+                          placeholder="Mots-clés Vinted…"
+                          [value]="item.ll_search_keywords ?? ''"
+                          (blur)="updateSearchKeywords(item, $any($event.target).value)"
+                          (keydown.enter)="$any($event.target).blur()"
+                        />
+                        <button
+                          type="button"
+                          class="search-active-btn"
+                          [class.search-active-btn--on]="item.flag_search_active"
+                          (click)="toggleSearchActive(item)"
+                        >
+                          {{ item.flag_search_active ? '● Recherche active' : 'Activer la recherche' }}
+                        </button>
+                      </div>
 
                       @if (item.nb_offers) {
                         <div class="offers-hint">{{ item.nb_offers }} offre{{ item.nb_offers > 1 ? 's' : '' }}</div>
@@ -198,6 +219,7 @@
                 </article>
               }
             </div>
+          }
           }
         </section>
       }
