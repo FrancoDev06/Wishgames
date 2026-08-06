@@ -1,11 +1,13 @@
 import cors from "cors";
 import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { join } from "path";
 import { existsSync } from "fs";
 import express, { Express, Router, Request, Response, NextFunction, json, text, urlencoded } from "express";
 
 import ResponsesUtil from "@utils/responses.util";
 import { logMiddleware } from "@middlewares/log.middleware";
+import { apiKeyMiddleware } from "@middlewares/auth.middleware";
 import { RootRouter } from "@routes/root.routes";
 import { CollectionRouter } from "@routes/collection.routes";
 import { PlatformsRouter } from "@routes/platforms.routes";
@@ -23,7 +25,11 @@ export default class RoutesUtil {
 		const product = instance.get('product');
 		const side = 'client';
 
-		instance.use(cors());
+		// En prod le frontend est servi depuis la meme origine (voir plus bas) : aucune origine
+		// cross-origin n'a besoin d'etre autorisee. CORS_ORIGIN ne sert qu'au dev local, ou `ng serve`
+		// (port 4200) appelle ce backend (port 6001) en cross-origin.
+		const corsOrigin = process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? false : 'http://localhost:4200');
+		instance.use(cors({ origin: corsOrigin }));
 		instance.use(json());
 		instance.use(text());
 		// CSP desactivee : le build Angular utilise un <script> inline pour appliquer le theme
@@ -35,9 +41,34 @@ export default class RoutesUtil {
 		instance.use(logMiddleware({ exclude: [`/${product}/${side}/v${version}/livez`, `/${product}/${side}/v${version}/readyz`] }));
 		instance.use('/covers', express.static(join(process.cwd(), 'public', 'covers')));
 		instance.use('/console-photos', express.static(join(process.cwd(), 'public', 'consoles')));
-		const add = (path: string, router: Router) => instance.use(`/${product}/${side}/v${version}/${path}`, router);
 
-		add('', RootRouter);
+		// Rate limiting généreux : app mono-utilisateur (§1), sert de garde-fou contre un bug client qui
+		// boucle ou un abus depuis une IP plutot que d'une vraie protection anti-bruteforce multi-
+		// utilisateurs. Uniquement sur les routes API protegees par API_KEY (meme perimetre que
+		// apiKeyMiddleware ci-dessous) : le RootRouter public reste exempte pour ne pas gener les health
+		// checks de l'hebergeur (Render), qui peuvent sonder frequemment.
+		const apiRateLimiter = rateLimit({
+			windowMs: 15 * 60 * 1000,
+			limit: 300,
+			standardHeaders: true,
+			legacyHeaders: false,
+			handler: (_req: Request, res: Response): void => {
+				ResponsesUtil.tooManyRequest(res, { id_case: 'RATE_LIMITED' });
+			},
+		});
+
+		// RootRouter reste public : c'est le point que verifient les health checks de l'hebergeur
+		// (Render), qui n'envoient pas de X-API-Key.
+		const add = (path: string, router: Router, protect: boolean = true) => {
+			const fullPath = `/${product}/${side}/v${version}/${path}`;
+			if (protect) {
+				instance.use(fullPath, apiRateLimiter);
+				instance.use(fullPath, apiKeyMiddleware);
+			}
+			instance.use(fullPath, router);
+		};
+
+		add('', RootRouter, false);
 		add('collection', CollectionRouter);
 		add('platforms', PlatformsRouter);
 		add('wishlist', WishlistRouter);

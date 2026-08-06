@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction, RequestHandler } from "express";
 import ResponsesUtil from "@utils/responses.util";
+import LogUtil from "@utils/log.util";
 
 type HTTPMethod = 'POST'|'PUT'|'PATCH'|'GET'|'DELETE'|'HEAD'|'ALL'|'OPTIONS'|'CONNECT';
 
@@ -26,7 +27,7 @@ export default class RouterUtil {
 			try {
 				await call({ id: identifier, res, req, next });
 			} catch (error) {
-				console.error(`[${identifier}] Unhandled route error!`, error);
+				LogUtil.conserror(`[${identifier}] Unhandled route error!`, error instanceof Error ? (error.stack ?? error.message) : String(error));
 				ResponsesUtil.somethingWentWrong(res);
 			}
 		});

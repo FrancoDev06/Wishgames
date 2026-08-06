@@ -5,6 +5,7 @@ import { ConsoleCollectionItem } from "@models/console-collection.model";
 import { ConsoleCollectionCreatePayload } from "@queries/console-collection.queries";
 import { WishlistStatus } from "@models/common.model";
 import ActivityLogQueries from "@queries/activity-log.queries";
+import { logIfPresent } from "@queries/_shared/log-if-present.util";
 
 export interface ConsoleWishlistCreatePayload {
 	id_console: string;
@@ -53,15 +54,13 @@ export default class ConsoleWishlistQueries {
 		);
 
 		const withConsole = await this.getById(result.rows[0].id);
-		if (withConsole) {
-			await ActivityLogQueries.log({
-				ll_kind: "wishlist_console",
-				ll_action: "added",
-				ll_title: withConsole.console_name,
-				ll_console_slug: withConsole.console_slug,
-				ll_console_name: withConsole.console_name,
-			});
-		}
+		await logIfPresent(withConsole, (c) => ({
+			ll_kind: "wishlist_console",
+			ll_action: "added",
+			ll_title: c.console_name,
+			ll_console_slug: c.console_slug,
+			ll_console_name: c.console_name,
+		}));
 
 		return result.rows[0];
 	}
@@ -76,15 +75,13 @@ export default class ConsoleWishlistQueries {
 		);
 
 		const withConsole = await this.getById(id);
-		if (withConsole) {
-			await ActivityLogQueries.log({
-				ll_kind: "wishlist_console",
-				ll_action: "edited",
-				ll_title: withConsole.console_name,
-				ll_console_slug: withConsole.console_slug,
-				ll_console_name: withConsole.console_name,
-			});
-		}
+		await logIfPresent(withConsole, (c) => ({
+			ll_kind: "wishlist_console",
+			ll_action: "edited",
+			ll_title: c.console_name,
+			ll_console_slug: c.console_slug,
+			ll_console_name: c.console_name,
+		}));
 
 		return result.rows[0] ?? null;
 	}
@@ -95,14 +92,14 @@ export default class ConsoleWishlistQueries {
 		const result = await DatabaseUtil.query(`DELETE FROM ref_console_wishlist WHERE id = $1`, [id]);
 		const deleted = (result.rowCount ?? 0) > 0;
 
-		if (deleted && withConsole) {
-			await ActivityLogQueries.log({
+		if (deleted) {
+			await logIfPresent(withConsole, (c) => ({
 				ll_kind: "wishlist_console",
 				ll_action: "deleted",
-				ll_title: withConsole.console_name,
-				ll_console_slug: withConsole.console_slug,
-				ll_console_name: withConsole.console_name,
-			});
+				ll_title: c.console_name,
+				ll_console_slug: c.console_slug,
+				ll_console_name: c.console_name,
+			}));
 		}
 
 		return deleted;

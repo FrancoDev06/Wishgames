@@ -1,8 +1,11 @@
 import { RequestError } from "./interfaces/return.interfaces.js";
 
+// `additional` resserré de `any` à `Record<string, unknown>` : tous les appelants du repo passent
+// déjà un objet litéral (ex. { id_case: "..." }), jamais une valeur primitive — ce typage documente
+// mieux l'intention sans changer le comportement (JSON.parse(JSON.stringify(...)) reste identique).
 export default class ErrorsUtil {
 
-	static _401(additional: any): RequestError {
+	static _401(additional: Record<string, unknown>): RequestError {
 		return {
 			info: 'execko',
 			error: 'ERROR_UNAUTHORIZED_ACTION',
@@ -10,7 +13,7 @@ export default class ErrorsUtil {
 		};
 	}
 
-	static _404(additional: any): RequestError {
+	static _404(additional: Record<string, unknown>): RequestError {
 		return {
 			info: 'execko',
 			error: 'ERROR_NO_DATA_FOUND',
@@ -18,7 +21,7 @@ export default class ErrorsUtil {
 		};
 	}
 
-	static _405(additional: any): RequestError {
+	static _405(additional: Record<string, unknown>): RequestError {
 		return {
 			info: 'execko',
 			error: 'ERROR_METHOD_NOT_ALLOWED',
@@ -26,7 +29,7 @@ export default class ErrorsUtil {
 		};
 	}
 
-	static _412(additional: any): RequestError {
+	static _412(additional: Record<string, unknown>): RequestError {
 		return {
 			info: 'execko',
 			error: 'ERROR_INVALID_PARAMETERS',
@@ -34,7 +37,7 @@ export default class ErrorsUtil {
 		};
 	}
 
-	static _422(additional: any): RequestError {
+	static _422(additional: Record<string, unknown>): RequestError {
 		return {
 			info: 'execko',
 			error: 'ERROR_UNPROCESSABLE_ENTITY',
@@ -42,7 +45,7 @@ export default class ErrorsUtil {
 		};
 	}
 
-	static _429(additional: any): RequestError {
+	static _429(additional: Record<string, unknown>): RequestError {
 		return {
 			info: 'execko',
 			error: 'ERROR_RATE_LIMITED',
@@ -50,7 +53,7 @@ export default class ErrorsUtil {
 		};
 	}
 
-	static _500(additional: any): RequestError {
+	static _500(additional: Record<string, unknown>): RequestError {
 		return {
 			info: 'execko',
 			error: 'ERROR_SOMETHING_WENT_WRONG',
@@ -58,7 +61,7 @@ export default class ErrorsUtil {
 		};
 	}
 
-	static _503(additional: any): RequestError {
+	static _503(additional: Record<string, unknown>): RequestError {
 		return {
 			info: 'execko',
 			error: 'ERROR_SERVICE_UNAVAILABLE',

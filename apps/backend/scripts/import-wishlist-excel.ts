@@ -9,7 +9,15 @@
 import { Pool } from "pg";
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
-import * as XLSX from "xlsx";
+// Le paquet npm officiel "xlsx" (SheetJS) est bloqué depuis 2021 à la 0.18.5 sur le registre npm,
+// version affectée par CVE-2023-30533 (prototype pollution) et CVE-2024-22363 (ReDoS) toutes deux
+// non patchées côté npm — SheetJS ne publie plus ses correctifs que sur son propre CDN
+// (cdn.sheetjs.com), hors du registre npm standard. "@e965/xlsx" est un miroir npm à jour, publié
+// spécifiquement pour republier les releases SheetJS (même code source, même API) sur le registre
+// npm — utilisé ici à la place de "xlsx" pour bénéficier des correctifs (0.20.3, au-delà des CVE
+// ci-dessus) sans dépendre d'une URL de tarball hors registre. Script d'import ponctuel hors surface
+// d'attaque API (jamais appelé automatiquement) ; ne lui faire lire qu'un fichier Excel de confiance.
+import * as XLSX from "@e965/xlsx";
 
 const WISHLIST_XLSX = join(import.meta.dir, "..", "..", "..", "data", "Wish List Retro(1).xlsx");
 const UNMATCHED_REPORT = join(import.meta.dir, "import-wishlist-unmatched.csv");

@@ -1,7 +1,7 @@
 import DatabaseUtil from "@utils/database.util";
 import QueryBuilderUtil from "@utils/query-builder.util";
 import { ConsoleCollectionItem, ConsoleCollectionItemWithConsole } from "@models/console-collection.model";
-import ActivityLogQueries from "@queries/activity-log.queries";
+import { logIfPresent } from "@queries/_shared/log-if-present.util";
 
 export interface ConsoleCollectionCreatePayload {
 	id_console: string;
@@ -78,16 +78,14 @@ export default class ConsoleCollectionQueries {
 		);
 
 		const withConsole = await this.getById(result.rows[0].id);
-		if (withConsole) {
-			await ActivityLogQueries.log({
-				ll_kind: "collection_console",
-				ll_action: "added",
-				ll_title: withConsole.console_name,
-				ll_console_slug: withConsole.console_slug,
-				ll_console_name: withConsole.console_name,
-				nb_price: withConsole.nb_price_paid,
-			});
-		}
+		await logIfPresent(withConsole, (c) => ({
+			ll_kind: "collection_console",
+			ll_action: "added",
+			ll_title: c.console_name,
+			ll_console_slug: c.console_slug,
+			ll_console_name: c.console_name,
+			nb_price: c.nb_price_paid,
+		}));
 
 		return result.rows[0];
 	}
@@ -102,16 +100,14 @@ export default class ConsoleCollectionQueries {
 		);
 
 		const withConsole = await this.getById(id);
-		if (withConsole) {
-			await ActivityLogQueries.log({
-				ll_kind: "collection_console",
-				ll_action: "edited",
-				ll_title: withConsole.console_name,
-				ll_console_slug: withConsole.console_slug,
-				ll_console_name: withConsole.console_name,
-				nb_price: withConsole.nb_price_paid,
-			});
-		}
+		await logIfPresent(withConsole, (c) => ({
+			ll_kind: "collection_console",
+			ll_action: "edited",
+			ll_title: c.console_name,
+			ll_console_slug: c.console_slug,
+			ll_console_name: c.console_name,
+			nb_price: c.nb_price_paid,
+		}));
 
 		return result.rows[0] ?? null;
 	}
@@ -122,15 +118,15 @@ export default class ConsoleCollectionQueries {
 		const result = await DatabaseUtil.query(`DELETE FROM ref_console_collection WHERE id = $1`, [id]);
 		const deleted = (result.rowCount ?? 0) > 0;
 
-		if (deleted && withConsole) {
-			await ActivityLogQueries.log({
+		if (deleted) {
+			await logIfPresent(withConsole, (c) => ({
 				ll_kind: "collection_console",
 				ll_action: "deleted",
-				ll_title: withConsole.console_name,
-				ll_console_slug: withConsole.console_slug,
-				ll_console_name: withConsole.console_name,
-				nb_price: withConsole.nb_price_paid,
-			});
+				ll_title: c.console_name,
+				ll_console_slug: c.console_slug,
+				ll_console_name: c.console_name,
+				nb_price: c.nb_price_paid,
+			}));
 		}
 
 		return deleted;

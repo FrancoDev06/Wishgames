@@ -1,5 +1,6 @@
 import ResponsesUtil from "@utils/responses.util";
 import { RDRouter } from "@utils/router.util";
+import ValidationUtil, { CONSOLE_ITEM_FIELD_SPECS, CONSOLE_WISHLIST_ENTRY_FIELD_SPECS } from "@utils/validation.util";
 import ConsoleCollectionQueries from "@queries/console-collection.queries";
 import ConsoleWishlistQueries from "@queries/console-wishlist.queries";
 import ConsoleWishlistOfferQueries from "@queries/console-wishlist-offer.queries";
@@ -23,6 +24,10 @@ router.register("POST", "/collection", async ({ req, res }): Promise<void> => {
 	if (!body.id_console || !body.ll_completeness || !body.ll_condition_overall) {
 		return ResponsesUtil.invalidParameters(res, { id_case: "MISSING_REQUIRED_FIELDS" });
 	}
+	const invalidFields = ValidationUtil.invalidFields(body, CONSOLE_ITEM_FIELD_SPECS);
+	if (invalidFields.length > 0) {
+		return ResponsesUtil.unprocessableEntity(res, { id_case: "INVALID_FIELD_TYPES", fields: invalidFields });
+	}
 
 	const item = await ConsoleCollectionQueries.create(body);
 	return ResponsesUtil.handleResult(res, { info: "execok", data: item }, 201);
@@ -33,7 +38,13 @@ router.register("PUT", "/collection/:id", async ({ req, res }): Promise<void> =>
 	const existing = await ConsoleCollectionQueries.getRaw(id);
 	if (!existing) return ResponsesUtil.notFound(res);
 
-	const item = await ConsoleCollectionQueries.update(id, req.body ?? {});
+	const body = req.body ?? {};
+	const invalidFields = ValidationUtil.invalidFields(body, CONSOLE_ITEM_FIELD_SPECS);
+	if (invalidFields.length > 0) {
+		return ResponsesUtil.unprocessableEntity(res, { id_case: "INVALID_FIELD_TYPES", fields: invalidFields });
+	}
+
+	const item = await ConsoleCollectionQueries.update(id, body);
 	return ResponsesUtil.handleResult(res, { info: "execok", data: item });
 });
 
@@ -59,6 +70,10 @@ router.register("POST", "/wishlist", async ({ req, res }): Promise<void> => {
 	if (!body.id_console) {
 		return ResponsesUtil.invalidParameters(res, { id_case: "MISSING_REQUIRED_FIELDS" });
 	}
+	const invalidFields = ValidationUtil.invalidFields(body, CONSOLE_WISHLIST_ENTRY_FIELD_SPECS);
+	if (invalidFields.length > 0) {
+		return ResponsesUtil.unprocessableEntity(res, { id_case: "INVALID_FIELD_TYPES", fields: invalidFields });
+	}
 
 	const item = await ConsoleWishlistQueries.create(body);
 	return ResponsesUtil.handleResult(res, { info: "execok", data: item }, 201);
@@ -69,7 +84,13 @@ router.register("PUT", "/wishlist/:id", async ({ req, res }): Promise<void> => {
 	const existing = await ConsoleWishlistQueries.getRaw(id);
 	if (!existing) return ResponsesUtil.notFound(res);
 
-	const item = await ConsoleWishlistQueries.update(id, req.body ?? {});
+	const body = req.body ?? {};
+	const invalidFields = ValidationUtil.invalidFields(body, CONSOLE_WISHLIST_ENTRY_FIELD_SPECS);
+	if (invalidFields.length > 0) {
+		return ResponsesUtil.unprocessableEntity(res, { id_case: "INVALID_FIELD_TYPES", fields: invalidFields });
+	}
+
+	const item = await ConsoleWishlistQueries.update(id, body);
 	return ResponsesUtil.handleResult(res, { info: "execok", data: item });
 });
 
@@ -83,6 +104,10 @@ router.register("POST", "/wishlist/:id/buy", async ({ req, res }): Promise<void>
 	const body = req.body ?? {};
 	if (!body.ll_completeness || !body.ll_condition_overall) {
 		return ResponsesUtil.invalidParameters(res, { id_case: "MISSING_REQUIRED_FIELDS" });
+	}
+	const invalidFields = ValidationUtil.invalidFields(body, CONSOLE_ITEM_FIELD_SPECS);
+	if (invalidFields.length > 0) {
+		return ResponsesUtil.unprocessableEntity(res, { id_case: "INVALID_FIELD_TYPES", fields: invalidFields });
 	}
 
 	const item = await ConsoleWishlistQueries.buy(String(req.params.id), body);

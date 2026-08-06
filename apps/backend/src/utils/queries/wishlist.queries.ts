@@ -4,6 +4,8 @@ import { WishlistItem, WishlistItemWithGame } from "@models/wishlist.model";
 import { CollectionItem } from "@models/collection.model";
 import { WishlistStatus } from "@models/common.model";
 import ActivityLogQueries from "@queries/activity-log.queries";
+import { gameCoverJoin } from "@queries/_shared/game-cover.sql";
+import { logIfPresent } from "@queries/_shared/log-if-present.util";
 
 export interface WishlistCreatePayload {
 	id_game: string;
@@ -55,11 +57,10 @@ export interface WishlistBuyPayload {
 
 // La jaquette affichée correspond à sa propre région quand elle est connue (wl.ll_region) ; sinon
 // on retombe sur la priorité Europe -> USA -> Japon habituelle (§2bis) — même logique que
-// CollectionQueries.SELECT_WITH_GAME. Avant ce correctif, une entrée wishlist ciblant le Japon
-// (ex. 1942 sur NES) affichait quand même la jaquette USA/Europe dès que le jeu avait aussi une
-// jaquette pour ces régions, la requête ignorant totalement wl.ll_region.
-// Le rendu 3D (BOX_3D, migration 0010) est préféré au scan plat (FRONT) une fois la région choisie
-// — même logique que GameQueries.COVER_JOIN pour le Catalogue.
+// CollectionQueries.SELECT_WITH_GAME (fragment partagé, voir _shared/game-cover.sql.ts). Avant ce
+// correctif, une entrée wishlist ciblant le Japon (ex. 1942 sur NES) affichait quand même la
+// jaquette USA/Europe dès que le jeu avait aussi une jaquette pour ces régions, la requête ignorant
+// totalement wl.ll_region.
 const SELECT_WITH_GAME = `
 	SELECT wl.*, g.ll_title AS title, c.ll_slug AS console_slug, c.ll_name AS console_name,
 	       cov.ll_image_url AS cover_front_url,
@@ -68,16 +69,7 @@ const SELECT_WITH_GAME = `
 	FROM ref_wishlist wl
 	JOIN ref_game g ON g.id = wl.id_game
 	JOIN ref_console c ON c.id = g.id_console
-	LEFT JOIN LATERAL (
-		SELECT ll_image_url
-		FROM ref_cover c2
-		WHERE c2.id_game = g.id AND c2.ll_cover_type IN ('FRONT', 'BOX_3D')
-		ORDER BY
-			CASE WHEN c2.ll_region = wl.ll_region THEN 0 ELSE 1 END,
-			CASE c2.ll_region WHEN 'Europe' THEN 1 WHEN 'North America' THEN 2 WHEN 'Japan' THEN 3 ELSE 4 END,
-			CASE WHEN c2.ll_cover_type = 'BOX_3D' THEN 0 ELSE 1 END
-		LIMIT 1
-	) cov ON true
+	${gameCoverJoin("wl")}
 `;
 
 export default class WishlistQueries {
@@ -124,16 +116,14 @@ export default class WishlistQueries {
 		);
 
 		const withGame = await this.getById(result.rows[0].id);
-		if (withGame) {
-			await ActivityLogQueries.log({
-				ll_kind: "wishlist_game",
-				ll_action: "added",
-				ll_title: withGame.title,
-				ll_console_slug: withGame.console_slug,
-				ll_console_name: withGame.console_name,
-				ll_cover_url: withGame.cover_front_url,
-			});
-		}
+		await logIfPresent(withGame, (g) => ({
+			ll_kind: "wishlist_game",
+			ll_action: "added",
+			ll_title: g.title,
+			ll_console_slug: g.console_slug,
+			ll_console_name: g.console_name,
+			ll_cover_url: g.cover_front_url,
+		}));
 
 		return result.rows[0];
 	}
@@ -148,16 +138,14 @@ export default class WishlistQueries {
 		);
 
 		const withGame = await this.getById(id);
-		if (withGame) {
-			await ActivityLogQueries.log({
-				ll_kind: "wishlist_game",
-				ll_action: "edited",
-				ll_title: withGame.title,
-				ll_console_slug: withGame.console_slug,
-				ll_console_name: withGame.console_name,
-				ll_cover_url: withGame.cover_front_url,
-			});
-		}
+		await logIfPresent(withGame, (g) => ({
+			ll_kind: "wishlist_game",
+			ll_action: "edited",
+			ll_title: g.title,
+			ll_console_slug: g.console_slug,
+			ll_console_name: g.console_name,
+			ll_cover_url: g.cover_front_url,
+		}));
 
 		return result.rows[0] ?? null;
 	}
@@ -168,15 +156,15 @@ export default class WishlistQueries {
 		const result = await DatabaseUtil.query(`DELETE FROM ref_wishlist WHERE id = $1`, [id]);
 		const deleted = (result.rowCount ?? 0) > 0;
 
-		if (deleted && withGame) {
-			await ActivityLogQueries.log({
+		if (deleted) {
+			await logIfPresent(withGame, (g) => ({
 				ll_kind: "wishlist_game",
 				ll_action: "deleted",
-				ll_title: withGame.title,
-				ll_console_slug: withGame.console_slug,
-				ll_console_name: withGame.console_name,
-				ll_cover_url: withGame.cover_front_url,
-			});
+				ll_title: g.title,
+				ll_console_slug: g.console_slug,
+				ll_console_name: g.console_name,
+				ll_cover_url: g.cover_front_url,
+			}));
 		}
 
 		return deleted;

@@ -9,6 +9,13 @@ WORKDIR /app/frontend
 COPY apps/frontend/package.json apps/frontend/package-lock.json ./
 RUN npm ci
 COPY apps/frontend .
+# Render expose les variables d'env du service comme build args pour les déploiements Docker :
+# API_KEY doit être définie côté Render avec LA MÊME valeur que celle lue par le backend
+# (apps/backend/src/middlewares/auth.middleware.ts) — injectée ici dans le bundle JS public, ce
+# n'est pas un secret fort (voir commentaire dans environments.prod.ts). Vide par défaut : le build
+# reste fonctionnel sans cette variable, juste sans en-tête X-API-Key envoyé.
+ARG API_KEY=""
+RUN sed -i "s#__API_KEY__#${API_KEY}#" src/environments/environments.prod.ts
 RUN npx ng build --configuration production
 
 # --- Étape 2 : runtime Bun (API + build Angular copié, une seule origine — voir routes.util.ts) ---

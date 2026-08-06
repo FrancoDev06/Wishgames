@@ -1,7 +1,8 @@
 import DatabaseUtil from "@utils/database.util";
 import QueryBuilderUtil from "@utils/query-builder.util";
 import { CollectionItem, CollectionItemWithGame } from "@models/collection.model";
-import ActivityLogQueries from "@queries/activity-log.queries";
+import { gameCoverJoin } from "@queries/_shared/game-cover.sql";
+import { logIfPresent } from "@queries/_shared/log-if-present.util";
 
 export interface CollectionCreatePayload {
 	id_game: string;
@@ -36,27 +37,17 @@ const UPDATABLE_FIELDS: (keyof CollectionUpdatePayload)[] = [
 ];
 
 // La jaquette affichée pour une ligne de collection correspond à sa propre région quand elle est
-// connue (col.ll_region) ; sinon on retombe sur la priorité Europe -> USA -> Japon habituelle (§2bis).
-// Le rendu 3D (BOX_3D, migration 0010) est préféré au scan plat (FRONT) une fois la région choisie
-// — même logique que GameQueries.COVER_JOIN pour le Catalogue. Avant ce correctif, Collection/
-// Wishlist ne regardaient jamais BOX_3D et retombaient toujours sur le scan plat même quand un
-// rendu 3D existait pour la région exacte.
+// connue (col.ll_region) ; sinon on retombe sur la priorité Europe -> USA -> Japon habituelle
+// (§2bis) — même logique que WishlistQueries.SELECT_WITH_GAME (fragment partagé, voir
+// _shared/game-cover.sql.ts). Avant ce correctif, Collection/Wishlist ne regardaient jamais BOX_3D
+// et retombaient toujours sur le scan plat même quand un rendu 3D existait pour la région exacte.
 const SELECT_WITH_GAME = `
 	SELECT col.*, g.ll_title AS title, c.ll_slug AS console_slug, c.ll_name AS console_name,
 	       cov.ll_image_url AS cover_front_url
 	FROM ref_collection col
 	JOIN ref_game g ON g.id = col.id_game
 	JOIN ref_console c ON c.id = g.id_console
-	LEFT JOIN LATERAL (
-		SELECT ll_image_url
-		FROM ref_cover c2
-		WHERE c2.id_game = g.id AND c2.ll_cover_type IN ('FRONT', 'BOX_3D')
-		ORDER BY
-			CASE WHEN c2.ll_region = col.ll_region THEN 0 ELSE 1 END,
-			CASE c2.ll_region WHEN 'Europe' THEN 1 WHEN 'North America' THEN 2 WHEN 'Japan' THEN 3 ELSE 4 END,
-			CASE WHEN c2.ll_cover_type = 'BOX_3D' THEN 0 ELSE 1 END
-		LIMIT 1
-	) cov ON true
+	${gameCoverJoin("col")}
 `;
 
 export default class CollectionQueries {
@@ -107,17 +98,15 @@ export default class CollectionQueries {
 		);
 
 		const withGame = await this.getById(result.rows[0].id);
-		if (withGame) {
-			await ActivityLogQueries.log({
-				ll_kind: "collection_game",
-				ll_action: "added",
-				ll_title: withGame.title,
-				ll_console_slug: withGame.console_slug,
-				ll_console_name: withGame.console_name,
-				ll_cover_url: withGame.cover_front_url,
-				nb_price: withGame.nb_price_paid,
-			});
-		}
+		await logIfPresent(withGame, (g) => ({
+			ll_kind: "collection_game",
+			ll_action: "added",
+			ll_title: g.title,
+			ll_console_slug: g.console_slug,
+			ll_console_name: g.console_name,
+			ll_cover_url: g.cover_front_url,
+			nb_price: g.nb_price_paid,
+		}));
 
 		return result.rows[0];
 	}
@@ -132,17 +121,15 @@ export default class CollectionQueries {
 		);
 
 		const withGame = await this.getById(id);
-		if (withGame) {
-			await ActivityLogQueries.log({
-				ll_kind: "collection_game",
-				ll_action: "edited",
-				ll_title: withGame.title,
-				ll_console_slug: withGame.console_slug,
-				ll_console_name: withGame.console_name,
-				ll_cover_url: withGame.cover_front_url,
-				nb_price: withGame.nb_price_paid,
-			});
-		}
+		await logIfPresent(withGame, (g) => ({
+			ll_kind: "collection_game",
+			ll_action: "edited",
+			ll_title: g.title,
+			ll_console_slug: g.console_slug,
+			ll_console_name: g.console_name,
+			ll_cover_url: g.cover_front_url,
+			nb_price: g.nb_price_paid,
+		}));
 
 		return result.rows[0] ?? null;
 	}
@@ -153,16 +140,16 @@ export default class CollectionQueries {
 		const result = await DatabaseUtil.query(`DELETE FROM ref_collection WHERE id = $1`, [id]);
 		const deleted = (result.rowCount ?? 0) > 0;
 
-		if (deleted && withGame) {
-			await ActivityLogQueries.log({
+		if (deleted) {
+			await logIfPresent(withGame, (g) => ({
 				ll_kind: "collection_game",
 				ll_action: "deleted",
-				ll_title: withGame.title,
-				ll_console_slug: withGame.console_slug,
-				ll_console_name: withGame.console_name,
-				ll_cover_url: withGame.cover_front_url,
-				nb_price: withGame.nb_price_paid,
-			});
+				ll_title: g.title,
+				ll_console_slug: g.console_slug,
+				ll_console_name: g.console_name,
+				ll_cover_url: g.cover_front_url,
+				nb_price: g.nb_price_paid,
+			}));
 		}
 
 		return deleted;

@@ -1,5 +1,6 @@
 import ResponsesUtil from "@utils/responses.util";
 import { RDRouter } from "@utils/router.util";
+import ValidationUtil, { GAME_ITEM_FIELD_SPECS, WISHLIST_ENTRY_FIELD_SPECS } from "@utils/validation.util";
 import WishlistQueries from "@queries/wishlist.queries";
 import WishlistOfferQueries from "@queries/wishlist-offer.queries";
 
@@ -22,6 +23,10 @@ router.register("POST", "/", async ({ req, res }): Promise<void> => {
 	if (!body.id_game) {
 		return ResponsesUtil.invalidParameters(res, { id_case: "MISSING_REQUIRED_FIELDS" });
 	}
+	const invalidFields = ValidationUtil.invalidFields(body, WISHLIST_ENTRY_FIELD_SPECS);
+	if (invalidFields.length > 0) {
+		return ResponsesUtil.unprocessableEntity(res, { id_case: "INVALID_FIELD_TYPES", fields: invalidFields });
+	}
 
 	const item = await WishlistQueries.create(body);
 	return ResponsesUtil.handleResult(res, { info: "execok", data: item }, 201);
@@ -32,7 +37,13 @@ router.register("PUT", "/:id", async ({ req, res }): Promise<void> => {
 	const existing = await WishlistQueries.getRaw(id);
 	if (!existing) return ResponsesUtil.notFound(res);
 
-	const item = await WishlistQueries.update(id, req.body ?? {});
+	const body = req.body ?? {};
+	const invalidFields = ValidationUtil.invalidFields(body, WISHLIST_ENTRY_FIELD_SPECS);
+	if (invalidFields.length > 0) {
+		return ResponsesUtil.unprocessableEntity(res, { id_case: "INVALID_FIELD_TYPES", fields: invalidFields });
+	}
+
+	const item = await WishlistQueries.update(id, body);
 	return ResponsesUtil.handleResult(res, { info: "execok", data: item });
 });
 
@@ -47,6 +58,10 @@ router.register("POST", "/:id/buy", async ({ req, res }): Promise<void> => {
 	const body = req.body ?? {};
 	if (!body.ll_completeness || !body.ll_condition_overall) {
 		return ResponsesUtil.invalidParameters(res, { id_case: "MISSING_REQUIRED_FIELDS" });
+	}
+	const invalidFields = ValidationUtil.invalidFields(body, GAME_ITEM_FIELD_SPECS);
+	if (invalidFields.length > 0) {
+		return ResponsesUtil.unprocessableEntity(res, { id_case: "INVALID_FIELD_TYPES", fields: invalidFields });
 	}
 
 	const item = await WishlistQueries.buy(String(req.params.id), body);
