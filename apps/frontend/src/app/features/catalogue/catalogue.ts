@@ -28,6 +28,10 @@ export type ConsoleStatusOption = 'all' | 'owned' | 'not-owned';
 
 const PAGE_SIZE = 60;
 
+// Index alphabétique (§3.3) affiché à droite de la liste de jeux — "#" couvre les titres qui ne
+// commencent pas par une lettre (chiffres, symboles), qui trient avant "A" côté backend.
+const ALPHABET_INDEX = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
+
 @Component({
   selector: 'app-catalogue',
   imports: [CollectionFormModal, GameDetailModal, ConsoleFormModal],
@@ -65,6 +69,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   protected readonly searchText = signal('');
 
   protected readonly hasMore = computed(() => this.games().length < this.total());
+  protected readonly alphabetIndex = ALPHABET_INDEX;
 
   // Vue "par console" (tuiles) tant qu'aucun filtre n'a été activé — c'est l'écran d'accueil du
   // catalogue ; dès qu'une console/recherche/statut est choisi, on bascule sur la liste plate.
@@ -233,7 +238,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
     this.observer?.disconnect();
   }
 
-  private fetchPage(reset: boolean): void {
+  private fetchPage(reset: boolean, jumpTo?: string): void {
     if (reset) {
       this.offset = 0;
       this.games.set([]);
@@ -252,12 +257,16 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
         search: this.searchText() || undefined,
         limit: PAGE_SIZE,
         offset: this.offset,
+        jumpTo,
       })
       .subscribe({
         next: (response) => {
           this.games.update((list) => (reset ? response.data : [...list, ...response.data]));
           this.total.set(response.additional.total);
-          this.offset += response.data.length;
+          // Avec jumpTo, l'offset réellement utilisé (calculé côté backend) diffère de celui envoyé
+          // dans la requête — on repart de la valeur renvoyée pour que le scroll infini continue au
+          // bon endroit.
+          this.offset = response.additional.offset + response.data.length;
           this.loading.set(false);
           this.loadingMore.set(false);
         },
@@ -269,6 +278,13 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
           this.loadingMore.set(false);
         },
       });
+  }
+
+  // Index alphabétique (§3.3) : évite d'avoir à re-scroller toute la liste d'une console pour
+  // atteindre une lettre déjà dépassée après un retour accidentel en haut de page.
+  protected jumpToLetter(letter: string): void {
+    this.fetchPage(true, letter);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   protected onSearchChange(value: string): void {

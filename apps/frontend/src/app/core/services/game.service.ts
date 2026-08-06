@@ -12,6 +12,7 @@ export interface GameListParams {
   search?: string;
   limit: number;
   offset: number;
+  jumpTo?: string;
 }
 
 export interface GameListResponse {
@@ -33,6 +34,7 @@ export class GameService {
     if (params.console) query['console'] = params.console;
     if (params.status) query['status'] = params.status;
     if (params.search) query['search'] = params.search;
+    if (params.jumpTo) query['jumpTo'] = params.jumpTo;
 
     return this.http.get<GameListResponse>(this.baseUrl, { params: query });
   }

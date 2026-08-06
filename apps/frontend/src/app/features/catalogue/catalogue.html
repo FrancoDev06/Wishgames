@@ -90,6 +90,14 @@
       </div>
     }
   } @else {
+  @if (!showConsolePicker()) {
+    <nav class="alpha-index" aria-label="Aller à la lettre">
+      @for (letter of alphabetIndex; track letter) {
+        <button type="button" (click)="jumpToLetter(letter)">{{ letter }}</button>
+      }
+    </nav>
+  }
+
   <div class="filters">
     <input
       type="search"

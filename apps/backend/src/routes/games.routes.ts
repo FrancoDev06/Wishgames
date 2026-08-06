@@ -16,9 +16,11 @@ router.register("GET", "/", async ({ req, res }): Promise<void> => {
 	const status = STATUS_VALUES.includes(statusParam as GameListFilters["status"])
 		? (statusParam as GameListFilters["status"])
 		: undefined;
+	const jumpToParam = typeof req.query.jumpTo === "string" ? req.query.jumpTo.trim().charAt(0) : undefined;
+	const jumpTo = jumpToParam || undefined;
 
-	const { items, total } = await GameQueries.list({ consoleSlug, status, search, limit, offset });
-	return ResponsesUtil.handleResult(res, { info: "execok", data: items, additional: { total, limit, offset } });
+	const { items, total, offset: usedOffset } = await GameQueries.list({ consoleSlug, status, search, limit, offset, jumpTo });
+	return ResponsesUtil.handleResult(res, { info: "execok", data: items, additional: { total, limit, offset: usedOffset } });
 });
 
 router.register("GET", "/:id", async ({ req, res }): Promise<void> => {

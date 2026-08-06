@@ -90,6 +90,56 @@
   height: 1px;
 }
 
+// ---------- Index alphabétique (liste de jeux d'une console) ----------
+// Fixe à droite de l'écran, toujours accessible quel que soit le scroll — évite de devoir
+// re-scroller toute la liste pour rejoindre une lettre déjà dépassée.
+.alpha-index {
+  position: fixed;
+  top: 50%;
+  right: var(--space-2);
+  transform: translateY(-50%);
+  z-index: var(--z-header);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: var(--space-2) var(--space-1);
+  background: var(--color-bg-sunken);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.alpha-index button {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: var(--transition-base);
+}
+
+.alpha-index button:hover,
+.alpha-index button:focus-visible {
+  color: var(--color-primary-contrast);
+  background: var(--color-primary);
+}
+
+@media (max-width: 859px) {
+  .alpha-index {
+    top: auto;
+    bottom: calc(var(--bottom-nav-height) + var(--space-3));
+    right: var(--space-1);
+    transform: none;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+}
+
 @media (max-width: 480px) {
   .filters__status {
     flex-wrap: wrap;

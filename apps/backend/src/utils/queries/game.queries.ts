@@ -8,11 +8,16 @@ export interface GameListFilters {
 	search?: string;
 	limit: number;
 	offset: number;
+	// Index alphabétique (§3.3) : quand fourni, ignore `offset` et le recalcule pour pointer sur la
+	// première ligne dont le titre commence par cette lettre (ou la lettre suivante existante) —
+	// évite de re-scroller toute la liste pour atteindre une lettre déjà dépassée.
+	jumpTo?: string;
 }
 
 export interface GameListResult {
 	items: GameListItem[];
 	total: number;
+	offset: number;
 }
 
 // Un jeu peut avoir plusieurs jaquettes FRONT, une par région (§2bis) : LEFT JOIN (pas LATERAL)
@@ -77,7 +82,25 @@ export default class GameQueries {
 		const countResult = await DatabaseUtil.query<{ count: string }>(`SELECT COUNT(*)::text AS count ${from}`, values);
 		const total = Number(countResult.rows[0]?.count ?? 0);
 
-		const listValues = [...values, filters.limit, filters.offset];
+		let offset = filters.offset;
+		if (filters.jumpTo) {
+			// Ne compare que la 1re lettre (pas g.ll_title entier) : on veut la position de la première
+			// ligne dont le titre commence par cette lettre, pas un tri par titre complet.
+			const jumpConditions = [...conditions, `UPPER(LEFT(g.ll_title, 1)) < $${values.length + 1}`];
+			const jumpFrom = `
+				FROM ref_game g
+				JOIN ref_console c ON c.id = g.id_console
+				${COVER_JOIN}
+				WHERE ${jumpConditions.join(" AND ")}
+			`;
+			const jumpResult = await DatabaseUtil.query<{ count: string }>(
+				`SELECT COUNT(*)::text AS count ${jumpFrom}`,
+				[...values, filters.jumpTo.toUpperCase()]
+			);
+			offset = Number(jumpResult.rows[0]?.count ?? 0);
+		}
+
+		const listValues = [...values, filters.limit, offset];
 		const itemsResult = await DatabaseUtil.query<GameListItem>(
 			`SELECT g.*, c.ll_slug AS console_slug, c.ll_name AS console_name,
 			        cov.ll_region AS region,
@@ -99,7 +122,7 @@ export default class GameQueries {
 			listValues
 		);
 
-		return { items: itemsResult.rows, total };
+		return { items: itemsResult.rows, total, offset };
 	}
 
 	static async getById(id: string): Promise<GameWithConsole | null> {
