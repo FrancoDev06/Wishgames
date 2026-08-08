@@ -97,6 +97,10 @@ export class Wishlist implements OnInit {
 
   protected readonly searchText = signal('');
   protected readonly sortBy = signal<SortOption>('priority');
+  // Filtre "recherche active uniquement" (retour utilisateur : retrouver rapidement les jeux dont
+  // le bouton "Recherche active" est coché, au milieu d'une wishlist qui en compte beaucoup plus
+  // que ceux réellement suivis côté bot Vinted) — indépendant du champ recherche texte/tri.
+  protected readonly activeSearchOnly = signal(false);
 
   protected readonly buyTarget = signal<WishlistItem | null>(null);
   protected readonly buySubmitting = signal(false);
@@ -118,7 +122,10 @@ export class Wishlist implements OnInit {
   protected readonly filteredSorted = computed<WishlistItem[]>(() => {
     const search = this.searchText().trim().toLowerCase();
     const comparator = SORT_COMPARATORS[this.sortBy()];
-    const filtered = search ? this.items().filter((item) => item.title.toLowerCase().includes(search)) : this.items();
+    let filtered = search ? this.items().filter((item) => item.title.toLowerCase().includes(search)) : this.items();
+    if (this.activeSearchOnly()) {
+      filtered = filtered.filter((item) => item.flag_search_active);
+    }
     return [...filtered].sort(comparator);
   });
 
@@ -243,6 +250,10 @@ export class Wishlist implements OnInit {
 
   protected onSortChange(value: string): void {
     this.sortBy.set(value as SortOption);
+  }
+
+  protected toggleActiveSearchOnly(): void {
+    this.activeSearchOnly.update((value) => !value);
   }
 
   // Bascule "actif dans la recherche" directement sur la carte (retour utilisateur : remplace

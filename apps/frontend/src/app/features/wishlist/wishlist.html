@@ -71,6 +71,16 @@
           <option value="date-asc">Date d'ajout (ancien → récent)</option>
           <option value="title">Titre (A → Z)</option>
         </select>
+
+        <button
+          type="button"
+          class="filters__toggle"
+          [class.filters__toggle--on]="activeSearchOnly()"
+          [attr.aria-pressed]="activeSearchOnly()"
+          (click)="toggleActiveSearchOnly()"
+        >
+          {{ activeSearchOnly() ? '● Recherche active uniquement' : 'Toutes les entrées' }}
+        </button>
       </div>
     }
 

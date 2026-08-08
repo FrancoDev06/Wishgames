@@ -99,6 +99,34 @@
   color: var(--color-text);
 }
 
+// Filtre "recherche active uniquement" (Wishlist) — même charte que .search-active-btn (bascule
+// par carte) pour que l'état "activé" se reconnaisse au premier coup d'œil, à l'échelle de toute
+// la barre de filtres cette fois.
+.filters__toggle {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid var(--color-border-strong);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: var(--transition-base);
+  white-space: nowrap;
+}
+
+.filters__toggle:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.filters__toggle--on {
+  background: var(--gradient-accent);
+  border-color: transparent;
+  color: var(--color-primary-contrast);
+}
+
 .browse__view-toggle {
   display: inline-flex;
   gap: var(--space-1);
